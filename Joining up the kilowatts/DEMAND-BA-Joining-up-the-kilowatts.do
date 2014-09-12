@@ -1,8 +1,10 @@
 * Analysis for 'Joining up the kilowatts' paper
 
+* Ben Anderson, Energy & Climate Change, Faculty of Engineering & Environment, University of Southampton
 * b.anderson@soton.ac.uk
 * (c) University of Southampton
-* Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies
+
+* Unless there is a different license file in the folder in which this script is found, the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies
 * http://creativecommons.org/licenses/by-nc/4.0/
 
 clear all
