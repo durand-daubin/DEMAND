@@ -1,10 +1,13 @@
 * DEMAND Project (www.demand.ac.uk)
-* Analyse sequences in ONS Time Use 2005 dataset
-* Needs to use MTUS version to get cooking & eating
 
 * Analysis for BEHAVE 2014 conference presentation with mathieu.durand-daubin@edf.fr
 
-* b.anderson@soton.ac.uk
+* Use MTUS (see http://www.timeuse.org/mtus/) version of ONS UK 2005 time use survey to get episodes of cooking & eating
+* Use this to work out what kinds of 'dinner' we have & classify the diary days accordingly
+* match the diary days/diarists back to the original ONS TU 2005 data from the UK data archive (http://discover.ukdataservice.ac.uk/catalogue/?sn=5592) to see what the different dinner 'types' were doing through the day
+
+* b.anderson@soton.ac.uk based on concept & logic devised by mathieu.durand-daubin@edf.fr
+
 * (c) University of Southampton
 * Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies
 * http://creativecommons.org/licenses/by-nc/4.0/
@@ -25,7 +28,7 @@ local rpath "`proot'/results/ONS TU 2005"
 * meals at work or school = 5
 * meals or snacks in other places = 6
 * food preparation, cooking = 18
-* restaurant, café, bar, pub = 39 (but may not be eating?!)
+* restaurant, cafÃ©, bar, pub = 39 (but may not be eating?!)
 * eloc = location
 
 local version = "v1.0"
@@ -35,6 +38,9 @@ set more off
 capture log close
 
 log using "`rpath'/DEMAND-BA-UK-2005-TU-BEHAVE-eating-`version'.smcl", replace
+
+* start with MTUS data
+* NB this is a UK only subsample with some derived variables added
 
 use "`dpath'/MTUS-adult-episode-UK-only-wf.dta", clear
 * data in long/episode format
@@ -176,6 +182,7 @@ tab dinner m_mtus, mi
 * gen as double so no rounding occurrs
 gen double serial = persid
 
+* link to original ONS data
 merge 1:1 serial using "`where'/Data/Social Science Datatsets/Time Use 2005/UKDA-5592-stata8/stata8/timeusefinal_for_archive.dta", gen(m_onstu) // persid should match to serial in ONS data
 * 87 cases not in MTUS even when 'bad cases' kept?
 
