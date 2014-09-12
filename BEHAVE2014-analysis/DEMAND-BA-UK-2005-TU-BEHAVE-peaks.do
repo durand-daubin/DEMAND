@@ -12,9 +12,7 @@ clear all
 
 * change these to run this script on different PC
 local where "/Users/ben/Documents/Work"
-local droot "`where'/Data/Social Science Datatsets/MTUS/World 6/"
-* location of time-use diary data
-local dpath "`droot'/processed"
+local droot "`where'/Data/Social Science Datatsets/Time Use 2005/UKDA-5592-stata8/stata8/"
 
 local proot "`where'/Projects/RCUK-DEMAND/Theme 1"
 local rpath "`proot'/results/ONS TU 2005"
@@ -27,6 +25,8 @@ capture log close
 
 log using "`rpath'/DEMAND-BA-UK-2005-TU-BEHAVE-peaks-`version'.smcl", replace
 
-use "`where'/Data/Social Science Datatsets/Time Use 2005/UKDA-5592-stata8/stata8/timeusefinal_for_archive.dta", clear
+use "`droot'/timeusefinal_for_archive.dta", clear
+
+* there should be a lot of code here, where has it gone?!
 
 log close
