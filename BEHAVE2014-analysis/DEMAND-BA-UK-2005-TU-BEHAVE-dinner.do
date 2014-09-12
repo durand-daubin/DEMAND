@@ -233,8 +233,6 @@ egen inc_quart = cut(sumgross), group(4)
 
 tab dinner_categories inc_quart [iw = propwt]
 
-stop
-
 keep serial persid dinner_categories propwt net_wgt badcase ageh respsex day
 
 save "/tmp/temp-data.dta", replace 
@@ -269,24 +267,9 @@ replace weekday = 1 if day != 1 & day!=7
 
 tab dinner_categories weekday
 
-
 * create tables for profiles for each type
 forvalues c = -1/3 {
 	tabout pact s_halfhour if dinner_categories  == `c' & weekday == 1 using "`rpath'/dinner_categories-`c'-main-acts-by-halfhour-weekdays.txt" [iw=propwt], replace
 }
-
-* extra stuff for Peaks paper
-* create tables 
-	* age
-	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-16-65-weekdays.txt" [iw=propwt] if ageh <= 10 & weekday == 1, replace
-	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-65+-weekdays.txt" [iw=propwt] if ageh > 10 & weekday == 1, replace
-	* gender
-	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-men-weekdays.txt" [iw=propwt] if respsex == 1 & weekday == 1, replace //men
-	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-women-weekdays.txt" [iw=propwt] if respsex == 2 & weekday == 1, replace //women
-	* day of week
-	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-sunday.txt" [iw=propwt] if day == 1, replace //Sunday
-	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-monday.txt" [iw=propwt] if day == 2, replace //Monday
-	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-friday.txt" [iw=propwt] if day == 6, replace //Friday
-	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-saturday.txt" [iw=propwt] if day == 7, replace //Saturday
 
 log close
