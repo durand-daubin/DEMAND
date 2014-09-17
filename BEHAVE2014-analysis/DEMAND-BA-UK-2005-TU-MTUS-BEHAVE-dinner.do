@@ -39,7 +39,7 @@ set more off
 
 capture log close
 
-log using "`rpath'/DEMAND-BA-UK-2005-TU-BEHAVE-eating-`version'.smcl", replace
+log using "`rpath'/DEMAND-BA-UK-2005-TU-MTUS-BEHAVE-eating-`version'.smcl", replace
 
 * start with MTUS data
 * NB this is a UK only subsample with some derived variables added
