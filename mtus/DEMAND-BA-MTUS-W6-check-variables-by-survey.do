@@ -38,6 +38,8 @@ use "`dpath'/processed/MTUS-adult-episode-UK-only-wf.dta", clear
 gen ba_weekday = 0
 replace ba_weekday = 1 if ba_dow < 6
 
+* set up a half-hour variable
+* this is set to the half hour in which the episode starts
 gen ba_hour = hh(s_starttime)
 gen ba_mins = mm(s_starttime)
 
@@ -47,6 +49,7 @@ gen ba_sec = 0
 * sets date to 1969!
 gen s_halfhour = hms(ba_hour, ba_hh, ba_sec)
 format s_halfhour %tcHH:MM
+lab var s_halfhour "Half hour in which episode starts (STATA time)"
 
 * drop bad cases
 keep if badcase == 0
@@ -55,23 +58,28 @@ keep if badcase == 0
 gen sleep = 0
 replace sleep = 1 if main == 2 | sec == 2
 
-* check overall
+* check for location overall
 local surveys "1974 1983 1987 1995 2000 2005"
 foreach s of local surveys {
 	tabout main eloc using "`rpath'/MTUS-W6-UK-adults-`s'-main-act-by-location.txt" if survey == `s', replace
+	tabout sec eloc using "`rpath'/MTUS-W6-UK-adults-`s'-secondary-act-by-location.txt" if survey == `s', replace
+	tabout sec elco if main == eat using "`rpath'/MTUS-W6-UK-adults-`s'-main-eat-sec-by-location.txt" if survey == `s', replace
+	tab main elco if sec == eat using "`rpath'/MTUS-W6-UK-adults-`s'-sec-eat-main-by-location.txt" if survey == `s', replace
 }
 
 * set up eating dummies
-* 5 meals at work or school -> not set for 2005* 6 meals or snacks in other places
-* 18 food preparation, cooking
-* 39 restaurant, café, bar, pub -> seperate activity not a location!
+* 5 = meals at work or school -> not set for 2005* 6 = meals or snacks in other places
+* 18 = food preparation, cooking
+* 39 = restaurant, café, bar, pub -> seperate activity not a location!
 
 * NB
-* 48 receive or visit friends
+* 48 = receive or visit friends
 
 * note that this could have several sequential episodes of eating if something else changed e.g. primary <-> secondary
 gen eat = 0
 replace eat = 1 if main == 5 | sec == 5 | main == 6 | sec == 6
 
+tab sec if main == eat
+tab main if sec == eat
 
 log close
