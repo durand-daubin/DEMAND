@@ -1,4 +1,7 @@
-/* WHAT I WANT TO DO TO
+/* 
+giulio.mattioli@gmail.com
+
+WHAT I WANT TO DO TO
 is to use the basic sequence analysis tools in Stata (see Brzinsky-Fay et al.)
 to investigate 7-days sequences for food shopping trips 
 */ 

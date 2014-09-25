@@ -26,7 +26,7 @@ capture log close
 
 log using "`rpath'/DEMAND-BA-UK-2005-TU-sequence-analysis-`version'.smcl", replace
 
-use "`dpath'/timeusefinal_for_archive_diary_long_v1.0.dta", clear
+use "`dpath'/timeusefinal_for_archive_diary_long_v2.0.dta", clear
 
 gen ba_weekday = 0
 replace ba_weekday = 1 if s_dow > 0 & s_dow < 6

@@ -1,4 +1,8 @@
-/* I want to restructure the journey dataset, to transform it into a TUS format 
+/*
+
+giulio.mattioli@gmail.com
+
+ I want to restructure the journey dataset, to transform it into a TUS format 
 the datasets that I am using is a very small extract of the 2002-2010 dataset 
 including only 2010 and only trips for the first 100 individuals (corresponding 
 roughly to 2000 journeys)*/
