@@ -84,9 +84,45 @@ replace eat_all = 1 if eat_m == 1 | eat_s == 1
 *					66 Entertain visitors at home 
 *					71 Visit friends or relatives
 
-* 1995
+* 1983
+* - MAIN/SEC 5	meals at work or school	
+*					0103   Scheduled break at work (meal) if time=15 minutes*					1502   Drinking non-alcoholic beverages + location in workplace or school*					0402   Lunch break at educational establishment – school* - MAIN/SEC 6	other meals or snacks	
+*					1501   Eating at home*					1502   Drinking non-alcoholic beverages + location not at workplace, school, or restaurant
+* - MAIN/SEC 18	food preparation, cooking	
+*					0601   Food preparation*					0602   Bake, freeze foods, make jams, pickles, preserves, dry herbs*					0604   Make a cup of tea, coffee
+* - MAIN/SEC 39	restaurant, café, bar, pub	
+*					2701   At the pub*					2702   Play pub games (eg darts, billiards, video games)*					2703   Wine bar, drink at restaurant*					2801   Eat out at restaurant, cafe*					2802   Eat out, fast food*					2803   Eat out, not specified*					2804   Eat meal at pub (not snack)
+* - MAIN/SEC 48	receive or visit friends	
+*					2901   Eating out at a colleague's, relative's, friend's house*					2902   Visiting friends, relatives*					3801   Entertaining at home
+
+* 1987
+* - MAIN/SEC5	Meals at work or school	
+*					402 lunch break at education establishment*				If at workplace (from location)*					1501 eat at home *					1502 drink non-alcoholic beverages* - MAIN/SEC6	Other meals or snacks	
+*				If not at workplace, restaurant, bar (from location)*					1501 eat at home *					1502 drink non-alcoholic beverages
+* - MAIN/SEC18	Food preparation, cook	
+*					601 food preparation*					602 bake, freezing, jam/pickling, drying food*					604 make cup of tea, coffee etc*					4001 home brewing, wine making
+* - MAIN/SEC39	Restaurant, café, bar, pub	
+*					2701 at the pub*					2703 wine bar, at bar in restaurant *					2801 eat out at restaurant or café*					2802 eat out at fast food or takeaway*					2803 eat out not specified*					2804 eat full meal at pub (not bar snacks)*				If at restaurant or pub (from location)*					1501 eat at home *					1502 drink non-alcoholic beverages
+* - MAIN/SEC48	Receive or visit friends	
+*					2901 eat out at friend’s house*					2902 visit friends or relations *					3801 entertain at home*				If with people from outside household in home or at other person’s home*					3802 alcohol, smoke, drugs
+					
+* 1995 (no secondary activities recorded nor was location)
+* - MAIN5	meals at work or school	
+*					Not possible to create* - MAIN6	other meals or snacks	  
+*					4 Eating/home* - MAIN18	food preparation, cooking	  
+*					3 Cooking
+* - MAIN39	restaurant, café, bar, pub	
+*					23 Eating out
+* - MAIN48	receive or visit friends	
+*					24 Socializing
 
 * 2000
+* - Main/Sec5	Meals at work or school	
+*					210 Eating (at work or school – wher=4)*					1310 Lunch break* - Main/Sec6	Other meals	
+*					210 Eating not coded in categories 5 or 38 (38 = Other public event, venue)* - Main/Sec18	Food preparation/ cooking	
+*					3100 Unspecified food management*					3110 Food preparation*					3120 Baking*					3140 Preserving* - Main/Sec39	Restaurant, café, bar, pub	
+*					(at restaurant/cafe/pub – wher=6)*					210 Eating*					5000 Unspecified social life and entertainment*					5100 Unspecified social life*					5110 Socialising with household members*					5120 Visiting and receiving visitors* - Main/Sec48	Receive or visit friends	
+*					5100 Unspecified social life*					5120 Visiting and receiving visit*					5190 Other specified social life
 
 * 2005 
 * NB - some of these codes are NOT available in the version of the ONS 2005 survey which is at http://discover.ukdataservice.ac.uk/catalogue/?sn=5592
