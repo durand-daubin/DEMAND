@@ -129,7 +129,11 @@ tab s_dow ba_dow
 gen missing_loc = 0
 replace missing_loc = 1 if lact == -1
 
-keep serial net_wgt t_slot t_month s_datetime s_faketime s_dow pact sact lact missing_loc
+* where are secondary acts missing?
+gen missing_sec = 0
+replace missing_sec = 1 if sact == -1
+
+keep serial net_wgt t_slot t_month s_datetime s_faketime s_dow pact sact lact missing_loc missing_sec
 
 order serial net_wgt t_month t_slot s_*
 
@@ -142,7 +146,8 @@ save "`proot'/processed/timeusefinal_for_archive_diary_long_`v'.dta", replace
 * generate tables of primary & secondary acts by location
 tabout pact lact using "`rpath'/ONS-TU-2005-v2-adults-primary-act-by-location.txt", replace
 tabout sact lact using "`rpath'/ONS-TU-2005-v2-adults-secondary-act-by-location.txt", replace
-tabout pact missing_loc using "`rpath'/ONS-TU-2005-v2-adults-primary-act-by-missing_location.txt", replace
 
+* generate table of missing secondary activities
+tabout pact missing_sec using "`rpath'/ONS-TU-2005-v2-adults-primary-act-by-missing_secondary.txt", replace
 
-* done
+di "* -> done!"
