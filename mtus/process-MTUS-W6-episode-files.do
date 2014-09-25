@@ -211,7 +211,7 @@ foreach f of local files {
 	xtset diarypid s_starttime, delta(5 min)
 	
 	* drop variables we don't need
-	drop ba_min* ba_hour* ba_starttime ba_date ba_datetime_st t_clocksttime duration_ms mins_f clockst_mins clockst_hours
+	drop ba_min* ba_hour* ba_hh ba_sec ba_starttime ba_date ba_datetime_st t_clocksttime duration_ms mins_f clockst_mins clockst_hours
 	
 	compress
 	
