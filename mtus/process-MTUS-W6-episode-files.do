@@ -174,6 +174,21 @@ foreach f of local files {
 	* check
 	li clockst *start* *end* in 1/10 
 	
+	* create a half-hour variable to put start (and end) times into 1/2 hour buckets for ease of ongoing analysis & graphing
+	* this also unifies the MTUS periods as different recording periods were used in a number of the surveys
+	* and the lowest common multiple is 30 minutes!
+	
+	gen ba_hourt = hh(s_starttime)
+	gen ba_minst = mm(s_starttime)
+	
+	gen ba_hh = 0 if ba_minst < 30
+	replace ba_hh = 30 if ba_minst > 29
+	gen ba_sec = 0
+	* sets date to 1969!
+	gen s_halfhour = hms(ba_hourt, ba_hh, ba_sec)
+	lab var s_halfhour "Episode starts during the half hour following"
+	format s_halfhour %tcHH:MM
+
 	* where is location missing?
 	gen missing_loc = 0
 	replace missing_loc = 1 if eloc == -8
@@ -196,7 +211,7 @@ foreach f of local files {
 	xtset diarypid s_starttime, delta(5 min)
 	
 	* drop variables we don't need
-	drop ba_mins ba_hours ba_starttime ba_date ba_datetime_st t_clocksttime duration_ms mins_f clockst_mins clockst_hours
+	drop ba_min* ba_hour* ba_starttime ba_date ba_datetime_st t_clocksttime duration_ms mins_f clockst_mins clockst_hours
 	
 	compress
 	
