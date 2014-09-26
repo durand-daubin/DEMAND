@@ -124,7 +124,7 @@ foreach n of numlist 1/`maxcount' {
 tab ba_weekday ba_dow
 
 * if try to tab by survey & start time you get jitter/spikes due to different time slot durations used in each year
-* so use the halfhour starttime variable created above (same as Mathieu)
+* so use the halfhour start time variable created previously (same as Mathieu)
 table s_halfhour eat_all survey
 graph bar (mean) eat_all, over(s_halfhour) by(survey) name(bar_eat_all)
 graph export "`rpath'/bar_eat_all_by_survey.png", replace
@@ -132,14 +132,16 @@ graph bar (mean) cook_all, over(s_halfhour) by(survey) name(bar_cook_all)
 graph export "`rpath'/bar_cook_all_by_survey.png", replace
 
 * dump these means out so can graph in excel as lines (easier to see)
-tabout pact lact using "`rpath'/ONS-TU-2005-v2-adults-primary-act-by-location.txt", replace
+* this will give the mean number of episodes in the half hour
+tabout s_halfhour survey using "`rpath'/MTUS-UK-Adults-eat_all-by-survey-halfhour.txt", cells(mean eat_all)  replace
+tabout s_halfhour survey using "`rpath'/MTUS-UK-Adults-eat_all-by-survey-halfhour.txt", cells(mean cook_all)  replace
 
 * both the following are disrupted by the time intervals used in the diary itself
 histogram eat_duration, by(survey) name(histo_eat_duration)
+graph export "`rpath'/histo_eat_duration_by_survey.png", replace
+
 histogram cook_duration, by(survey) name(histo_cook_duration)
-
-
-stop
+graph export "`rpath'/histo_cook_duration_by_survey.png", replace
 
 * so we need to start UK dinner earlier - about 17:00
 * but end about 22:00?
@@ -154,6 +156,8 @@ preserve
 	* how many don't sleep?
 	tab sleep_all ba_dow if sleep_all == 0, mi
 restore
+
+stop
 
 * now find the cooking that came before the dinner (if there was any)
 
