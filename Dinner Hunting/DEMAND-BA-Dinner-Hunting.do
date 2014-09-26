@@ -146,17 +146,16 @@ graph export "`rpath'/histo_cook_duration_by_survey.png", replace
 * so we need to start UK dinner earlier - about 17:00
 * but end about 22:00?
 
-* check for non-eaters, non-co non-sleepers
-* NB in some years (all except 1995, 2005) there will be mutiple days per respondent making no sleep/eat etc much more unlikely
+* check for non-eaters, non-cookers & non-sleepers
+* NB not eating/cooking/sleeping at all will be more likely to show up in the years with just 1 diary day (1995, 2005)
 preserve
 	collapse (mean) eat_all cook_all sleep, by(survey persid ba_dow)
 	* how many don't eat?
 	table ba_dow eat_all survey if eat_all == 0, mi
-	stop
 	* how many don't cook?
-	tab ba_dow cook_all if cook_all == 0, mi
+	table ba_dow cook_all survey if cook_all == 0, mi
 	* how many don't sleep?
-	tab ba_dow sleep_all if sleep_all == 0, mi
+	table ba_dow sleep_all survey if sleep_all == 0, mi
 restore
 
 * now find the cooking that came before the dinner (if there was any)
@@ -165,16 +164,19 @@ restore
 keep if eat_all == 1 | cook_all == 1
 * make sure they're in order
 sort survey persid id epnum
-* in this dataset there is 1 diary day per person so persid gives a uniq id
-* this is not the case in other surveys - where there may be multiple days per diary so beware!
+
 * keep badcase to be able to distinguish between bad cases and non-eaters below
 keep survey persid id epnum s_* ba_* badcase main sec eloc eat* cook* 
 * don't do dinner skip here as this is setting any kind of eat to 'dinner_skip'
 
+stop
+
+************************************************
+* Define dinner - varies by survey?
 * define dinner as starting to eat 17:00 - 22:00
 * ?: should we define an end time?
-gen dinner = 0 if eat == 1
-replace dinner = 1 if eat == 1 & ba_hour >= 17 & ba_hour <= 22
+gen dinner = 0 if eat_all == 1
+replace dinner = 1 if eat_all == 1 & ba_hour >= 17 & ba_hour <= 22
 
 * who goes out for dinner?
 * this is going to be underestimated as we never have eating defined as a primary or secondary activity when 
