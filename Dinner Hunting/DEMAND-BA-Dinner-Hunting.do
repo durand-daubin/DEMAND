@@ -185,8 +185,8 @@ replace dinner = 1 if eat_all == 1 & ba_hour >= 17 & ba_hour <= 22
 gen dinner_out = 1 if dinner == 1 & eloc != 1
 gen dinner_out_dur = eat_duration if dinner_out == 1
 
-* so, which dinners have cook before or during them?
-by persid: gen dinner_cook = 1 if dinner == 1 & dinner_out != 1 & (cook[_n-1] == 1 | cook == 1)
+* so, which dinners have cooking at home before or during them?
+by persid: gen dinner_cook = 1 if dinner == 1 & dinner_out != 1 & (cook[_n-1] == 1 | cook == 1) & eloc == 1
 gen dinner_cook_dur = eat_duration if dinner_cook == 1
 
 * and which don't - i.e. no cooking before and no cooking during
