@@ -133,8 +133,8 @@ graph export "`rpath'/bar_cook_all_by_survey.png", replace
 
 * dump these means out so can graph in excel as lines (easier to see)
 * this will give the mean number of episodes in the half hour
-tabout s_halfhour survey using "`rpath'/MTUS-UK-Adults-eat_all-by-survey-halfhour.txt", cells(mean eat_all)  replace
-tabout s_halfhour survey using "`rpath'/MTUS-UK-Adults-eat_all-by-survey-halfhour.txt", cells(mean cook_all)  replace
+tabout s_halfhour survey using "`rpath'/MTUS-UK-Adults-eat_all-by-survey-halfhour.txt", cells(mean eat_all) sum replace
+tabout s_halfhour survey using "`rpath'/MTUS-UK-Adults-eat_all-by-survey-halfhour.txt", cells(mean cook_all) sum replace
 
 * both the following are disrupted by the time intervals used in the diary itself
 histogram eat_duration, by(survey) name(histo_eat_duration)
@@ -147,17 +147,17 @@ graph export "`rpath'/histo_cook_duration_by_survey.png", replace
 * but end about 22:00?
 
 * check for non-eaters, non-co non-sleepers
+* NB in some years (all except 1995, 2005) there will be mutiple days per respondent making no sleep/eat etc much more unlikely
 preserve
-	collapse (mean) eat_all cook_all sleep, by(persid ba_dow)
+	collapse (mean) eat_all cook_all sleep, by(survey persid ba_dow)
 	* how many don't eat?
-	tab eat_all ba_dow if eat_all == 0, mi
+	table ba_dow eat_all survey if eat_all == 0, mi
+	stop
 	* how many don't cook?
-	tab cook_all ba_dow if cook_all == 0, mi
+	tab ba_dow cook_all if cook_all == 0, mi
 	* how many don't sleep?
-	tab sleep_all ba_dow if sleep_all == 0, mi
+	tab ba_dow sleep_all if sleep_all == 0, mi
 restore
-
-stop
 
 * now find the cooking that came before the dinner (if there was any)
 
