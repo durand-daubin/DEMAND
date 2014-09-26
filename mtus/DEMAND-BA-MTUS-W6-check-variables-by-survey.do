@@ -69,6 +69,7 @@ replace eat_all = 1 if eat_m == 1 | eat_s == 1
 
 * NB - definitions (see documentation)
 * 1975
+* 7 day / one week in three of the four waves, only 2 days (Monday & Tuesday) in the 4-10 September wave remain, other data from this wave no longer exists
 * - Main/Sec5	Meals at work or school	
 *					49  Meal break at work* - Main/Sec6	Other meals	
 *					34 Eat meals, snacks 
@@ -85,6 +86,7 @@ replace eat_all = 1 if eat_m == 1 | eat_s == 1
 *					71 Visit friends or relatives
 
 * 1983
+* 7-day
 * - MAIN/SEC 5	meals at work or school	
 *					0103   Scheduled break at work (meal) if time=15 minutes*					1502   Drinking non-alcoholic beverages + location in workplace or school*					0402   Lunch break at educational establishment – school* - MAIN/SEC 6	other meals or snacks	
 *					1501   Eating at home*					1502   Drinking non-alcoholic beverages + location not at workplace, school, or restaurant
@@ -96,6 +98,7 @@ replace eat_all = 1 if eat_m == 1 | eat_s == 1
 *					2901   Eating out at a colleague's, relative's, friend's house*					2902   Visiting friends, relatives*					3801   Entertaining at home
 
 * 1987
+* 7 day
 * - MAIN/SEC5	Meals at work or school	
 *					402 lunch break at education establishment*				If at workplace (from location)*					1501 eat at home *					1502 drink non-alcoholic beverages* - MAIN/SEC6	Other meals or snacks	
 *				If not at workplace, restaurant, bar (from location)*					1501 eat at home *					1502 drink non-alcoholic beverages
@@ -106,7 +109,7 @@ replace eat_all = 1 if eat_m == 1 | eat_s == 1
 * - MAIN/SEC48	Receive or visit friends	
 *					2901 eat out at friend’s house*					2902 visit friends or relations *					3801 entertain at home*				If with people from outside household in home or at other person’s home*					3802 alcohol, smoke, drugs
 					
-* 1995 (no secondary activities recorded nor was location)
+* 1995 - 1 day (no secondary activities recorded nor was location)
 * - MAIN5	meals at work or school	
 *					Not possible to create* - MAIN6	other meals or snacks	  
 *					4 Eating/home* - MAIN18	food preparation, cooking	  
@@ -116,7 +119,7 @@ replace eat_all = 1 if eat_m == 1 | eat_s == 1
 * - MAIN48	receive or visit friends	
 *					24 Socializing
 
-* 2000
+* 2000 - 2 days (1 weekday, 1 weekend)
 * - Main/Sec5	Meals at work or school	
 *					210 Eating (at work or school – wher=4)*					1310 Lunch break* - Main/Sec6	Other meals	
 *					210 Eating not coded in categories 5 or 38 (38 = Other public event, venue)* - Main/Sec18	Food preparation/ cooking	
@@ -124,7 +127,7 @@ replace eat_all = 1 if eat_m == 1 | eat_s == 1
 *					(at restaurant/cafe/pub – wher=6)*					210 Eating*					5000 Unspecified social life and entertainment*					5100 Unspecified social life*					5110 Socialising with household members*					5120 Visiting and receiving visitors* - Main/Sec48	Receive or visit friends	
 *					5100 Unspecified social life*					5120 Visiting and receiving visit*					5190 Other specified social life
 
-* 2005 
+* 2005 - 1 day
 * NB - some of these codes are NOT available in the version of the ONS 2005 survey which is at http://discover.ukdataservice.ac.uk/catalogue/?sn=5592
 * - Main/Sec5	Meals at work or school	
 *					Not possible to distinguish
