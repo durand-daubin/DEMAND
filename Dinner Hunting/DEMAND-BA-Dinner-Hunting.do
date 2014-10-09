@@ -1,4 +1,7 @@
 * DEMAND Project (www.demand.ac.uk)
+* Funded by RCUK through the
+* "DEMAND: Dynamics of Energy, Mobility and Demand" End User Energy Demand Research Centre (www.demand.ac.uk) 
+* Grant: http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1
 
 * Analysis for paper developed from BEHAVE 2014 conference presentation (http://www.slideshare.net/ben_anderson/behave-practices-hunting5) with mathieu.durand-daubin@edf.fr
 
