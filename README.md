@@ -1,16 +1,14 @@
-DEMAND-Theme-1-git
+DEMAND-Theme-1
 ==================
 
-Various stats scripts used as part of the RCUK "DEMAND: Dynamics of Energy, Mobility and Demand" End User Energy Demand Research Centre (www.demand.ac.uk)
+Various scripts used to analyse data on domestic energy use & social practices as part of the DEMAND centre
 
 Theme 1 is especially interested in using time use data to analyse energy using 'practices'.
 
-Unless otherwise indicated this work was funded by RCUK under the End User Energy Demand Centres Programme via grant: 
+Unless otherwise indicated this work was funded by RCUK through the End User Energy Demand Centres Programme via the "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1).
 
-http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1
+Unless otherwise indicated the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies to this work:
 
-Unless there is a specific license notice in the relevant folder or script, the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies
-
-http://creativecommons.org/licenses/by-nc/4.0/
+ * http://creativecommons.org/licenses/by-nc/4.0/
 
 YMMV
