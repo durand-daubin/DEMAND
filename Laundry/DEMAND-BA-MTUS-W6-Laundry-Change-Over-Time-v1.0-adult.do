@@ -50,8 +50,8 @@ capture log close
 
 log using "`rpath'/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-`version'-adult.smcl", replace
 
-local do_halfhour_episodes = 1
-local do_halfhour_samples = 0
+local do_halfhour_episodes = 0
+local do_halfhour_samples = 1
 local do_sequences = 0
 
 * make script run without waiting for user input
@@ -175,13 +175,10 @@ if `do_halfhour_episodes' {
 	* check % episodes which are laundry
 	* NB reporting frame shorter in 2005 (10 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
 	* row %
-	svy: tab survey laundry_p, row se ci
-	svy: tab survey laundry_s, row se ci
+	tab survey laundry_p [iw=propwt]
+	tab survey laundry_s [iw=propwt]
 	* all
-	* counts (for checking with weighted tables)
-	svy: tab survey laundry_all, count se ci
-	* row %
-	svy: tab survey laundry_all, row se ci
+	tab survey laundry_all [iw=propwt]
 	
 	* check duration of laundry
 	* before we do this mere together episodes that are contiguous (e.g. laundry (s) then laundry(p) -> 1 episode)
@@ -281,8 +278,8 @@ if `do_halfhour_samples' {
 	gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
 	
-	* check % episodes which are laundry
-	* NB reporting frame shorter in 2005 (10 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
+	* check % samples which are laundry
+	* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
 	di "* main"
 	tab survey laundry_p [iw=propwt]
 	di "* secondary"
@@ -300,8 +297,8 @@ if `do_halfhour_samples' {
 		replace any_laundry_`a' = 1 if laundry_`a' > 0
 	}
 	* by year
-	table survey any_laundry_all [iw=propwt]
-	
+	tab survey any_laundry_all [iw=propwt]
+	stop
 	* Separate days
 	table survey day [iw=propwt], by(any_laundry_all)
 
@@ -312,7 +309,11 @@ if `do_halfhour_samples' {
 	* days by half hour
 	table s_halfhour survey day [iw=propwt], by(any_laundry_all)	
 
-
+	* seasons
+	recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
+	* check
+	* tab month season
+	table s_halfhour survey season [iw=propwt], by(any_laundry_all)
 } 
 
 *************************
