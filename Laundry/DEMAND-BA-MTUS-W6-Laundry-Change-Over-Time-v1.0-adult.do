@@ -50,8 +50,8 @@ capture log close
 
 log using "`rpath'/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-`version'-adult.smcl", replace
 
-local do_halfhour_episodes = 1
-local do_halfhour_samples = 1
+local do_halfhour_episodes = 0
+local do_halfhour_samples = 0
 local do_sequences = 1
 
 * make script run without waiting for user input
@@ -337,13 +337,25 @@ if `do_sequences' {
 	* keep the matched cases
 	keep if m_aggvars == 3
 	
+	* define laundry
+	gen laundry_p = 0
+	lab var laundry_p "Main act = laundry (21)"
+	replace laundry_p = 1 if main == 21
+	
+	gen laundry_s = 0
+	lab var laundry_s "Secondary act = laundry (21)"
+	replace laundry_s = 1 if sec == 21
+	
+	gen laundry_all = 0
+	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
+
 	* we can't use the lag notation and xtset as there are various time periods represented in the data
 	* and we would need to set up some fake (or real!) dates to attach the start times to.
 	* we could do this but we don't really need to.
 	
 	* we want to use episodes not time slots (as we are ignoring duration here)
 	
-	local acts "p s all"
+	local acts "all"
 	foreach a of local acts {
 		* make sure we do this within diaries
 		bysort survey diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
@@ -361,7 +373,7 @@ if `do_sequences' {
 	}
 	
 	* keep only the laundry and before/after episodes
-	keep if laundry_all == 1 | before_laundry_p != . | before_laundry_s != . | before_laundry_all != .
+	keep if laundry_all == 1 | before_laundry_all != . | after_laundry_all != .
 	/*
 	* try using the sqset commands
 	* use the half hour data
