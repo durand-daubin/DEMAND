@@ -156,7 +156,7 @@ if `do_halfhour_episodes' {
 	gen duration = s_endtime - s_starttime
 	format duration %tcHH:MM
 	tab duration survey [iw=propwt]
-	stop
+
 	***************
 	* Laundry
 	
