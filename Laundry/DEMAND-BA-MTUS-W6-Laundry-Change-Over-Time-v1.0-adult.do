@@ -130,10 +130,6 @@ gen ba_weekday = 0
 replace ba_weekday = 1 if day > 1 & day < 7
 
 
-*************************
-* merge in the episode data
-* egen diarypid = group(countrya survey swave msamp hldid persid day)
-* egen pid = group(countrya survey swave msamp hldid persid)
 
 * keep only the vars we want to keep memory required low
 keep sex age main7 main21 hhtype empstat emp unemp student retired propwt survey day month year ///
@@ -142,7 +138,13 @@ keep sex age main7 main21 hhtype empstat emp unemp student retired propwt survey
 * number of diary-days
 svy: tab survey, obs
 
+preserve
+
 if `do_halfhour_episodes' {
+	*************************
+	* merge in the episode data
+	* egen diarypid = group(countrya survey swave msamp hldid persid day)
+	* egen pid = group(countrya survey swave msamp hldid persid)
 	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf.dta", ///
 		gen(m_aggvars)
 	
@@ -262,9 +264,14 @@ if `do_halfhour_episodes' {
 	table s_halfhour survey day [iw=propwt], by(laundry_all)	
 }
 
+restore
+
+preserve
 *************************
 * sampled data for comparison
 if `do_halfhour_samples' {
+	* start fresh
+	use "`dpath'/MTUS-adult-aggregate-UK-only-wf.dta", clear
 	* merge in the sampled data
 	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long.dta", ///
 		gen(m_aggvars)
@@ -318,12 +325,11 @@ if `do_halfhour_samples' {
 	* tab month season
 	table s_halfhour survey season [iw=propwt], by(any_laundry_all)
 } 
-
+restore
 *************************
 * sequences
 if `do_sequences' {
-	use "`dpath'/MTUS-adult-aggregate-UK-only-wf.dta", clear
-	
+	* back to the episodes
 	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf.dta", ///
 		gen(m_aggvars)
 	
