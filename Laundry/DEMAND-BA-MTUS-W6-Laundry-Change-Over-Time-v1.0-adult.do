@@ -51,7 +51,7 @@ capture log close
 log using "`rpath'/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-`version'-adult.smcl", replace
 
 local do_halfhour_episodes = 0
-local do_halfhour_samples = 0
+local do_halfhour_samples = 1
 local do_sequences = 1
 
 * make script run without waiting for user input
@@ -297,7 +297,7 @@ if `do_halfhour_samples' {
 	
 	* collapse to add up the sampled laundry by half hour
 	* use the byvars we're interested in (or could re-merge with aggregated file)
-	collapse (sum) laundry_* (mean) propwt, by(diarypid survey day month year s_halfhour ba_birth_cohort ba_age_r)
+	collapse (sum) laundry_* (mean) propwt, by(diarypid survey day month year s_halfhour ba_birth_cohort ba_age_r sex)
 	* because the different surveys have different reporting periods we need to just count at least 1 laundry in the half hour
 	local acts "p s all"
 	foreach a of local acts {
@@ -310,6 +310,10 @@ if `do_halfhour_samples' {
 	* Separate days
 	table survey day [iw=propwt], by(any_laundry_all)
 
+	table survey day sex [iw=propwt], by(any_laundry_all)
+	
+	stop
+	
 	di "* Tables for all days"
 	* All years, all days
 	table s_halfhour survey any_laundry_all [iw=propwt]
@@ -362,18 +366,22 @@ if `do_sequences' {
 		bysort survey diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
 		
 		lab val before_laundry_`a' after_laundry_`a' MAIN
-		
-		table before_laundry_`a' 
-		table before_laundry_`a' survey [iw=propwt]
+		 
+		table before_laundry_`a' survey [iw=propwt], col
 	
 		table after_laundry_`a'
-		table after_laundry_`a' survey [iw=propwt]
+		table after_laundry_`a' survey [iw=propwt], col
 		
-		table before_laundry_`a' after_laundry_`a' [iw=propwt], by(survey)
+		*table before_laundry_`a' after_laundry_`a' [iw=propwt], by(survey)
+		levelsof(survey), local(surveys)
+		foreach s of local surveys {
+			qui: tabout before_laundry_`a' after_laundry_`a' [iw=propwt] using "`rpath'/before-after-laundry-`s'.txt" if survey == `s', replace
+		}
 	}
 	
-	* keep only the laundry and before/after episodes
-	keep if laundry_all == 1 | before_laundry_all != . | after_laundry_all != .
+	sqset main diarypid s_starttime
+	
+	
 	/*
 	* try using the sqset commands
 	* use the half hour data
