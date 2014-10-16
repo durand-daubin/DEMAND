@@ -204,8 +204,13 @@ foreach n of numlist 1/`maxcount' {
 
 
 * Means are probably not going to tell us much given the differences in recording frames
-* Use tables instead as durations are so 'rounded'
+* Use table instead as durations are so 'rounded'
+* even so have to allow for differences in recording frames
 table laundry_duration sex survey [iw=propwt]
+
+* age cohort differences in incidence of laundry
+table ba_birth_cohort laundry_all survey [iw=propwt]
+
 
 * leave this empty to skip the (time consuming) aggregations & table outputs
 local vars "21"
@@ -234,9 +239,6 @@ table laundry_dup_flag laundry_all survey
 * In any case we do need to watch out for situations where we sum the number of episodes per halfhour as 
 * we may have more episodes in 2005 due to the smaller recording time frame.
 
-* age cohort differences by sex
-bysort sex: table ba_birth_cohort laundry_all survey [iw=propwt]
-
 * Note that where the diary has episodes shorter than 30 minutes we may get more than 1 episode reported per half hour
 * We will also miss longer episodes that started this half-hour and are continuing in the next half hour
 
@@ -250,7 +252,12 @@ if `do_halfhour_episodes' {
 	table s_halfhour survey laundry_all [iw=propwt]
 	
 	* Separate days
+	table survey day [iw=propwt], by(laundry_all)
+	
+	* days by half hour
 	table s_halfhour survey day [iw=propwt], by(laundry_all)
+	
+
 }
 * to convert to slots we have to do something different: sample
 * choose the sampling point (i.e. slot duration)
@@ -280,6 +287,9 @@ foreach a of local acts {
 	
 	table before_laundry_`a' after_laundry_`a' [iw=propwt], by(survey)
 }
+
+* keep only the laundry and before/after episodes
+keep if laundry_all == 1 | before_laundry_p != . | before_laundry_s != . | before_laundry_all != .
 
 /*
 * try using the sqset commands
