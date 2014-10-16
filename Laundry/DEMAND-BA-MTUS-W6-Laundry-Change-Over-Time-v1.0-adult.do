@@ -50,9 +50,9 @@ capture log close
 
 log using "`rpath'/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-`version'-adult.smcl", replace
 
-local do_halfhour_episodes = 0
+local do_halfhour_episodes = 1
 local do_halfhour_samples = 1
-local do_sequences = 0
+local do_sequences = 1
 
 * make script run without waiting for user input
 set more off
@@ -114,10 +114,13 @@ recode hhldsize (0=0) (1=1) (2=2) (3=3) (4=4) (5/max=5), gen(ba_npeople)
 lab def ba_npeople 0 "0" 1 "1" 2 "2" 3 "3" 4 "4" 5 "5+"
 lab val ba_npeople ba_npeople
 
+* age categories
 egen ba_age_r = cut(age), at(16,24,34,44,54,64,74,84)
 lab var ba_age_r "Recoded age -> decades"
-gen ba_birthyear = year - age
+tab ba_age_r
 
+* age cohorts
+gen ba_birthyear = year - age
 egen ba_birth_cohort = cut(ba_birthyear), at(1890,1900,1910,1920,1930,1940,1950,1960,1970,1980)
 tab ba_birth_cohort survey
 * NB - max age = 80 so older cohorts missing from 2005
@@ -344,11 +347,11 @@ if `do_sequences' {
 		
 		lab val before_laundry_`a' after_laundry_`a' MAIN
 		
-		tab before_laundry_`a' 
-		tab before_laundry_`a' survey [iw=propwt], col nof
+		table before_laundry_`a' 
+		table before_laundry_`a' survey [iw=propwt]
 	
-		tab after_laundry_`a'
-		tab after_laundry_`a' survey [iw=propwt], col nof
+		table after_laundry_`a'
+		table after_laundry_`a' survey [iw=propwt]
 		
 		table before_laundry_`a' after_laundry_`a' [iw=propwt], by(survey)
 	}
