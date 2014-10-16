@@ -270,8 +270,6 @@ preserve
 *************************
 * sampled data for comparison
 if `do_halfhour_samples' {
-	* start fresh
-	use "`dpath'/MTUS-adult-aggregate-UK-only-wf.dta", clear
 	* merge in the sampled data
 	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long.dta", ///
 		gen(m_aggvars)
