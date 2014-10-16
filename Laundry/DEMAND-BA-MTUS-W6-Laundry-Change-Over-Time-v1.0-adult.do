@@ -306,7 +306,7 @@ if `do_halfhour_samples' {
 	}
 	* by year
 	tab survey any_laundry_all [iw=propwt]
-	stop
+	
 	* Separate days
 	table survey day [iw=propwt], by(any_laundry_all)
 
