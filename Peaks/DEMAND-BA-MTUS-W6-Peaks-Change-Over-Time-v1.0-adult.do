@@ -152,36 +152,52 @@ if `do_halfhour_episodes' {
 * choose the sampling point (i.e. slot duration)
 local slot 10
 
-* remember that each diary starts at 04:00 so to avoid confusion we given the variable names the
-* WRONG hours so we don't forget!
-foreach h of numlist 4(1)27 {
-	local realh = `h'
-	if `h' >= 24 { 
-		local realh = `h' - 24
+* remember that each diary starts at 04:00
+
+foreach h of numlist 0(1)24 {
+	local realh = `h' + 4
+	if `realh' > 23 {
+		local realh = `realh' - 24
 	}
-	di "* Checking hour = `h' (which is actually `realh')"
+	di "* Checking diary hour = `h' (which is actually `realh')"
 	foreach m of numlist 0(`slot')60 {
 		* if we hit 60 we're on the hour so skip to next hour loop
 		if `m' != 60 {
 			* convert h & m to total mins since start
 			local mins = (`h' * 60) + `m'
-			* if the activity started at or before 'now' then record it (we don't care when it finishes)
-			gen slotp_`h'`m' = main if ba_startm <= `mins'
-			lab val slotp_`h'`m' MAIN
-			gen slots_`h'`m' = sec if ba_startm <= `mins'
-			lab val slots_`h'`m' SEC
-			gen slotloc_`h'`m' = eloc if ba_startm <= `mins'
-			lab val slotloc_`h'`m' eloc
+			* di "* Checking diary hour `h' (actually `realh') : diary minute `m' (start mins = `mins')"
+			* if the activity started at or before 'now' and it finishes after now then record it (we don't care when it finishes)
+			gen slotp`mins' = main if ba_startm <= `mins' & end > ba_startm
+			lab var slotp`mins' "Main act at `realh':`m'"
+			lab val slotp`mins' MAIN
+			gen slots`mins' = sec if ba_startm <= `mins' & end > ba_startm
+			lab var slots`mins' "Sec act at `realh':`m'"
+			lab val slots`mins' SEC
+			* this will create missing if location is missing
+			gen slotloc`mins' = eloc if ba_startm <= `mins' & end > ba_startm
+			lab var slotloc`mins' "Location act at `realh':`m'"
+			lab val slotloc`mins' eloc
 		}
 	}			
 }
 
-* test
-sort ba_startm
-li diarypid s_starttime ba_startm end main slotp_410 slotp_420 slotp_430 in 1/10
+* collapse these to single values per diarypid (they should be unique within diarypid)
+* this creates a wide form file
+* survey is not needed as it is part of diarypid but it helps to then analyse the data
+collapse (mean) slot*, by(diarypid survey)
+
+* now convert this wide file back to long
+reshape slotp slots slotloc, i(diarypid survey)
+
+rename slotp main
+rename slots sec
+rename slotloc loc
 stop
 
-* collapse these to single values per diarypid (they should be unique within diarypid
-collapse (mean) slot*, by(diarypid)
+rename _j t_slot
+* t_slot will now be each slot which is `slot' minutes long
+gen min = mod(t_slot,10)
+gen t_hour = ceil(t_slot/60)
+
 
 log close
