@@ -50,6 +50,8 @@ capture log close
 
 log using "`rpath'/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-`version'-adult.smcl", replace
 
+local do_halfhour_episodes = 1
+
 * make script run without waiting for user input
 set more off
 
@@ -232,16 +234,28 @@ table laundry_dup_flag laundry_all survey
 * In any case we do need to watch out for situations where we sum the number of episodes per halfhour as 
 * we may have more episodes in 2005 due to the smaller recording time frame.
 
-* count laundry episodes that start in a given half hour by survey & sex
-table s_halfhour sex survey if laundry_all  == 1 [iw=propwt]
-
-* repeat by day 
-by survey: table s_halfhour day laundry_all [iw=propwt]
-
 * age cohort differences by sex
 bysort sex: table ba_birth_cohort laundry_all survey [iw=propwt]
 
-stop 
+* Note that where the diary has episodes shorter than 30 minutes we may get more than 1 episode reported per half hour
+* We will also miss longer episodes that started this half-hour and are continuing in the next half hour
+
+if `do_halfhour_episodes' {
+	
+	* This will record all episodes that started within the half hour but it won't catch episodes that started before and
+	* are long-lasting. So it is good for looking at the distribution of episodes that are short, like laundry (mostly)
+	* It does NOT work for longer-lasting episodes like sleep or paid work
+	di "* Tables for all days"
+	* All years, all days
+	table s_halfhour survey laundry_all [iw=propwt]
+	
+	* Separate days
+	table s_halfhour survey day [iw=propwt], by(laundry_all)
+}
+* to convert to slots we have to do something different: sample
+* choose the sampling point (i.e. slot duration)
+local slot 10 
+
 *************************
 * sequences
 * we can't use the lag notation and xtset as there are various time periods represented in the data
@@ -250,17 +264,22 @@ stop
 
 * we want to use episodes not time slots (as we are ignoring duration here)
 
-* make sure we do this within diaries
-bysort survey diarypid: gen before_laundry_m = main[_n-1] if laundry_m == 1
-bysort survey diarypid: gen after_laundry_m = main[_n+1] if laundry_m == 1
+local acts "p s all"
+foreach a of local acts {
+	* make sure we do this within diaries
+	bysort survey diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
+	bysort survey diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
+	
+	lab val before_laundry_`a' after_laundry_`a' MAIN
+	
+	tab before_laundry_`a' 
+	tab before_laundry_`a' survey [iw=propwt], col nof
 
-lab val before_laundry after_laundry MAIN
-
-tab before_laundry
-tab before_laundry survey
-
-tab after_laundry
-tab after_laundry survey, col nof
+	tab after_laundry_`a'
+	tab after_laundry_`a' survey [iw=propwt], col nof
+	
+	table before_laundry_`a' after_laundry_`a' [iw=propwt], by(survey)
+}
 
 /*
 * try using the sqset commands
