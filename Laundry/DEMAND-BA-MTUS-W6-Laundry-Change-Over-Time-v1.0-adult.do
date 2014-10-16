@@ -312,8 +312,6 @@ if `do_halfhour_samples' {
 
 	table survey day sex [iw=propwt], by(any_laundry_all)
 	
-	stop
-	
 	di "* Tables for all days"
 	* All years, all days
 	table s_halfhour survey any_laundry_all [iw=propwt]
