@@ -154,7 +154,7 @@ local slot 10
 
 * remember that each diary starts at 04:00
 
-foreach h of numlist 0(1)24 {
+foreach h of numlist 0(1)23 {
 	local realh = `h' + 4
 	if `realh' > 23 {
 		local realh = `realh' - 24
@@ -167,14 +167,14 @@ foreach h of numlist 0(1)24 {
 			local mins = (`h' * 60) + `m'
 			* di "* Checking diary hour `h' (actually `realh') : diary minute `m' (start mins = `mins')"
 			* if the activity started at or before 'now' and it finishes after now then record it (we don't care when it finishes)
-			gen slotp`mins' = main if ba_startm <= `mins' & end > ba_startm
+			gen slotp`mins' = main if ba_startm <= `mins' & end > `mins'
 			lab var slotp`mins' "Main act at `realh':`m'"
 			lab val slotp`mins' MAIN
-			gen slots`mins' = sec if ba_startm <= `mins' & end > ba_startm
+			gen slots`mins' = sec if ba_startm <= `mins' & end > `mins'
 			lab var slots`mins' "Sec act at `realh':`m'"
 			lab val slots`mins' SEC
 			* this will create missing if location is missing
-			gen slotloc`mins' = eloc if ba_startm <= `mins' & end > ba_startm
+			gen slotloc`mins' = eloc if ba_startm <= `mins' & end > `mins'
 			lab var slotloc`mins' "Location act at `realh':`m'"
 			lab val slotloc`mins' eloc
 		}
@@ -183,21 +183,34 @@ foreach h of numlist 0(1)24 {
 
 * collapse these to single values per diarypid (they should be unique within diarypid)
 * this creates a wide form file
-* survey is not needed as it is part of diarypid but it helps to then analyse the data
+* survey is not needed as it is part of diarypid but it helps when analysing the data
 collapse (mean) slot*, by(diarypid survey)
 
 * now convert this wide file back to long
-reshape slotp slots slotloc, i(diarypid survey)
+reshape long slotp slots slotloc, i(diarypid survey)
 
 rename slotp main
+lab val main MAIN
 rename slots sec
+lab val sec SEC
 rename slotloc loc
-stop
+lab val loc ELOC
 
 rename _j t_slot
 * t_slot will now be each slot which is `slot' minutes long
-gen min = mod(t_slot,10)
+gen min = mod(t_slot,60)
 gen t_hour = ceil(t_slot/60)
+
+save "`dpath'/MTUS-adult-aggregate-UK-only-wf-10min-samples-long.dta", replace
+
+* t_hour = 0 and t_hour = 24 are the same
+replace t_hour = 0 if t_hour == 24
+tab t_hour
+* fix the following hour problem
+replace t_hour = t_hour + 1 if t_min == 0
+
+li t_slot t_hour min in 1/24
+
 
 
 log close
