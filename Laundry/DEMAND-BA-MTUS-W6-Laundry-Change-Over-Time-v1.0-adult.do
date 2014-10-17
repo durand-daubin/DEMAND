@@ -377,22 +377,15 @@ if `do_sequences' {
 		}
 	}
 	
-	sqset main diarypid s_starttime
-	
 	
 	/*
 	* try using the sqset commands
-	* use the half hour data
-	use "/Users/ben/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/MTUS/MTUS-W6-Adult-UK-only-v1.0-laundryhalfhour.dta", clear
 	
-	* turn it round
-	reshape long anyhh_laundry, i(diarypid) j(hhslot)
-	
-	* tell it to look at sequences of laundry
-	sqset anyhh_laundry diarypid hhslot
-	
+	* tell it to look at sequences
+	sqset main diarypid s_starttime
+		
 	* top 20 sequences
-	sqtab survey, ranks(1/20) 
+	sqtab survey if before_laundry ! = 1 | after_laundry ! = 1, ranks(1/20) 
 	*/
 } 
 
