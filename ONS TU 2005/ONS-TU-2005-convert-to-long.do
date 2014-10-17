@@ -110,13 +110,22 @@ tab s_dow ba_dow
 * NB: s_dow is the ACTUAL day, ba_dow is the day the diary started!
 lab var s_datetime "Time of day (end of slot)"
 
-egen t_time = concat(t_hour t_min), punct(":")
-lab var t_time "Time of day (half hours)"
+destring t_min, force replace
+destring t_hour, force replace
+
+recode t_min (0/29 = "00") (30/59 = "30"), gen(t_hhmin)
+egen t_halfhour = concat(t_hour t_hhmin), punct(":")
+lab var t_halfhour "Time of day (half hours)"
 
 * create a fake stata time - NB this sets date to 1/1/1960!
 gen double s_faketime = clock(t_time,"hm")
 format s_faketime %tcHH:MM
 lab var s_faketime "Time of day"
+
+* create a fake stata time - NB this sets date to 1/1/1960!
+gen double s_halfhour = clock(t_halfhour,"hm")
+format s_halfhour %tcHH:MM
+lab var s_halfhour "Time of day (half hours)"
 
 *sort t_time
 li t_slot month t_month ba_dow s_* in 1/10
