@@ -170,7 +170,7 @@ compress
 * save it!
 save "`proot'/processed/timeusefinal_for_archive_diary_long_`v'.dta", replace
 * save a .csv version for R
-export using "`proot'/processed/timeusefinal_for_archive_diary_long_`v'.csv", comma nolabel replace
+outsheet using "`proot'/processed/timeusefinal_for_archive_diary_long_`v'.csv", comma nolabel replace
 
 
 di "* -> done!"
