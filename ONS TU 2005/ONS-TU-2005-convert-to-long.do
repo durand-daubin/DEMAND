@@ -106,10 +106,11 @@ gen double s_datetime=  mdyhms(t_month,t_day,t_year,t_hour, t_min, t_sec)
 format s_datetime %tc
 gen s_dow = dow(dofc(s_datetime))
 lab def s_dow 0 "Sunday" 1 "Monday" 2 "Tuesday" 3 "Wednesday" 4 "Thursday" 5 "Friday" 6 "Saturday"
+lab var s_dow "Day of week (STATA form)"
 lab val s_dow s_dow
 tab s_dow ba_dow
 * NB: s_dow is the ACTUAL day, ba_dow is the day the diary started!
-lab var s_datetime "Time of day (end of slot)"
+lab var s_datetime "Date & time slot starts"
 
 destring t_min, force replace
 destring t_hour, force replace
@@ -118,15 +119,23 @@ recode t_min (0/29 = "00") (30/59 = "30"), gen(t_hhmin)
 egen t_halfhour = concat(t_hour t_hhmin), punct(":")
 lab var t_halfhour "Time of day (half hours)"
 
-* create a fake stata time - NB this sets date to 1/1/1960!
+* create a fake stata time
+egen t_time = concat(t_hour t_min), punct(":")
 gen double s_starttime = clock(t_time,"hm")
 format s_starttime %tcHH:MM
-lab var s_starttime "Time of day"
+lab var s_starttime "Time slot starts"
 
-* create a fake stata time - NB this sets date to 1/1/1960!
+* create a fake half hour
 gen double s_halfhour = clock(t_halfhour,"hm")
 format s_halfhour %tcHH:MM
 lab var s_halfhour "Time of day (half hours)"
+
+lab var lact "Location"
+lab var pact "Primary activity"
+lab var sct "Secondary activity"
+
+lab var t_slot "Diary slot (144 * 10 mins)"
+lab var t_month "Month diary completed"
 
 *sort t_time
 li t_slot month t_month ba_dow s_* in 1/10
@@ -138,12 +147,14 @@ tab s_dow ba_dow
 * where is location missing?
 gen missing_loc = 0
 replace missing_loc = 1 if lact == -1
+lab var missing_loc "Location missing"
 
 * where are secondary acts missing?
 gen missing_sec = 0
 replace missing_sec = 1 if sact == -1
+lab var missing_sec "Secondary act missing"
 
-keep serial net_wgt t_slot t_month s_datetime s_faketime s_dow pact sact lact missing_loc missing_sec
+keep serial net_wgt t_slot t_month s_* pact sact lact missing_loc missing_sec
 
 order serial net_wgt t_month t_slot s_*
 
