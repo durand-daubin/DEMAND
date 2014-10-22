@@ -1,4 +1,4 @@
-DEMAND Theme 1: BEHAVE2014-analysis
+DEMAND Theme 1: BEHAVE 2014 analysis
 ==================
 
 Scripts used to analyse data for papers/presentations for BEHAVE 2014 conference, Oxford, September
