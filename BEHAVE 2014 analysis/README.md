@@ -1,7 +1,7 @@
 DEMAND Theme 1: BEHAVE 2014 analysis
 ==================
 
-Scripts used to analyse data for papers/presentations for BEHAVE 2014 conference, Oxford, September.
+Scripts used to analyse data for papers/presentations for [BEHAVE 2014](http://behaveconference.com/programme/) conference, Oxford, September.
 
  * Peaks = components of peak demand (contribution to http://www.slideshare.net/ben_anderson/behave-2014bacomppeakv22)
  * Dinner = analysis as contribution to 'Practice Hunting' (http://www.slideshare.net/ben_anderson/behave-practices-hunting5)
