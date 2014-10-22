@@ -42,17 +42,20 @@ lab var ba_dow "Day of week (from diaryday)"
 
 tab diaryday ba_dow
 
+***************
+* save out a survey file with no time use data - can merge back in later
 preserve
 	drop pact* sact* lact* aprim* asec* p_* s_* loc* comp*
+	compress
 	save "`proot'/processed/timeusefinal_for_archive_survey_`v'.dta", replace
-	
 restore
 
-* keep the diary data
+* keep the diary data only
 
 keep serial net_wgt month ba_dow pact* sact* lact* 
 
-* convert to long format and set up stata time variable
+****************
+* convert to long format and set up stata time variables
 reshape long pact sact lact, i(serial)
 
 rename _j t_slot
@@ -132,7 +135,7 @@ lab var s_halfhour "Time of day (half hours)"
 
 lab var lact "Location"
 lab var pact "Primary activity"
-lab var sct "Secondary activity"
+lab var sact "Secondary activity"
 
 lab var t_slot "Diary slot (144 * 10 mins)"
 lab var t_month "Month diary completed"
@@ -161,7 +164,8 @@ order serial net_wgt t_month t_slot s_*
 xtset serial s_datetime, delta(10 minutes)
 
 compress
-	
+
+* save it!
 save "`proot'/processed/timeusefinal_for_archive_diary_long_`v'.dta", replace
 
 di "* -> done!"
