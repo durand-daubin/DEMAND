@@ -1,4 +1,4 @@
-DEMAND-Theme-1
+DEMAND Theme 1
 ==================
 
 Various scripts used to analyse data on domestic energy use & social practices as part of the DEMAND centre
@@ -9,8 +9,10 @@ Unless otherwise indicated this work was funded by RCUK through the End User Ene
  * http://www.demand.ac.uk
  * http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1
 
-Unless otherwise indicated the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies to this work:
+###Terms of Use:
 
- * http://creativecommons.org/licenses/by-nc/4.0/
+Unless there is a specific license notice in the relevant folder or script, the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies
 
-YMMV
+http://creativecommons.org/licenses/by-nc/4.0/
+
+[YMMV](http://en.wiktionary.org/wiki/YMMV)

@@ -1,17 +1,13 @@
-DEMAND-Theme-1-git Activities
+DEMAND Theme 1: Activities
 ==================
 
-Various stats scripts used as part of the RCUK DEMAND End User Energy Demand Research Centre (www.demand.ac.uk)
+Experimental analysis of activities in the ONS UK 2000 & 2005 time use surveys including an attempt to look at 'moments' of a day.
 
-Theme 1 is especially interested in using time use data to analyse energy using 'practices'.
+###Terms of Use:
 
 Unless there is a specific license notice in the relevant folder or script, the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies
 
 http://creativecommons.org/licenses/by-nc/4.0/
 
-Activities
-----------
+[YMMV](http://en.wiktionary.org/wiki/YMMV)
 
-Experimental analysis of activities in the ONS UK 2000 & 2005 time use surveys including an attempt to look at 'moments' of a day.
-
-YMMV
