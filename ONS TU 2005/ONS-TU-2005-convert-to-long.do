@@ -49,7 +49,7 @@ preserve
 	compress
 	save "`proot'/processed/timeusefinal_for_archive_survey_`v'.dta", replace
 	* save a .csv version for R
-	export using "`proot'/processed/timeusefinal_for_archive_survey_`v'.csv", comma nolabel replace
+	outsheet using "`proot'/processed/timeusefinal_for_archive_survey_`v'.csv", comma nolabel replace
 restore
 
 * keep the diary data only
