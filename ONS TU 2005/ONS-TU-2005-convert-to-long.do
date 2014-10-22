@@ -1,4 +1,5 @@
 * Convert ONS 2005 time-use data to long format, set stata dates/times and separate time diary data from survey data
+
 * b.anderson@soton.ac.uk
 * (c) University of Southampton
 * Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies
@@ -11,7 +12,7 @@ local where "/Users/ben/Documents/Work"
 local proot "`where'/Data/Social Science Datatsets/Time Use 2005"
 * location of time-use diary data
 local dpath "`proot'/UKDA-5592-stata8-v2/stata8"
-local rpath "`proot'/tables"
+
 
 * version
 * local v = "v1.0"
@@ -118,9 +119,9 @@ egen t_halfhour = concat(t_hour t_hhmin), punct(":")
 lab var t_halfhour "Time of day (half hours)"
 
 * create a fake stata time - NB this sets date to 1/1/1960!
-gen double s_faketime = clock(t_time,"hm")
-format s_faketime %tcHH:MM
-lab var s_faketime "Time of day"
+gen double s_starttime = clock(t_time,"hm")
+format s_starttime %tcHH:MM
+lab var s_starttime "Time of day"
 
 * create a fake stata time - NB this sets date to 1/1/1960!
 gen double s_halfhour = clock(t_halfhour,"hm")
@@ -151,12 +152,5 @@ xtset serial s_datetime, delta(10 minutes)
 compress
 	
 save "`proot'/processed/timeusefinal_for_archive_diary_long_`v'.dta", replace
-
-* generate tables of primary & secondary acts by location
-tabout pact lact using "`rpath'/ONS-TU-2005-v2-adults-primary-act-by-location.txt", replace
-tabout sact lact using "`rpath'/ONS-TU-2005-v2-adults-secondary-act-by-location.txt", replace
-
-* generate table of missing secondary activities
-tabout pact missing_sec using "`rpath'/ONS-TU-2005-v2-adults-primary-act-by-missing_secondary.txt", replace
 
 di "* -> done!"
