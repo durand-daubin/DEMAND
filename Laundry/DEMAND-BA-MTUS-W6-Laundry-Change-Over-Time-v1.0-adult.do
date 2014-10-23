@@ -379,7 +379,6 @@ if `do_sequences' {
 	* get frequencies of sequencies (this will be a very big table)
 	* the ones which have missing (.) before laundry indicate nothing recorded before hand which seems a bit odd?
 	
-	* why do I get different results every time I run this??
 	qui: tab laundry_seq
 	qui: return li
 	di "For laundry_seq before contract: N = " r(N) ", r = " r(r)
