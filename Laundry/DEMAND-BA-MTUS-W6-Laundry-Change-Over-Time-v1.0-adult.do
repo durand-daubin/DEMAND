@@ -51,7 +51,7 @@ capture log close
 log using "`rpath'/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-`version'-adult.smcl", replace
 
 local do_halfhour_episodes = 0
-local do_halfhour_samples = 1
+local do_halfhour_samples = 0
 local do_sequences = 1
 
 * make script run without waiting for user input
@@ -332,23 +332,22 @@ if `do_sequences' {
 	* back to the episodes
 	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf.dta", ///
 		gen(m_aggvars)
-	
-	* won't match the dropped years	& badcases
-	tab m_aggvars survey
+	* this won't have matched the dropped years	& badcases
+	* tab m_aggvars survey
 	
 	* keep the matched cases
-	keep if m_aggvars == 3
+	qui: keep if m_aggvars == 3
 	
 	* define laundry
-	gen laundry_p = 0
+	qui: gen laundry_p = 0
 	lab var laundry_p "Main act = laundry (21)"
-	replace laundry_p = 1 if main == 21
+	qui: replace laundry_p = 1 if main == 21
 	
 	gen laundry_s = 0
 	lab var laundry_s "Secondary act = laundry (21)"
 	replace laundry_s = 1 if sec == 21
 	
-	gen laundry_all = 0
+	qui: gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
 
 	* we can't use the lag notation and xtset as there are various time periods represented in the data
@@ -356,37 +355,69 @@ if `do_sequences' {
 	* we could do this but we don't really need to.
 	
 	* we want to use episodes not time slots (as we are ignoring duration here)
-	
+	qui: log off
+
 	local acts "all"
 	foreach a of local acts {
 		* make sure we do this within diaries
-		bysort survey diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
-		bysort survey diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
+		qui: bysort survey diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
+		qui: bysort survey diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
 		
 		lab val before_laundry_`a' after_laundry_`a' MAIN
 		 
-		table before_laundry_`a' survey [iw=propwt], col
-	
-		table after_laundry_`a'
-		table after_laundry_`a' survey [iw=propwt], col
-		
-		*table before_laundry_`a' after_laundry_`a' [iw=propwt], by(survey)
-		levelsof(survey), local(surveys)
-		foreach s of local surveys {
-			qui: tabout before_laundry_`a' after_laundry_`a' [iw=propwt] using "`rpath'/before-after-laundry-`s'.txt" if survey == `s', replace
-		}
+		qui: tabout before_laundry_`a' survey [iw=propwt] using "`rpath'/before-laundry-by-survey.txt", replace
+		qui: tabout after_laundry_`a' survey [iw=propwt] using "`rpath'/after-laundry-by-survey.txt", replace
 	}
+	*tab laundry_all
+	* create a sequence variable (horrible kludge but hey, it works :-)
+	qui: egen laundry_seq = concat(before_laundry_all laundry_all after_laundry_all) if laundry_all == 1 , punct("_") 
 	
+	* get frequencies of sequencies (this will be a very big table)
+	* the ones which have missing (.) before laundry indicate nothing recorded before hand which seems a bit odd?
 	
-	/*
-	* try using the sqset commands
+	* why do I get different results every time I run this??
+	qui: tab laundry_seq
+	qui: return li
+	di "For laundry_seq before contract: N = " r(N) ", r = " r(r)
 	
-	* tell it to look at sequences
-	sqset main diarypid s_starttime
+	preserve
+		* contract doesn't like iw - only allows fw (which need to be integers)
+		* so these will be unweighted
+		contract laundry_seq survey, nomiss
+		qui: tab laundry_seq
 		
-	* top 20 sequences
-	sqtab survey if before_laundry ! = 1 | after_laundry ! = 1, ranks(1/20) 
-	*/
+		qui: return li
+		di "For laundry_seq after contract : N = " r(N) ", r = " r(r)
+
+		* reshape it to get the frequencies per survey into columns
+		qui: reshape wide _freq, i(laundry_seq) j(survey)
+		qui: return li
+		
+		li in 1/5
+		outsheet using "`rpath'/laundry-sequences-by-survey-wide.txt", replace
+		* totals
+		* the number of different sequences will probably vary by sample size - more potential variation
+		su _freq*, sep(0)
+		tabstat _freq*, s(n sum)
+		* top in 1974?
+		gsort - _freq1974
+		li in 1/10, sep(0)
+		* top in 2005?
+		gsort - _freq2005
+		li in 1/10, sep(0)
+		
+		
+	restore
+	drop *laundry* m_aggvars
+	/*
+		* try using the sqset commands
+		
+		* tell it to look at sequences
+		sqset main diarypid s_starttime
+			
+		* top 20 sequences
+		sqtab survey if before_laundry ! = 1 | after_laundry ! = 1, ranks(1/20) 
+	*/	
 } 
 
 
