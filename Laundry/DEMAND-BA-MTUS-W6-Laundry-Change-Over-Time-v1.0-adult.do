@@ -359,9 +359,13 @@ if `do_sequences' {
 
 	local acts "all"
 	foreach a of local acts {
-		* make sure we do this within diaries
-		qui: bysort survey diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
-		qui: bysort survey diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
+		* make sure we do this within diaries otherwise we might get a 'before' or 'after' belonging to someone else!
+		
+		****
+		* This is the bit that causes the problem - it produces different results each time - why??
+		qui: bysort diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
+		qui: bysort diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
+		****
 		
 		lab val before_laundry_`a' after_laundry_`a' MAIN
 		 
