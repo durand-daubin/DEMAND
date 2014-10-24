@@ -66,5 +66,14 @@ table(MTUSW6UK_m$laundry_all)
 table("Laundry as primary"= MTUSW6UK_m$laundry_p == 1, MTUSW6UK_m$eloc)
 table("Laundry as secondary"= MTUSW6UK_m$laundry_s == 1, MTUSW6UK_m$eloc)
 
-laundry_all_tod <- table("All laundry" = MTUSW6UK_m$laundry_all == 1, MTUSW6UK_m$s_halfhour)
-plot(laundry_all_tod)
+# check time of day for laundry for all years together
+laundry_all_tod <- aggregate(MTUSW6UK_m$laundry_all, by=list(MTUSW6UK_m$s_halfhour, MTUSW6UK_m$survey), FUN=sum)
+# fix variable names
+names(laundry_all_tod) <- c("s_halfhour","survey","freq") 
+# add up number of laundry episodes in each survey
+lsum74 <-sum(laundry_all_tod$freq[laundry_all_tod$survey == 1974])
+
+# % laundry done in any gven half hour
+laundry_all_tod$laundry_pc <- (laundry_all_tod$x / lsum) * 100
+plot(laundry_all_tod$Group.1, xlab = "Half hour", laundry_all_tod$laundry_pc, ylab = "% laundry done")
+
