@@ -65,15 +65,15 @@ foreach i of numlist 1(1)10 {
 	
 	* we want to use episodes not time slots (as we are ignoring duration here)
 	
+	* This is vital - we have to have the episodes in diary & time order!
+	sort diarypid start
 	local acts "all"
 	foreach a of local acts {
-		* make sure we do this within diaries otherwise we might get a 'before' or 'after' belonging to someone else!
+		* make sure we do this within diaries otherwise we might get a 'before' or 'after' belonging to a previous day (for multi day diaries)
+		* or to someone else (for 1 day diaries or the first day)!
 		
-		****
-		* This is the bit that causes the problem - it produces different results each time - why??
-		qui: bysort diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
-		qui: bysort diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
-		****
+		qui: by diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
+		qui: by diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
 		
 		lab val before_laundry_`a' after_laundry_`a' MAIN
 		 

@@ -196,6 +196,10 @@ if `do_halfhour_episodes' {
 	* add on duration if previous and subsequent episodes are also laundry and location is unchanged
 	* NB: if you make maxcount > 1 then you could have episodes of eating separated by a long episode of something else
 	local maxcount = 1
+	
+	* This is vital - we have to have the episodes in diary & time order!
+	sort diarypid start
+
 	foreach n of numlist 1/`maxcount' {
 		local prev = `n' - 1
 		di "* Now = `n', previous = `prev'"
@@ -336,18 +340,18 @@ if `do_sequences' {
 	* tab m_aggvars survey
 	
 	* keep the matched cases
-	qui: keep if m_aggvars == 3
+	keep if m_aggvars == 3
 	
 	* define laundry
-	qui: gen laundry_p = 0
+	gen laundry_p = 0
 	lab var laundry_p "Main act = laundry (21)"
-	qui: replace laundry_p = 1 if main == 21
+	replace laundry_p = 1 if main == 21
 	
 	gen laundry_s = 0
 	lab var laundry_s "Secondary act = laundry (21)"
 	replace laundry_s = 1 if sec == 21
 	
-	qui: gen laundry_all = 0
+	gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
 
 	* we can't use the lag notation and xtset as there are various time periods represented in the data
@@ -355,33 +359,35 @@ if `do_sequences' {
 	* we could do this but we don't really need to.
 	
 	* we want to use episodes not time slots (as we are ignoring duration here)
-	qui: log off
+
+	* This is vital - we have to have the episodes in diary & time order!
+	sort diarypid start
+	
+	* we are NOT going to worry about sequential episodes which are both laundry_all as this will indicate
+	* that something changed - most likely a switch of laundry from primary to secondary activity (or vice versa)
+	* this may be of interest in itself
 
 	local acts "all"
 	foreach a of local acts {
-		* make sure we do this within diaries otherwise we might get a 'before' or 'after' belonging to someone else!
+		* make sure we do this within diaries otherwise we might get a 'before' or 'after' belonging to a previous day (for multi day diaries)
+		* or to someone else (for 1 day diaries or the first day)!
 		
-		****
-		* This is the bit that causes the problem - it produces different results each time - why??
-		qui: bysort diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
-		qui: bysort diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
-		****
+		qui: by diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
+		qui: by diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
 		
 		lab val before_laundry_`a' after_laundry_`a' MAIN
 		 
 		qui: tabout before_laundry_`a' survey [iw=propwt] using "`rpath'/before-laundry-by-survey.txt", replace
 		qui: tabout after_laundry_`a' survey [iw=propwt] using "`rpath'/after-laundry-by-survey.txt", replace
 	}
-	*tab laundry_all
+	tab laundry_all
 	* create a sequence variable (horrible kludge but hey, it works :-)
-	qui: egen laundry_seq = concat(before_laundry_all laundry_all after_laundry_all) if laundry_all == 1 , punct("_") 
+	egen laundry_seq = concat(before_laundry_all laundry_all after_laundry_all) if laundry_all == 1 , punct("_") 
 	
 	* get frequencies of sequencies (this will be a very big table)
-	* the ones which have missing (.) before laundry indicate nothing recorded before hand which seems a bit odd?
+	* the few which have missing (.) before laundry indicate nothing recorded before hand which seems a bit odd?
 	
-	qui: tab laundry_seq
-	qui: return li
-	di "For laundry_seq before contract: N = " r(N) ", r = " r(r)
+	tab laundry_seq
 	
 	preserve
 		* contract doesn't like iw - only allows fw (which need to be integers)
@@ -411,7 +417,7 @@ if `do_sequences' {
 		
 		
 	restore
-	drop *laundry* m_aggvars
+	
 	/*
 		* try using the sqset commands
 		
