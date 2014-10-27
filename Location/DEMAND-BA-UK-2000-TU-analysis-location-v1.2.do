@@ -4,6 +4,30 @@
 * generates a line chart for each location code with 7 lines (days of week) across hour of day
 * merges the summary data into 1 file for future use
 
+* This work was funded by RCUK through the End User Energy Demand Centres Programme via the
+* "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1)
+
+/*   
+
+Copyright (C) 2014  University of Southampton
+
+Author: Ben Anderson (b.anderson@soton.ac.uk, @dataknut, https://github.com/dataknut) 
+	[Energy & Climate Change, Faculty of Engineering & Environment, University of Southampton]
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License 
+(http://choosealicense.com/licenses/gpl-2.0/), or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+#YMMV - http://en.wiktionary.org/wiki/YMMV
+
+*/
+
 clear all
 
 * change these to run this script on different PC

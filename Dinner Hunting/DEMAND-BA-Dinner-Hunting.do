@@ -1,19 +1,33 @@
+*******************************************
 * DEMAND Project (www.demand.ac.uk)
-* Funded by RCUK through the
-* "DEMAND: Dynamics of Energy, Mobility and Demand" End User Energy Demand Research Centre (www.demand.ac.uk) 
-* Grant: http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1
-
 * Analysis for paper developed from BEHAVE 2014 conference presentation (http://www.slideshare.net/ben_anderson/behave-practices-hunting5) with mathieu.durand-daubin@edf.fr
 
 * Use MTUS (see http://www.timeuse.org/mtus/) to get episodes of cooking & eating
 * Use this to work out what kinds of 'dinner' we have & classify the diary days accordingly
 * match the diary days/diarists back to the original ONS TU 2005 data from the UK data archive (http://discover.ukdataservice.ac.uk/catalogue/?sn=5592) to see what the different dinner 'types' were doing through the day
 
-* b.anderson@soton.ac.uk based on concept & logic devised by mathieu.durand-daubin@edf.fr
+/*   
 
-* (c) University of Southampton
-* Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies
-* http://creativecommons.org/licenses/by-nc/4.0/
+Copyright (C) 2014  University of Southampton
+
+Author: Ben Anderson (b.anderson@soton.ac.uk, @dataknut, https://github.com/dataknut) 
+	[Energy & Climate Change, Faculty of Engineering & Environment, University of Southampton]
+
+based on concept & logic devised by mathieu.durand-daubin@edf.fr
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License 
+(http://choosealicense.com/licenses/gpl-2.0/), or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+#YMMV - http://en.wiktionary.org/wiki/YMMV
+
+*/
 
 clear all
 
