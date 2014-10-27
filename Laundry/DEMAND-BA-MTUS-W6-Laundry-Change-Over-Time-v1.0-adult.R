@@ -4,24 +4,38 @@
 # - distributions of laundry in 1975 & 2005
 # - changing laundry practices
 
+# Data source: www.timeuse.org/mtus
 # data already in long format (but episodes)
-
-# b.anderson@soton.ac.uk
-# (c) University of Southampton
 
 # This work was funded by RCUK through the End User Energy Demand Centres Programme via the
 # "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1)
-# Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) license applies
-# http://creativecommons.org/licenses/by-nc/4.0/
+
+#     Copyright (C) 2014  University of Southampton
+#     Author: Ben Anderson (b.anderson@soton.ac.uk, @dataknut, https://github.com/dataknut)
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License 
+# (http://choosealicense.com/licenses/gpl-2.0/), or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
   
 # clear out all old objects etc to avoid confusion
 rm(list = ls()) 
+
+# add libraries
+library("lattice", "Hmisc")
 
 # set up some useful vars
 ifile_d <- c("~/Documents/Work/Data/Social Science Datatsets/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf.dta")
 ifile_s <- c("~/Documents/Work/Data/Social Science Datatsets/MTUS/World 6/processed/MTUS-adult-aggregate-UK-only-wf.dta")
   
-rpath <- "How to set this as a string to be concatenated with a file name?"
+rpath <- c("/Users/ben/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/MTUS")
+# paste!
 
 # Loading the data
 # load as stata file
@@ -80,45 +94,113 @@ laundry_fr <- aggregate(MTUSW6UK_m$year, by=list(MTUSW6UK_m$s_halfhour), FUN=mea
 names(laundry_fr) <- c("s_halfhour","junk") 
 # drop junk
 laundry_fr <- laundry_fr["s_halfhour"]
-  
+
+# there must be a simple way to do this as a loop switching p for s and all
 # primary
 laundry_p_tod <- aggregate(MTUSW6UK_m$laundry_p, by=list(MTUSW6UK_m$s_halfhour), FUN=sum)
-names(laundry_p_tod) <- c("s_halfhour","p_laundry_freq") 
-# how many laundry episodes are there?
-lpsum <-sum(laundry_p_tod$p_laundry_freq)
-laundry_fr$p_laundry_pc <- (laundry_p_tod$p_laundry_freq/lpsum) * 100
+names(laundry_p_tod) <- c("s_halfhour","freq") 
+# each half hour as a proportion of laundry episodes
+laundry_fr$p_laundry_pr <- (laundry_p_tod$freq/sum(laundry_p_tod$freq))
 
 # secondary
 laundry_s_tod <- aggregate(MTUSW6UK_m$laundry_s, by=list(MTUSW6UK_m$s_halfhour), FUN=sum)
-names(laundry_s_tod) <- c("s_halfhour","s_laundry_freq") 
-lssum <-sum(laundry_s_tod$s_laundry_freq)
-laundry_fr$s_laundry_pc <- (laundry_s_tod$s_laundry_freq/lssum) * 100
+names(laundry_s_tod) <- c("s_halfhour","freq") 
+# each half hour as a proportion of laundry episodes
+laundry_fr$s_laundry_pr <- (laundry_s_tod$freq/sum(laundry_s_tod$freq))
 
 # all
 laundry_all_tod <- aggregate(MTUSW6UK_m$laundry_all, by=list(MTUSW6UK_m$s_halfhour), FUN=sum)
-names(laundry_all_tod) <- c("s_halfhour","all_laundry_freq") 
-lasum <-sum(laundry_all_tod$all_laundry_freq)
-laundry_fr$all_laundry_pc <- (laundry_all_tod$all_laundry_freq/lasum) * 100
+names(laundry_all_tod) <- c("s_halfhour","freq") 
+# each half hour as a proportion of laundry episodes
+laundry_fr$all_laundry_pr <- (laundry_all_tod$freq/sum(laundry_all_tod$freq))
 
-# I want a line plot here with primary & secndary...
-plot(laundry_fr)
+# plot with primary & secondary for all years
+# direct graph to file
+png(paste(rpath,"/laundry-time-of-day-all-years.png", sep=""))
+plot(x = laundry_fr$s_halfhour, y = laundry_fr$p_laundry_pr,
+     xlab = "Half Hour", 
+     ylab = "% of laundry of that type", 
+     type = "l",
+     col = "red")
+points(x = laundry_fr$s_halfhour, y = laundry_fr$s_laundry_pr, type = "l")
+# cex = scaling factor
+legend('topright',c("Primary act","Secondary act"), lty=1, col=c('red', 'black'), bty='n', cex=1)
+title("% of laundry done at different times of day (all years)", cex=0.75)
+dev.off()
 
-# check time of day for laundry for each year
-for(s in c(1974,2005)) {
-  laundry_all_todtemp <- aggregate(MTUSW6UK_m$laundry_all[survey==s], by=list(MTUSW6UK_m$s_halfhour[survey==s]), FUN=sum)
-  # fix variable names
-  names(laundry_all_todtemp) <- c("s_halfhour","freq") 
-  # add up number of laundry episodes in each survey
-  lsum <-sum(laundry_all_todtemp$freq)
-  
-  # % laundry done in any gven half hour in this year
-  # how to get s to assign the year to the column name??
-  laundry_all_tod$laundry_pc_s <- (laundry_all_tod$freq/lsum) * 100
-  
-  # direct graph to file
-  png("/Users/ben/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/MTUS/laundry-time-of-day-s.jpg")
-  plot(laundry_all_tod$s_halfhour, xlab = "Half hour (s)", laundry_all_tod$laundry_pc, ylab = "% laundry done")
-  title("% of laundry done at different times of day (s)")
-  dev.off()
-}
+# laundry for each year - how to loop over?
+# make subsets to speed things up
 
+MTUSW6UK_m1974 <- subset(MTUSW6UK_m,survey==1974)
+
+laundry_tod_1974p <- aggregate(MTUSW6UK_m1974$laundry_p, by=list(MTUSW6UK_m1974$s_halfhour), FUN=sum)
+names(laundry_tod_1974p) <- c("s_halfhour","freq") 
+laundry_fr$laundry_p_1974_pr <- (laundry_tod_1974p$freq/sum(laundry_tod_1974p$freq))
+
+laundry_tod_1974s <- aggregate(MTUSW6UK_m1974$laundry_s, by=list(MTUSW6UK_m1974$s_halfhour), FUN=sum)
+names(laundry_tod_1974s) <- c("s_halfhour","freq") 
+laundry_fr$laundry_s_1974_pr <- (laundry_tod_1974s$freq/sum(laundry_tod_1974s$freq))
+
+laundry_tod_1974all <- aggregate(MTUSW6UK_m1974$laundry_s, by=list(MTUSW6UK_m1974$s_halfhour), FUN=sum)
+names(laundry_tod_1974all) <- c("s_halfhour","freq") 
+laundry_fr$laundry_all_1974_pr <- (laundry_tod_1974all$freq/sum(laundry_tod_1974all$freq))
+
+
+MTUSW6UK_m2005 <- subset(MTUSW6UK_m,survey==2005)
+
+laundry_tod_2005p <- aggregate(MTUSW6UK_m2005$laundry_p, by=list(MTUSW6UK_m2005$s_halfhour), FUN=sum)
+names(laundry_tod_2005p) <- c("s_halfhour","freq") 
+laundry_fr$laundry_p_2005_pr <- (laundry_tod_2005p$freq/sum(laundry_tod_2005p$freq))
+
+laundry_tod_2005s <- aggregate(MTUSW6UK_m2005$laundry_s, by=list(MTUSW6UK_m2005$s_halfhour), FUN=sum)
+names(laundry_tod_2005s) <- c("s_halfhour","freq") 
+laundry_fr$laundry_s_2005_pr <- (laundry_tod_2005s$freq/sum(laundry_tod_2005s$freq))
+
+laundry_tod_2005all <- aggregate(MTUSW6UK_m2005$laundry_all, by=list(MTUSW6UK_m2005$s_halfhour), FUN=sum)
+names(laundry_tod_2005all) <- c("s_halfhour","freq") 
+laundry_fr$laundry_all_2005_pr <- (laundry_tod_2005all$freq/sum(laundry_tod_2005all$freq))
+
+# now compare laundry for 1974 & 2005
+# must be a simple way to loop over these
+# direct graph to file
+# primary episodes
+png(paste(rpath,"/laundry-time-of-day-1974-2005-primary.png", sep=""))
+plot(x = laundry_fr$s_halfhour, y = laundry_fr$laundry_p_1974_pr,
+     xlab = "Half Hour", 
+     ylab = "Proportion of laundry of that type", 
+     pch = 1,
+     col = "red")
+points(x = laundry_fr$s_halfhour, y = laundry_fr$laundry_p_2005_pr, col = "blue", pch=2)
+# cex = scaling factor
+legend('topright',c("Primary act 1974","Primary act 2005"), 
+      col=c('red', 'blue'), pch=c(1,2), cex=1)
+title("% of laundry done at different times of day (1974-2005)", cex=0.75)
+dev.off()
+
+# secondary episodes
+png(paste(rpath,"/laundry-time-of-day-1974-2005-secondary.png", sep=""))
+plot(x = laundry_fr$s_halfhour, y = laundry_fr$laundry_s_1974_pr,
+     xlab = "Half Hour", 
+     ylab = "Proportion of laundry of that type", 
+     pch = 1,
+     col = "red")
+points(x = laundry_fr$s_halfhour, y = laundry_fr$laundry_s_2005_pr, col = "blue", pch = 2)
+# cex = scaling factor
+legend('topright',c("Secondary act 1974","Secondary act 2005"), 
+       col=c('red','blue'), pch=c(1,2), cex=1)
+title("% of laundry done at different times of day (1974-2005)", cex=0.75)
+dev.off()
+
+# all laundry episodes
+png(paste(rpath,"/laundry-time-of-day-1974-2005-all.png", sep=""))
+plot(x = laundry_fr$s_halfhour, y = laundry_fr$laundry_all_1974_pr,
+     xlab = "Half Hour", 
+     ylab = "Proportion of laundry of that type", 
+     pch = 1,
+     col = "red")
+points(x = laundry_fr$s_halfhour, y = laundry_fr$laundry_all_2005_pr, col = "blue", pch = 2)
+# cex = scaling factor
+legend('topright',c("All laundry 1974","All laundry 2005"), 
+       col=c('red', 'red','blue','blue'), pch=c(1,2), cex=1)
+title("% of laundry done at different times of day (1974-2005)", cex=0.75)
+dev.off()
