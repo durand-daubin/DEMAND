@@ -285,7 +285,7 @@ if `do_halfhour_episodes' {
 
 restore
 
-*preserve
+preserve
 *************************
 * sampled data for comparison
 if `do_halfhour_samples' {
@@ -352,7 +352,6 @@ if `do_halfhour_samples' {
 	* laundry by employment status if female
 	table survey day empstat if sex == 2 & any_laundry_all == 1 [iw=propwt]
 	
-	stop
 	di "* Tables for all days"
 	* All years, all days
 	table s_halfhour survey any_laundry_all [iw=propwt]
