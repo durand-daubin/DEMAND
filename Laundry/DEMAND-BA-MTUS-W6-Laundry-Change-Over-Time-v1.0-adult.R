@@ -201,6 +201,6 @@ plot(x = laundry_fr$s_halfhour, y = laundry_fr$laundry_all_1974_pr,
 points(x = laundry_fr$s_halfhour, y = laundry_fr$laundry_all_2005_pr, col = "blue", pch = 2)
 # cex = scaling factor
 legend('topright',c("All laundry 1974","All laundry 2005"), 
-       col=c('red', 'red','blue','blue'), pch=c(1,2), cex=1)
+       col=c('red','blue'), pch=c(1,2), cex=1)
 title("% of laundry done at different times of day (1974-2005)", cex=0.75)
 dev.off()
