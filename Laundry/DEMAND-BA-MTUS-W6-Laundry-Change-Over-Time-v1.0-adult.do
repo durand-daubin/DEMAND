@@ -66,8 +66,8 @@ capture log close
 log using "`rpath'/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-`version'-adult.smcl", replace
 
 local do_halfhour_episodes = 0
-local do_halfhour_samples = 0
-local do_sequences = 1
+local do_halfhour_samples = 1
+local do_sequences = 0
 
 * make script run without waiting for user input
 set more off
@@ -285,7 +285,7 @@ if `do_halfhour_episodes' {
 
 restore
 
-preserve
+*preserve
 *************************
 * sampled data for comparison
 if `do_halfhour_samples' {
@@ -305,6 +305,9 @@ if `do_halfhour_samples' {
 	gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
 	
+	* this is the number of 10 minute samples by survey & day of the week
+	tab survey day [iw=propwt]
+	
 	* check % samples which are laundry
 	* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
 	di "* main"
@@ -316,21 +319,40 @@ if `do_halfhour_samples' {
 	
 	* collapse to add up the sampled laundry by half hour
 	* use the byvars we're interested in (or could re-merge with aggregated file)
-	collapse (sum) laundry_* (mean) propwt, by(diarypid survey day month year s_halfhour ba_birth_cohort ba_age_r sex)
+	
+	collapse (sum) laundry_* (mean) propwt, by(diarypid survey day month year s_halfhour ba_birth_cohort ba_age_r sex emp empstat)
 	* because the different surveys have different reporting periods we need to just count at least 1 laundry in the half hour
+	lab val emp EMP
+	lab val empstat EMPSTAT
 	local acts "p s all"
 	foreach a of local acts {
 		gen any_laundry_`a' = 0
 		replace any_laundry_`a' = 1 if laundry_`a' > 0
 	}
-	* by year
-	tab survey any_laundry_all [iw=propwt]
+	* the number of half hour data points by survey & day
+	tab survey day [iw=propwt]
+	
+	svyset [iw=propwt]
+	* the distribution of laundry by survey
+	di "* primary"
+	svy: tab survey any_laundry_p, row ci
+	
+	di "* secondary"
+	svy: tab survey any_laundry_p, row ci
+	
+	di "* all"
+	svy: tab survey any_laundry_all, row ci
 	
 	* Separate days
 	table survey day [iw=propwt], by(any_laundry_all)
 
+	* days by gender
 	table survey day sex [iw=propwt], by(any_laundry_all)
 	
+	* laundry by employment status if female
+	table survey day empstat if sex == 2 & any_laundry_all == 1 [iw=propwt]
+	
+	stop
 	di "* Tables for all days"
 	* All years, all days
 	table s_halfhour survey any_laundry_all [iw=propwt]
@@ -444,7 +466,23 @@ if `do_sequences' {
 	*/	
 } 
 
+* we're back to the main survey aggregate file here.
+* drop diary duplicates & do some basic stats
 
+duplicates drop pid
+
+* create working age variable
+gen ba_working_age = 0
+replace ba_working_age = 1 if age > 18 // OK, it should be 16 but...
+* women
+replace ba_working_age = 0 if age > 60 & sex == 2
+* men
+replace ba_working_age = 0 if age > 65 & sex == 1
+* check
+table ba_age_r ba_working_age sex
+
+* Propoprtion of women in work
+tab survey empstat [iw=propwt] if ba_working_age == 1 & sex == 2, row
 
 
 log close
