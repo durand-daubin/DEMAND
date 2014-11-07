@@ -468,7 +468,7 @@ if `do_sequences' {
 * we're back to the main survey aggregate file here.
 * drop diary duplicates & do some basic stats
 
-duplicates drop pid
+duplicates drop pid, force
 
 * create working age variable
 gen ba_working_age = 0
