@@ -1,6 +1,8 @@
 * Exploratory analysis for DEMAND
 * Uses ONS Time Use 2000/1 survey to look at a moment in time
 
+* Data available from http://discover.ukdataservice.ac.uk/catalogue/?sn=5592
+
 * This work was funded by RCUK through the End User Energy Demand Centres Programme via the
 * "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1)
 

@@ -1,5 +1,7 @@
 * DEMAND Project (www.demand.ac.uk)
 * Analyse ONS Time Use 2005 dataset
+* Data available from http://discover.ukdataservice.ac.uk/catalogue/?sn=5592
+
 * Analysis for BEHAVE 2014 conference presentation on components of peak
 
 * local version = "v1.0"
