@@ -67,5 +67,10 @@ tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-65+-weekdays-`vers
 tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-men-weekdays-`version'.txt" [iw=net_wgt ] if respsex == 1 & weekday == 1, replace //men
 tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-women-weekdays-`version'.txt" [iw=net_wgt ] if respsex == 2 & weekday == 1, replace //women
 
+levelsof(s_dow), local(days)
+
+foreach d of local days {
+	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-all-day-`d'-`version'.txt" [iw=net_wgt ], replace
+}
 
 log close
