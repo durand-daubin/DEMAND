@@ -60,17 +60,19 @@ replace weekday = 1 if s_dow != 1 & s_dow!=7
 * create tables 
 * yes, stata could create these as charts but I like to import to excel & fiddle :-)
 
+* at home only
 * age
-tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-16-65-weekdays-`version'.txt" [iw=net_wgt ] if ageh <= 10 & weekday == 1, replace
-tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-65+-weekdays-`version'.txt" [iw=net_wgt ] if ageh > 10 & weekday == 1, replace
+tabout pact s_halfhour using "`rpath'/main-acts-at-home-by-s_halfhour-16-65-weekdays-`version'.txt" [iw=net_wgt ] if lact == 1 & ageh <= 10 & weekday == 1, replace
+tabout pact s_halfhour using "`rpath'/main-acts-at-home-by-s_halfhour-65+-weekdays-`version'.txt" [iw=net_wgt ] if lact == 1 & ageh > 10 & weekday == 1, replace
 * gender
-tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-men-weekdays-`version'.txt" [iw=net_wgt ] if respsex == 1 & weekday == 1, replace //men
-tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-women-weekdays-`version'.txt" [iw=net_wgt ] if respsex == 2 & weekday == 1, replace //women
+tabout pact s_halfhour using "`rpath'/main-acts-at-home-by-s_halfhour-men-weekdays-`version'.txt" [iw=net_wgt ] if lact == 1 & respsex == 1 & weekday == 1, replace //men
+tabout pact s_halfhour using "`rpath'/main-acts-at-home-by-s_halfhour-women-weekdays-`version'.txt" [iw=net_wgt ] if lact == 1 & respsex == 2 & weekday == 1, replace //women
 
 levelsof(s_dow), local(days)
 
 foreach d of local days {
-	tabout pact s_halfhour using "`rpath'/main-acts-by-s_halfhour-all-day-`d'-`version'.txt" [iw=net_wgt ], replace
+	di "* testing day `d'"
+	qui: tabout pact s_halfhour using "`rpath'/main-acts-at-home-by-s_halfhour-all-day-`d'-`version'.txt" [iw=net_wgt ] if lact == 1 & s_dow == `d', replace
 }
 
 log close
