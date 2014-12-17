@@ -266,7 +266,7 @@ tab ba_age_r dinner_categories [iw= propwt], row nof
 tab ba_dow dinner_categories
 
 * link to original MTUS data but in 10 min samples for easy graphing
-merge 1:1 diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long.dta", gen(m_onstu) // persid should match to serial in ONS data
+merge 1:1 diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", gen(m_10minsample) // persid should match to serial in ONS data
 * 87 cases not in MTUS even when 'bad cases' kept?
 stop
 keep if badcase == 0
