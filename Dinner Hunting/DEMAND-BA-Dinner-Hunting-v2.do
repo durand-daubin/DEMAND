@@ -41,12 +41,15 @@ local proot "`where'/Projects/RCUK-DEMAND/Theme 1"
 local rpath "`proot'/papers/Practice Hunting-Dinner"
 
 * ONS TU codes:
-* meals at work or school = 5 (not available in all surveys)
-* meals or snacks in other places = 6
-* food preparation, cooking = 18
-* restaurant, cafe, bar, pub = 39 (but may not be eating?!)
-* out with friends could be = 48 (but check location as might also be at home)
-* eloc = location
+* eating/drinking = 4
+* preparing food = 5
+
+* restaurant, cafe, bar, pub = ???
+
+* spending time with friends/family at home = 23
+* going out with friends/family = 24
+
+* lact = location (missing/home/elsewhere)
 
 local version = "v2.0"
 * uses updated version of ONS TU 2005 which includes eating & cooking seperately
@@ -58,21 +61,16 @@ capture log close
 
 log using "`rpath'/DEMAND-BA-ONS-TU-2005-dinner-hunting-`version'.smcl", replace
 
-* start with MTUS data
-* NB this is a UK only subsample with some derived variables added
-
 use "`dpath'/timeusefinal_for_archive_diary_long_v2.0.dta", clear
 * data in long/episode format
 
 gen ba_weekday = 0
-replace ba_weekday = 1 if ba_dow < 6
+replace ba_weekday = 1 if s_dow > 0 & s_dow < 6
 
-* drop bad cases
-keep if badcase == 0
 
 * sleep (surely everyone reports it?!) - use this as a checker later on
 gen sleep_all = 0
-replace sleep_all = 1 if main == 2 | sec == 2
+replace sleep_all = 1 if main == 1 | sec == 1
 
 * set up eating dummies
 * 5 not set for 2005
@@ -81,33 +79,15 @@ replace sleep_all = 1 if main == 2 | sec == 2
 * - location changed 
 * both of which we might care about
 gen eat_p = 0
-replace eat_p = 1 if main == 6 
+replace eat_p = 1 if pact == 4
 gen eat_s = 0
-replace eat_s = 1 if sec == 6
+replace eat_s = 1 if sact == 4
 
 gen eat_all = 0
 replace eat_all = 1 if eat_p == 1 | eat_s == 1
 
 * calculate duration
-bysort survey diarypid: gen eat_duration = time if eat_all == 1
-* count back & forward maxcount episodes to check if they are also eating 
-* indicates something changed - primary/secondary act or location or who with etc
-* add on duration if previous and subsequent episodes are also eat and location is unchanged
-* NB: if you make maxcount > 1 then you could have episodes of eating separated by a long episode of something else e.g. breakfast -> work -> lunch
-* might be best to check the duration of the episode in between if you do this (or even check what it was e.g. cooking)
-local maxcount = 1
-foreach n of numlist 1/`maxcount' {
-	local prev = `n' - 1
-	di "* Now = `n', previous = `prev'"
-	di "* Before"
-	su eat_duration
-	bysort survey diarypid: replace eat_duration = eat_duration + time[_n-`n'] if eat_all == 1 & ///
-		eat_all[_n-`n'] == 1 & eloc == eloc[_n-`n']
-	bysort survey diarypid: replace eat_duration = eat_duration + time[_n+`n'] if eat_all == 1 & ///
-		eat_all[_n+`n'] == 1 & eloc == eloc[_n+`n']
-	di "* After"
-	su eat_duration
-}
+* don't do this - is complicated in non-episode data
 
 * same for cooking
 * There could be several sequential episodes of cooking if something else changed e.g. 
