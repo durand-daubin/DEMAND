@@ -50,6 +50,9 @@ local rpath "`proot'/papers/Practice Hunting-Dinner"
 
 local version = "v1.0"
 
+* switch graphs on/off
+local do_graphs = 0
+
 set more off
 
 capture log close
@@ -143,22 +146,24 @@ tab ba_weekday ba_dow
 * if try to tab by survey & start time you get jitter/spikes due to different time slot durations used in each year
 * so use the halfhour start time variable created previously (same as Mathieu)
 table s_halfhour eat_all survey
-graph bar (mean) eat_all, over(s_halfhour) by(survey) name(bar_eat_all)
-graph export "`rpath'/bar_eat_all_by_survey.png", replace
-graph bar (mean) cook_all, over(s_halfhour) by(survey) name(bar_cook_all) 
-graph export "`rpath'/bar_cook_all_by_survey.png", replace
+if `do_graphs' {
+	graph bar (mean) eat_all, over(s_halfhour) by(survey) name(bar_eat_all)
+	graph export "`rpath'/bar_eat_all_by_survey.png", replace
+	graph bar (mean) cook_all, over(s_halfhour) by(survey) name(bar_cook_all) 
+	graph export "`rpath'/bar_cook_all_by_survey.png", replace
+	
+	* both the following are disrupted by the time intervals used in the diary itself
+	histogram eat_duration, by(survey) name(histo_eat_duration)
+	graph export "`rpath'/histo_eat_duration_by_survey.png", replace
+
+	histogram cook_duration, by(survey) name(histo_cook_duration)
+	graph export "`rpath'/histo_cook_duration_by_survey.png", replace
+}
 
 * dump these means out so can graph in excel as lines (easier to see)
 * this will give the mean number of episodes in the half hour
 tabout s_halfhour survey using "`rpath'/MTUS-UK-Adults-eat_all-by-survey-halfhour.txt", cells(mean eat_all) sum replace
 tabout s_halfhour survey using "`rpath'/MTUS-UK-Adults-eat_all-by-survey-halfhour.txt", cells(mean cook_all) sum replace
-
-* both the following are disrupted by the time intervals used in the diary itself
-histogram eat_duration, by(survey) name(histo_eat_duration)
-graph export "`rpath'/histo_eat_duration_by_survey.png", replace
-
-histogram cook_duration, by(survey) name(histo_cook_duration)
-graph export "`rpath'/histo_cook_duration_by_survey.png", replace
 
 * so we need to start UK dinner earlier - about 17:00
 * but end about 22:00?
@@ -186,12 +191,11 @@ sort survey persid id epnum
 keep survey persid id epnum s_* ba_* badcase main sec eloc eat* cook* 
 * don't do dinner skip here as this is setting any kind of eat to 'dinner_skip'
 
-stop
-
 ************************************************
 * Define dinner - varies by survey?
 * define dinner as starting to eat 17:00 - 22:00
 * ?: should we define an end time?
+gen ba_hour = hh(s_starttime)
 gen dinner = 0 if eat_all == 1
 replace dinner = 1 if eat_all == 1 & ba_hour >= 17 & ba_hour <= 22
 
@@ -203,23 +207,23 @@ gen dinner_out = 1 if dinner == 1 & eloc != 1
 gen dinner_out_dur = eat_duration if dinner_out == 1
 
 * so, which dinners have cooking at home before or during them?
-by persid: gen dinner_cook = 1 if dinner == 1 & dinner_out != 1 & (cook[_n-1] == 1 | cook == 1) & eloc == 1
+bysort persid: gen dinner_cook = 1 if dinner == 1 & dinner_out != 1 & (cook_all[_n-1] == 1 | cook_all == 1) & eloc == 1
 gen dinner_cook_dur = eat_duration if dinner_cook == 1
 
 * and which don't - i.e. no cooking before and no cooking during
 * inverse of the cook situation (we would need to allow for non-existing episodes before the eat otherwise)
-by persid: gen dinner_nocook = 1 if dinner == 1 & dinner_cook != 1 & dinner_out != 1
+bysort persid: gen dinner_nocook = 1 if dinner == 1 & dinner_cook != 1 & dinner_out != 1
 gen dinner_nocook_dur = eat_duration if dinner_nocook == 1
 
 keep if dinner == 1
 local vars "dinner dinner_out dinner_cook dinner_nocook"
 foreach v of local vars {
-	by persid: egen `v'_n = count(`v')
+	bysort persid: egen `v'_n = count(`v')
 }
 su *_n
 
 * now collect together the dinners
-collapse (mean) dinner*, by(persid) // Takes the mean value of dinner
+collapse (mean) dinner*, by(diarypid) // Takes the mean value of dinner
 su dinner*
 * there can be several dinners in one diary - e.g. one cooked at home and then eating out later (or vice versa)
 tab dinner_cook dinner_nocook
@@ -239,19 +243,21 @@ replace dinner_categories = 1 if dinner_cook == 1 // dinner with cooking
 tab dinner_categories, mi
 
 * merge back to MTUS to get weight and 'badcase'
-merge 1:1 persid using "`dpath'/MTUS-adult-aggregate-UK-only-wf-2005.dta", gen(m_mtus) keepusing(badcase day propwt)
+merge m:1 persid using "`dpath'/MTUS-adult-aggregate-UK-only-wf.dta", gen(m_mtus) keepusing(badcase day propwt)
+
+keep if badcase == 0
 
 * some of these will be bad cases
 tab dinner m_mtus, mi
 
-* gen as double so no rounding occurrs
-gen double serial = persid
+stop
 
-* link to original ONS data
-merge 1:1 serial using "`where'/Data/Social Science Datatsets/Time Use 2005/UKDA-5592-stata8/stata8/timeusefinal_for_archive.dta", gen(m_onstu) // persid should match to serial in ONS data
+* link to original MTUS data but in 10 min samples for easy graphing
+merge 1:1 persid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long.dta", gen(m_onstu) // persid should match to serial in ONS data
 * 87 cases not in MTUS even when 'bad cases' kept?
 
 keep if badcase == 0
+
 
 * no eating at all
 gen no_eat = 0
