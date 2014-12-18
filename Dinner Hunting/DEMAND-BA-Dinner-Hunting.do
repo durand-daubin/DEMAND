@@ -4,8 +4,7 @@
 
 * Use MTUS (see http://www.timeuse.org/mtus/) to get episodes of cooking & eating
 * Use this to work out what kinds of 'dinner' we have & classify the diary days accordingly
-* match the diary days/diarists back to the original ONS TU 2005 data from the UK data archive (http://discover.ukdataservice.ac.uk/catalogue/?sn=5592) to see what the different dinner 'types' were doing through the day
-
+* match the diary days/diarists back to the 10 minute sampled MTUS data to produce time use graphs etc
 /*   
 
 Copyright (C) 2014  University of Southampton
@@ -48,7 +47,9 @@ local rpath "`proot'/papers/Practice Hunting-Dinner"
 * out with friends could be = 48 (but check location as might also be at home)
 * eloc = location
 
-local version = "v1.0"
+local version = "v1.1"
+* version 2 - uses 10 minute sampled version of MTUS data
+* version 1 - uses ONS TU 2005 data
 
 * switch graphs on/off
 local do_graphs = 0
@@ -74,15 +75,14 @@ gen sleep_all = 0
 replace sleep_all = 1 if main == 2 | sec == 2
 
 * set up eating dummies
-* 5 not set for 2005
 * There could be several sequential episodes of eating if something else changed e.g. 
 * - primary <-> secondary
 * - location changed 
 * both of which we might care about
 gen eat_p = 0
-replace eat_p = 1 if main == 6 
+replace eat_p = 1 if main == 5 | main == 6
 gen eat_s = 0
-replace eat_s = 1 if sec == 6
+replace eat_s = 1 if sec == 5 | sec == 6
 
 gen eat_all = 0
 replace eat_all = 1 if eat_p == 1 | eat_s == 1
@@ -253,6 +253,8 @@ tab dinner_categories no_eat, mi
 * merge back to MTUS to get weight and 'badcase'
 merge m:1 diarypid using "`dpath'/MTUS-adult-aggregate-UK-only-wf.dta", gen(m_mtus)
 
+drop dinner_*dur dinner_*n dinner_out dinner_cook dinner_nocook eat_all
+
 keep if badcase == 0
 
 tab dinner m_mtus, mi
@@ -265,75 +267,31 @@ tab dinner_categories m_mtus, mi
 tab ba_age_r dinner_categories [iw= propwt], row nof
 tab ba_dow dinner_categories
 
-* link to original MTUS data but in 10 min samples for easy graphing
-merge 1:1 diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", gen(m_10minsample) // persid should match to serial in ONS data
-* 87 cases not in MTUS even when 'bad cases' kept?
-stop
-keep if badcase == 0
-
-* set as survey data for descriptives
 * use MTUS weight
 svyset [iw= propwt]
 
-gen work_stat = yinact // all inactive on diary day
-replace work_stat= 8 if stat == 1 & yinact == . // employed
-replace work_stat= 9 if stat == 2 & yinact == . // self-employed
-label copy yinact work_stat
-label def work_stat 8 "Employed" 9 "Self-employed", modify
-lab val work_stat work_stat
-
-local tvars "day respsex agex respmar parent work_stat"
+local tvars "ba_dow sex ba_age_r civstat student empstat income"
 foreach v of local tvars {
 di "* Testing `v' and dinner_categories"
 	svy: tab dinner_categories `v', col
 }
 
-* check two differernt weights
-su propwt net_wgt
-pwcorr propwt net_wgt
-* hmm, they don't really correlate
+* link to original MTUS data but in 10 min samples for easy graphing
+merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", gen(m_10minsample) // persid should match to serial in ONS data
 
-egen inc_quart = cut(sumgross), group(4)
+* shouldn't have bad cases but just on case...
+keep if badcase == 0
 
-tab dinner_categories inc_quart [iw = propwt]
-
-keep serial persid dinner_categories propwt net_wgt badcase ageh respsex day
-
-save "/tmp/temp-data.dta", replace 
-* go back to long form data
-use "`where'/Data/Social Science Datatsets/Time Use 2005/processed/timeusefinal_for_archive_diary_long_v1.0.dta", clear
-
-merge m:1 serial using "/tmp/temp-data.dta"
-* drop bad cases that came in from original data
-keep if _merge == 3
-
-gen ba_hour = hh(s_faketime)
-gen ba_mins = mm(s_faketime)
-
-gen ba_hh = 0 if ba_mins < 30
-replace ba_hh = 30 if ba_mins > 29
-gen ba_sec = 0
-* sets date to 1969!
-gen s_halfhour = hms(ba_hour, ba_hh, ba_sec)
-format s_halfhour %tcHH:MM
-tab s_faketime ba_hour 
-
-* code eating - NB codes are DIFFERENT to MTUS!!
+* code eating
 gen eat = 0
-replace eat = 1 if pact == 3 | sact == 3
+replace eat = 1 if pact == 5 | sact == 6
 
-* check distribution of eating for dinner types by weight
-tab s_halfhour dinner_categories if eat == 1 [iw=propwt]
-tab s_halfhour dinner_categories if eat == 1 [iw= net_wgt]
-
-gen weekday = 0 
-replace weekday = 1 if day != 1 & day!=7
-
-tab dinner_categories weekday
+tab ba_weekday dinner_categories [iw= propwt]
+tab ba_dow dinner_categories [iw= propwt], col nof
 
 * create tables for profiles for each type
 forvalues c = -1/3 {
-	tabout pact s_halfhour if dinner_categories  == `c' & weekday == 1 using "`rpath'/dinner_categories-`c'-main-acts-by-halfhour-weekdays.txt" [iw=propwt], replace
+	qui: tabout time_slot pact if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-main-acts-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
 }
 
 log close
