@@ -44,11 +44,11 @@ local rpath "`proot'/papers/Practice Hunting-Dinner"
 * meals or snacks in other places = 6
 * food preparation, cooking = 18
 * restaurant, cafe, bar, pub = 39 (but may not be eating?!)
-* out with friends could be = 48 (but check location as might also be at home)
+* out with friends could be eating = 48 (but check location as might also be at home)
 * eloc = location
 
 local version = "v1.1"
-* version 2 - uses 10 minute sampled version of MTUS data
+* version 1.1 - uses 10 minute sampled version of MTUS data
 * version 1 - uses ONS TU 2005 data
 
 * switch graphs on/off
@@ -186,11 +186,13 @@ restore
 * this keeps the eating and cooking episodes only
 keep if eat_all == 1 | cook_all == 1
 * make sure they're in order
-sort survey persid id epnum
+sort diarypid epnum
 
 * keep badcase to be able to distinguish between bad cases and non-eaters below
-keep countrya survey swave msamp hldid persid day diarypid pid epnum s_* ba_* badcase main sec eloc eat* cook* 
+keep countrya survey swave msamp hldid persid day diarypid pid epnum age s_* ba_* badcase main sec eloc eat* cook* 
 * don't do dinner skip here as this is setting any kind of eat to 'dinner_skip'
+
+li diarypid s_* main sec eat* cook* in 1/10
 
 ************************************************
 * Define dinner - varies by survey (& year?)
@@ -224,7 +226,8 @@ foreach v of local vars {
 su *_n
 
 * now collect together the dinners
-collapse (mean) dinner* eat_all, by(diarypid) // Takes the mean value of dinner and should be a whole number as it is per diary day
+* add in a check variable
+collapse (mean) dinner* eat_all, by(diarypid age) // Takes the mean value of dinner and should be a whole number as it is per diary day
 su dinner*
 * there can be several dinners in one diary - e.g. one cooked at home and then eating out later (or vice versa)
 tab dinner_cook dinner_nocook
@@ -250,8 +253,13 @@ replace dinner_categories = -1 if no_eat == 1 // no eating at all!
 
 tab dinner_categories no_eat, mi
 
+rename age age_check
 * merge back to MTUS to get weight and 'badcase'
 merge m:1 diarypid using "`dpath'/MTUS-adult-aggregate-UK-only-wf.dta", gen(m_mtus)
+
+* check the matches were OK
+su age age_check
+pwcorr age age_check
 
 drop dinner_*dur dinner_*n dinner_out dinner_cook dinner_nocook eat_all
 
@@ -264,8 +272,8 @@ lab val dinner_categories dinner_categories
 
 tab dinner_categories m_mtus, mi
 
-tab ba_age_r dinner_categories [iw= propwt], row nof
-tab ba_dow dinner_categories
+table ba_age_r dinner_categories survey [iw= propwt]
+table ba_dow dinner_categories survey [iw= propwt]
 
 * use MTUS weight
 svyset [iw= propwt]
@@ -279,19 +287,34 @@ di "* Testing `v' and dinner_categories"
 * link to original MTUS data but in 10 min samples for easy graphing
 merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", gen(m_10minsample) // persid should match to serial in ONS data
 
-* shouldn't have bad cases but just on case...
+* shouldn't have bad cases but just in case...
 keep if badcase == 0
 
 * code eating
 gen eat = 0
-replace eat = 1 if pact == 5 | sact == 6
+replace eat = 1 if pact == 5 | sact == 5 | pact == 6 | sact == 6
+
+* code cooking
+gen cook = 0
+replace cook = 1 if pact == 18 | sact == 18
+
+* code pub (may not be eating)
+gen pub = 0
+replace pub = 1 if pact == 39 | sact == 39
 
 tab ba_weekday dinner_categories [iw= propwt]
 tab ba_dow dinner_categories [iw= propwt], col nof
 
-* create tables for profiles for each type
-forvalues c = -1/3 {
-	qui: tabout time_slot pact if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-main-acts-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
-}
+* create tables for profiles for each type for 2005
+preserve
+	keep if survey == 2005
+	forvalues c = -1/3 {
+		di "* Creating tables for dinner_category: `c'"
+		qui: tabout s_starttime cook if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-cook-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
+		qui: tabout s_starttime eat if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-eat-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
+		qui: tabout s_starttime pub if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-pub-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
+		qui: tabout s_starttime pact if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-all-main-acts-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
+	}
+restore
 
 log close
