@@ -306,15 +306,25 @@ tab ba_weekday dinner_categories [iw= propwt]
 tab ba_dow dinner_categories [iw= propwt], col nof
 
 * create tables for profiles for each type for 2005
-preserve
-	keep if survey == 2005
-	forvalues c = -1/3 {
-		di "* Creating tables for dinner_category: `c'"
-		qui: tabout s_starttime cook if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-cook-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
-		qui: tabout s_starttime eat if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-eat-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
-		qui: tabout s_starttime pub if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-pub-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
-		qui: tabout s_starttime pact if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-all-main-acts-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
-	}
-restore
+local d-1 "No-eat"
+local d0 "No-Dinner"
+local d1 "Cook-Dinner"
+local d2 "No-Cook-Dinner"
+local d3 "Dinner-Out"
+
+* run analysis just for 2005
+keep if survey == 2005
+* in case not already set
+svyset [iw=propwt]
+format s_starttime %tcHH:mm
+qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-cook-by-halfhour-weekdays-`version'.txt", c(mean cook) sum svy replace
+qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-cook-by-halfhour-weekdays-`version'.txt" [iw=propwt], c(mean eat) sum replace
+qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-cook-by-halfhour-weekdays-`version'.txt" [iw=propwt], c(mean pub) sum replace
+
+forvalues c = -1/3 {
+	di "* Creating tables for dinner_category: `c'"
+	qui: tabout s_starttime pact if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-`d`c''-all-main-acts-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
+}
+
 
 log close
