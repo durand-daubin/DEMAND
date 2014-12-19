@@ -192,7 +192,7 @@ sort diarypid epnum
 keep countrya survey swave msamp hldid persid day diarypid pid epnum age s_* ba_* badcase main sec eloc eat* cook* 
 * don't do dinner skip here as this is setting any kind of eat to 'dinner_skip'
 
-li diarypid s_* main sec eat* cook* in 1/10
+li diarypid epnum s_starttime main sec eat_all cook_all in 1/10
 
 ************************************************
 * Define dinner - varies by survey (& year?)
@@ -200,58 +200,82 @@ li diarypid s_* main sec eat* cook* in 1/10
 * should we define an end time?
 * should it vary by year, or anything else??
 gen ba_hour = hh(s_starttime)
-gen dinner = 0
-replace dinner = 1 if eat_all == 1 & ba_hour >= 17 & ba_hour <= 22
+gen dinner = 1 if eat_all == 1 & ba_hour >= 17 & ba_hour <= 22
+table ba_hour survey dinner 
+
+* which dinners have cooking at home before or during them?
+bysort diarypid: gen dinner_cook = 1 if dinner == 1 & eloc == 1 ///
+	& (cook_all[_n-1] == 1 | cook_all == 1)
+gen dinner_cook_dur = eat_duration if dinner_cook == 1
+table ba_hour survey dinner_cook
+
+* and which don't - i.e. no cooking before and no cooking during
+bysort diarypid: gen dinner_nocook = 1 if dinner == 1 & eloc == 1 ///
+	& (cook_all[_n-1] != 1 | cook_all != 1)
+gen dinner_nocook_dur = eat_duration if dinner_nocook == 1
+table ba_hour survey dinner_nocook
 
 * who goes out for dinner?
+* NB this can include cooking beforehand to take out, or cooking & eating elsewhere?
 * this is going to be underestimated as we never have eating defined as a primary or secondary activity when 
 * the primary or secondary activity is "restaurant, cafe, bar, pub" 
 * (which should really have been coded as location not activity!)
-gen dinner_out = 1 if dinner == 1 & eloc != 1
-gen dinner_out_dur = eat_duration if dinner_out == 1
 
-* so, which dinners have cooking at home before or during them?
-bysort persid: gen dinner_cook = 1 if dinner == 1 & dinner_out != 1 & (cook_all[_n-1] == 1 | cook_all == 1) & eloc == 1
-gen dinner_cook_dur = eat_duration if dinner_cook == 1
+* dinner not at home, with the episode prior being cooking at home
+bysort diarypid: gen dinner_out_cook = 1 if dinner == 1 & eloc != 1 ///
+	& (cook_all[_n-1] == 1 & eloc[_n-1] == 1)
+gen dinner_out_cook_dur = eat_duration if dinner_out_cook == 1
+table ba_hour survey dinner_out_cook
 
-* and which don't - i.e. no cooking before and no cooking during
-* inverse of the cook situation (we would need to allow for non-existing episodes before the eat otherwise)
-bysort persid: gen dinner_nocook = 1 if dinner == 1 & dinner_cook != 1 & dinner_out != 1
-gen dinner_nocook_dur = eat_duration if dinner_nocook == 1
+* dinner out with no cooking at home
+bysort diarypid: gen dinner_out_nocook = 1 if dinner == 1 & eloc != 1 ///
+	& (cook_all[_n-1] != 1 & eloc[_n-1] == 1)
+gen dinner_out_nocook_dur = eat_duration if dinner_out_cook == 1
+table ba_hour survey dinner_out_nocook
 
-local vars "dinner dinner_out dinner_cook dinner_nocook"
+local vars "dinner dinner_out_cook dinner_out_nocook dinner_cook dinner_nocook"
 foreach v of local vars {
-	bysort persid: egen `v'_n = count(`v')
+	bysort diarypid: egen `v'_n = count(`v')
 }
 su *_n
 
 * now collect together the dinners
 * add in a check variable
-collapse (mean) dinner* eat_all, by(diarypid age) // Takes the mean value of dinner and should be a whole number as it is per diary day
+collapse (mean) dinner* eat_all, by(diarypid age survey) // Takes the mean value of dinner and should be a whole number as it is per diary day
 su dinner*
 * there can be several dinners in one diary - e.g. one cooked at home and then eating out later (or vice versa)
 tab dinner_cook dinner_nocook
-tab dinner_out dinner_nocook
-tab dinner_cook dinner_out
+tab dinner_out_nocook dinner_nocook
+tab dinner_cook dinner_out_nocook
 
 * mostly they are few except for the cook/no cook
 
 gen no_eat = 0
 replace no_eat = 1 if eat_all == 0
-lab def no_eat 0 "Ate" 1 "Didn't eat at all"
+lab def no_eat 0 "Ate during the day" 1 "Didn't eat at all"
 lab val no_eat no_eat
+
+tab dinner no_eat, mi
 
 * we assume that dinner_cook takes precedence over the others so set this code last
 * ? we could investigate the sequences to take the longest duration
 
 * these are the exact results:
-gen dinner_categories = 2 if dinner_nocook == 1 // dinner without cooking
-replace dinner_categories = 3 if dinner_out == 1 // dinner out
-replace dinner_categories = 1 if dinner_cook == 1 // dinner with cooking
-replace dinner_categories = 0 if dinner == 0 // no dinner
-replace dinner_categories = -1 if no_eat == 1 // no eating at all!
+gen dinner_categories = 0 if no_eat == 1 // no eating at all!
+replace dinner_categories = 1 if dinner != 1 & no_eat != 1 // no dinner but did eat
+replace dinner_categories = 2 if dinner == 1 //temp
+* test
+tab dinner_categories, mi
+* complete dinner detail
+replace dinner_categories = 2 if dinner_nocook == 1 // dinner without cooking
+replace dinner_categories = 3 if dinner_cook == 1 // dinner with cooking
+replace dinner_categories = 4 if dinner_out_nocook == 1 // dinner out with no prior cooking
+replace dinner_categories = 5 if dinner_out_cook == 1 // dinner out with prior cooking
+lab def dinner_categories 0 "No eat" 1 "No dinner (but did eat)" 2 "Dinner without cooking" 3 "Dinner with cooking" 4 "Dinner out, no cooking" 5 "Dinner out, prior cooking"
+lab val dinner_categories dinner_categories
 
-tab dinner_categories no_eat, mi
+tab dinner_categories, mi
+tab dinner_categories survey, mi
 
 rename age age_check
 * merge back to MTUS to get weight and 'badcase'
@@ -261,16 +285,12 @@ merge m:1 diarypid using "`dpath'/MTUS-adult-aggregate-UK-only-wf.dta", gen(m_mt
 su age age_check
 pwcorr age age_check
 
-drop dinner_*dur dinner_*n dinner_out dinner_cook dinner_nocook eat_all
+drop dinner_*dur dinner_*n dinner_out* dinner_cook dinner_nocook eat_all
 
 keep if badcase == 0
 
-tab dinner m_mtus, mi
-
-lab def dinner_categories -1 "No eat" 0 "No dinner" 1 "Dinner with cooking" 2 "Dinner no cooking" 3 "Dinner out"
-lab val dinner_categories dinner_categories
-
-tab dinner_categories m_mtus, mi
+table dinner_categories survey m_mtus, mi
+* so non-matches seem to be 1995
 
 table ba_age_r dinner_categories survey [iw= propwt]
 table ba_dow dinner_categories survey [iw= propwt]
@@ -280,8 +300,8 @@ svyset [iw= propwt]
 
 local tvars "ba_dow sex ba_age_r civstat student empstat income"
 foreach v of local tvars {
-di "* Testing `v' and dinner_categories"
-	svy: tab dinner_categories `v', col
+di "* Testing `v' and dinner_categories for 2005"
+	svy: tab dinner_categories `v' if survey == 2005, col
 }
 
 * link to original MTUS data but in 10 min samples for easy graphing
@@ -302,29 +322,37 @@ replace cook = 1 if pact == 18 | sact == 18
 gen pub = 0
 replace pub = 1 if pact == 39 | sact == 39
 
-tab ba_weekday dinner_categories [iw= propwt]
-tab ba_dow dinner_categories [iw= propwt], col nof
-
-* create tables for profiles for each type for 2005
-local d-1 "No-eat"
-local d0 "No-Dinner"
-local d1 "Cook-Dinner"
-local d2 "No-Cook-Dinner"
-local d3 "Dinner-Out"
-
+****************************
 * run analysis just for 2005
+****************************
 keep if survey == 2005
+
 * in case not already set
 svyset [iw=propwt]
 format s_starttime %tcHH:mm
-qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-cook-by-halfhour-weekdays-`version'.txt", c(mean cook) sum svy replace
-qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-cook-by-halfhour-weekdays-`version'.txt" [iw=propwt], c(mean eat) sum replace
-qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-cook-by-halfhour-weekdays-`version'.txt" [iw=propwt], c(mean pub) sum replace
 
-forvalues c = -1/3 {
-	di "* Creating tables for dinner_category: `c'"
-	qui: tabout s_starttime pact if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-`d`c''-all-main-acts-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
+tab dinner_categories
+
+* cook
+qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-cook-by-halfhour-weekdays-`version'.txt", c(mean cook) format(4) sum svy replace
+* eat
+qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-eat-by-halfhour-weekdays-`version'.txt", c(mean eat) format(4) sum svy replace
+* pub
+qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-pub-by-halfhour-weekdays-`version'.txt", c(mean pub) format(4) sum svy replace
+
+* create tables for profiles for each type for 2005
+local d0 "No-eat"
+local d1 "No-Dinner"
+local d2 "No-Cook-Dinner"
+local d3 "Cook-Dinner"
+local d4 "No-Cook-Dinner-Out"
+local d5 "Cook-Dinner-Out"
+
+/* skip until we've got the categories fixed
+forvalues c = 0/5 {
+	di "* Creating tables for dinner_category: `c' (`d`c'')"
+	qui: tabout s_starttime pact if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-all-main-acts-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
 }
-
+*/
 
 log close
