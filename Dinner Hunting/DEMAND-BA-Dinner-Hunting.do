@@ -304,8 +304,13 @@ di "* Testing `v' and dinner_categories for 2005"
 	svy: tab dinner_categories `v' if survey == 2005, col
 }
 
+* check before merge
+tab dinner_categories survey, mi
+
+* there are a few undefined in each year
+
 * link to original MTUS data but in 10 min samples for easy graphing
-merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", gen(m_10minsample) // persid should match to serial in ONS data
+merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", gen(m_10minsample) // diarypid should match all
 
 * shouldn't have bad cases but just in case...
 keep if badcase == 0
@@ -318,7 +323,7 @@ replace eat = 1 if pact == 5 | sact == 5 | pact == 6 | sact == 6
 gen cook = 0
 replace cook = 1 if pact == 18 | sact == 18
 
-* code pub (may not be eating)
+* code pub etc (may not be eating)
 gen pub = 0
 replace pub = 1 if pact == 39 | sact == 39
 
@@ -331,7 +336,9 @@ keep if survey == 2005
 svyset [iw=propwt]
 format s_starttime %tcHH:mm
 
-tab dinner_categories
+tab dinner_categories, mi
+
+/* skip until we've got the categories fixed
 
 * cook
 qui: tabout s_starttime dinner_categories using "`rpath'/dinner_categories-cook-by-halfhour-weekdays-`version'.txt", c(mean cook) format(4) sum svy replace
@@ -348,7 +355,6 @@ local d3 "Cook-Dinner"
 local d4 "No-Cook-Dinner-Out"
 local d5 "Cook-Dinner-Out"
 
-/* skip until we've got the categories fixed
 forvalues c = 0/5 {
 	di "* Creating tables for dinner_category: `c' (`d`c'')"
 	qui: tabout s_starttime pact if dinner_categories  == `c' & ba_weekday == 1 using "`rpath'/dinner_categories-`c'-all-main-acts-by-halfhour-weekdays-`version'.txt" [iw=propwt], replace
