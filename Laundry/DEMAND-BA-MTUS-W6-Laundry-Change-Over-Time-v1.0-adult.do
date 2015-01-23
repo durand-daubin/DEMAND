@@ -364,6 +364,10 @@ if `do_halfhour_samples' {
 	* check
 	* tab month season
 	table s_halfhour survey season [iw=propwt], by(any_laundry_all)
+	
+	* by half hour & employment status for women
+	table s_halfhour empstat survey if sex == 2 & any_laundry_all == 1 [iw=propwt]
+	stop
 } 
 restore
 *************************
