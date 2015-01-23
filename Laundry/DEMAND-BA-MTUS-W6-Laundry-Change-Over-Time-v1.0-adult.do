@@ -289,7 +289,7 @@ if `do_halfhour_episodes' {
 
 restore
 
-*preserve
+preserve
 *************************
 * sampled data
 if `do_halfhour_samples' {
