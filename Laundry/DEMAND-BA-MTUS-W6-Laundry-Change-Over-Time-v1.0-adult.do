@@ -108,11 +108,14 @@ keep `filter'
 * 1974 = 7 day dairy
 svy: tab id survey, col count
 
+/* already done in input file
+
 * hh size recode & test
 recode hhldsize (1=1) (2=2) (3=3) (4=4) (5/max=5), gen(ba_hhsize)
 lab var ba_hhsize "Recoded household size"
 lab def ba_hhsize 1 "1" 2 "2" 3 "3" 4 "4" 5 "5+"
 lab var ba_hhsize ba_hhsize
+
 * svy: tab ba_hhsize survey, col count
 
 * main7 & main8 = paid work
@@ -144,6 +147,7 @@ tab ba_birth_cohort survey
 gen ba_weekday = 0
 replace ba_weekday = 1 if day > 1 & day < 7
 
+*/
 
 
 * keep only the vars we want to keep memory required low
@@ -285,22 +289,34 @@ if `do_halfhour_episodes' {
 
 restore
 
-preserve
+*preserve
 *************************
-* sampled data for comparison
+* sampled data
 if `do_halfhour_samples' {
 	* merge in the sampled data
-	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long.dta", ///
+	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", ///
 		gen(m_aggvars)
+	
+	* set up half-hour variable
+	gen ba_hourt = hh(s_starttime)
+	gen ba_minst = mm(s_starttime)
+	
+	gen ba_hh = 0 if ba_minst < 30
+	replace ba_hh = 30 if ba_minst > 29
+	gen ba_sec = 0
+	* sets date to 1969!
+	gen s_halfhour = hms(ba_hourt, ba_hh, ba_sec)
+	lab var s_halfhour "Episode starts during the half hour following"
+	format s_halfhour %tcHH:MM
 	
 	* define laundry
 	gen laundry_p = 0
 	lab var laundry_p "Main act = laundry (21)"
-	replace laundry_p = 1 if main == 21
+	replace laundry_p = 1 if pact == 21
 	
 	gen laundry_s = 0
 	lab var laundry_s "Secondary act = laundry (21)"
-	replace laundry_s = 1 if sec == 21
+	replace laundry_s = 1 if sact == 21
 	
 	gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
@@ -316,6 +332,9 @@ if `do_halfhour_samples' {
 	tab survey laundry_s [iw=propwt]
 	di "* all"
 	tab survey laundry_all [iw=propwt]
+	
+	* keep 1974 & 2005 only
+	keep if survey == 1974 | survey == 2005
 	
 	* collapse to add up the sampled laundry by half hour
 	* use the byvars we're interested in (or could re-merge with aggregated file)
@@ -366,8 +385,11 @@ if `do_halfhour_samples' {
 	table s_halfhour survey season [iw=propwt], by(any_laundry_all)
 	
 	* by half hour & employment status for women
-	table s_halfhour empstat survey if sex == 2 & any_laundry_all == 1 [iw=propwt]
-	stop
+	table s_halfhour empstat survey if sex == 2 [iw=propwt], by(any_laundry_all)
+	
+	*repeat by day for 2005
+	table s_halfhour empstat day if survey == 2005 & sex == 2 [iw=propwt], by(any_laundry_all)
+
 } 
 restore
 *************************
