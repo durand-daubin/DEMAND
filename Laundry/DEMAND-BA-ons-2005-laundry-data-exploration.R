@@ -1,18 +1,22 @@
 # Header ###########################################
-# ONS Time Use 2005 data
+# Time Use data analysis for 'Laundry' paper  
 #
-# Explorations using R
+# Use ONS UK Time Use Survey 2005 to examine:
+# - distributions of laundry in 2005
 #
-# Script for use as part of: The Social Science of Energy Storage (PSY6018)
+# Data source: http://discover.ukdataservice.ac.uk/catalogue/?sn=5592
+# Data already in long format (but 10 minute slots)
 #
-# Sheffield/Southampton Centre for Doctoral Training in Energy Storage and its Applications
-# http://www.southampton.ac.uk/engineering/postgraduate/research_degrees/energy_storage_cdt.page
+# This work was funded by RCUK through the End User Energy Demand Centres Programme via the
+# "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1)
 #
 # Copyright (C) 2014  University of Southampton
 # 
 # Author: Ben Anderson (b.anderson@soton.ac.uk, @dataknut, https://github.com/dataknut) 
 # [Energy & Climate Change, Faculty of Engineering & Environment, University of Southampton]
 # 
+# The MIT License (MIT) applies - see https://github.com/dataknut/
+#
 # end header
 
 # To do: -----------------------------------------------------------------
@@ -26,25 +30,19 @@ rm(list = ls())
 starttime <- proc.time()
 
 # load required packages
-packagel <- c("foreign","ggplot2","plyr")
+# foreign - not needed if we are loading csv files
+# NB: this will fail if you do not have internet access
+# on OS X at least it asks if you want to re-start R first, click no
+packagel <- c("ggplot2","plyr")
+install.packages(packagel)
 lapply(packagel, require, character.only = T)
 
-# if this breaks/fails because they haven't been installed use
-#install.packages("foreign")
-#install.packages("ggplot2")
-#install.packages("plyr")
-# or you can use this line will load all of them from the list above
-# NB - this will ask to restart R, click no
-#install.packages(packagel)
-
 # path to data & results
-# You will need to have downloaded the data from Dropbox/MOLE
-# You will need to change these!!
 
 # where's the data?
-dpath <- "/Users/ben/Documents/Dropbox/energy-storage-dtc/data/"
+dpath <- "/Users/ben/Documents/Work/Data/Social Science Datatsets/Time Use 2005/processed/"
 # where do you want the results to go?
-rpath <- "/Users/ben/Documents/Work/Projects/Sheffield-UoS-Energy-Storage-CDT/results/"
+rpath <- "/Users/ben/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/ONS TU 2005"
 
 # time axis defnition
 # can't get this to work!
@@ -54,7 +52,7 @@ rpath <- "/Users/ben/Documents/Work/Projects/Sheffield-UoS-Energy-Storage-CDT/re
 # Time use data in long form - this has data in 10 minute time 'slots'
 # It also has a few survey variables attached to each time use slot
 
-tu2005data <- read.csv(paste0(dpath, "UK-2005-TU-merged-long-reduced.csv"))
+tu2005data <- read.csv(paste0(dpath,"UK-2005-TU-merged-long-reduced.csv"))
 
 # Now stop to check what's in it and make sure we understand the format!
 head(tu2005data)
@@ -73,6 +71,13 @@ tu2005data$t_month[tu2005data$t_month == 6] <- "June"
 tu2005data$t_month[tu2005data$t_month == 9] <- "September"
 tu2005data$t_month[tu2005data$t_month == 11] <- "November"
 
+# set the order of the month factor
+tu2005data$t_month <- factor(tu2005data$t_month, 
+  levels = c("February","June","September","November"))
+
+# re-check
+table("Month"= tu2005data$t_month)
+
 # check the days
 table("Days"= tu2005data$s_dow)
 
@@ -83,29 +88,6 @@ tu2005data$s_dow <- factor(tu2005data$s_dow,
 
 # recheck
 table("Days"= tu2005data$s_dow)
-
-# Test: Sleep -----------------------------------------------------------------
-tu2005data$sleep_all <- 0
-# set to 1 for any sleep (primary or secondary act)
-tu2005data$sleep_all[tu2005data$pact == "sleeping" | tu2005data$sact == "sleeping"] <- 1 
-
-# create the summary table for sleep
-sleeping <- ddply(tu2005data, c("s_dow", "s_halfhour"), summarise, pc=100*mean(sleep_all))
-
-ylabt <- "sleeping"
-# create the plot as an object
-sleep_plot <- ggplot(sleeping, aes(x=s_halfhour, y=pc, colour=s_dow, group=s_dow)) + geom_line()
-# draw the plot with some options to make it look pretty
-sleep_plot + xlab("Time of Day") + 
-  ylab(paste("% reporting", ylabt)) + 
-  labs(colour="Day of the week") +
-  scale_x_discrete(breaks=c("00:00","04:00","08:00","12:00","16:00","20:00","23:30"),
-                   labels=c("00:00","04:00","08:00","12:00","16:00","20:00","23:30")) +
-  theme(axis.text.x = element_text(angle=90, hjust=1, vjust=1))
-# does that look about right?
-
-# save the plot
-ggsave(paste0(rpath,"sleep_tod_plot.pdf"), width=12, height=8, unit="cm", dpi=300) 
 
 # Test: all acts -----------------------------------------------------------------
 # add a dummy variable we can count
@@ -135,10 +117,42 @@ all_acts_stplot + xlab("Time of Day") + ylab("N reporting") +
 # save the plot
 ggsave(paste0(rpath,"all_acts_tod_stackedplot.pdf"), width=12, height=8, unit="cm", dpi=300) 
 
-# What we really want to do is to create a new column with primary acts where travel is collapsed to 1
+# What we really want to do is to create a new column with primary acts where:
+# - all travel is collapsed to 1 code
+# - the '/' are removed to make graph saving easier later
 # Something like:
-#tu2005data$pact_n <- tu2005data$pact
-#tu2005data$pact_n[charmatch("travel", tu2005data$pact ) !=1] <- "travel"
+tu2005data$pact_c <- as.character(tu2005data$pact)
+tu2005data$pact_nc <- gsub("/", " or ", tu2005data$pact_c)
+# find the travel
+tu2005data$pact_t <- grepl("travel", tu2005data$pact_c)
+
+tu2005data$sact_c <- as.character(tu2005data$sact)
+tu2005data$sact_nc <- gsub("/", " or ", tu2005data$sact_c)
+# find the travel
+tu2005data$sact_t <- grepl("travel", tu2005data$sact_c)
+
+# set travel
+tu2005data$pact_nc[tu2005data$pact_t == TRUE] <- "travel"
+tu2005data$sact_nc[tu2005data$sact_t == TRUE] <- "travel"
+
+# convert back to factors
+tu2005data$pact_nf <- as.factor(tu2005data$pact_nc)
+tu2005data$sact_nf <- as.factor(tu2005data$sact_nc)
+
+table(tu2005data$pact_nf)
+
+# now re-try the stacked chart - there are fewer categories (but still a lot!)
+all_acts_nf <- ddply(tu2005data, c("s_starttime","pact_nf"), summarise, count=sum(count))
+all_acts_stplotn <- ggplot(all_acts_nf, aes(x=s_starttime, y=count, fill=pact_nf, group=pact_nf)) + geom_area()
+all_acts_stplotn + xlab("Time of Day") + ylab("N reporting") + 
+  labs(fill="Activity") +
+  scale_x_discrete(breaks=c("00:00","04:00","08:00","12:00","16:00","20:00","23:30"),
+                   labels=c("00:00","04:00","08:00","12:00","16:00","20:00","23:30")) +
+  theme(axis.text.x = element_text(angle=90, hjust=1, vjust=1)) +
+  theme(legend.position="right")
+# well that worked slightly better but it's still fairly illegible, further grouping required!!
+# save the plot
+ggsave(paste0(rpath,"all_acts_nf_tod_stackedplot.pdf"), width=12, height=8, unit="cm", dpi=300) 
 
 # Practices: Laundry -----------------------------------------------------------------
 # Interesting of itself but we also want to try to compare the results with the HES data
@@ -152,7 +166,15 @@ tu2005data$laundry_all[tu2005data$pact == "washing clothes" &
                          tu2005data$lact != "elsewhere"] <- 1 
 
 # make the table
-laundry <- ddply(tu2005data, c("s_dow", "s_halfhour"), summarise, pc=100*mean(laundry_all))
+laundry <- ddply(tu2005data, c("s_dow", "s_halfhour"), summarise, 
+                 n=sum(count),
+                 pc=mean(laundry_all),
+                 sd=sd(laundry_all))
+# CI for propn
+# +/- (1.96 ∗ sqrt(p∗(1−p)/n))
+laundry$se <- sqrt(laundry$pc*(1-laundry$pc)/laundry$n)
+laundry$ci <- 1.96 * laundry$se
+  
 # plot it
 laundry_plot <- ggplot(laundry, aes(x=s_halfhour, y=pc, colour=s_dow, group=s_dow)) + geom_line()
 laundry_plot + xlab("Time of Day") + 
@@ -160,9 +182,11 @@ laundry_plot + xlab("Time of Day") +
   labs(colour="Day of the week") +
   scale_x_discrete(breaks=c("00:00","04:00","08:00","12:00","16:00","20:00","23:30"),
                    labels=c("00:00","04:00","08:00","12:00","16:00","20:00","23:30")) +
-  theme(axis.text.x = element_text(angle=90, hjust=1, vjust=1))
+  theme(axis.text.x = element_text(angle=90, hjust=1, vjust=1)) +
+  facet_wrap( ~ s_dow) +
+  geom_errorbar(aes(ymin=pc-ci, ymax=pc+ci), width=.2)
 # save the plot
-ggsave(paste0(rpath,"laundry_tod_dow_plot.pdf"), width=12, height=8, unit="cm", dpi=300)
+ggsave(paste0(rpath,"laundry_ci_tod_dow_plot.pdf"), width=12, height=8, unit="cm", dpi=300)
 
 # try a contour plot/heat map to make day of the week easier to see
 laundry_hmplot <- ggplot(laundry, aes(x=s_halfhour, y=s_dow, fill=pc))
@@ -189,7 +213,15 @@ laundry_plot + xlab("Time of Day") +
 ggsave(paste0(rpath,"laundry_tod_by_age_plot.pdf"), width=12, height=8, unit="cm", dpi=300)
 
 # working status
-laundry_wrk <- ddply(tu2005data, c("wrking", "s_halfhour", "s_dow"), summarise, pc=100*mean(laundry_all))
+laundry_wrk <- ddply(tu2005data, c("wrking", "s_halfhour", "s_dow"), summarise, 
+                     n=sum(count),
+                     pc=mean(laundry_all),
+                     sd=sd(laundry_all))
+# CI for propn
+# +/- (1.96 ∗ sqrt(p∗(1−p)/n))
+laundry_wrk$se <- sqrt(laundry$pc*(1-laundry$pc)/laundry$n)
+laundry_wrk$ci <- 1.96 * laundry$se
+
 laundry_plot <- ggplot(laundry_wrk, aes(x=s_halfhour, y=pc, colour=wrking, group=wrking)) + geom_line()
 laundry_plot + xlab("Time of Day") + 
   ylab(paste("% reporting", ylabt)) + 
@@ -197,6 +229,7 @@ laundry_plot + xlab("Time of Day") +
   scale_x_discrete(breaks=c("00:00","04:00","08:00","12:00","16:00","20:00","23:30"),
                    labels=c("00:00","04:00","08:00","12:00","16:00","20:00","23:30")) +
   theme(axis.text.x = element_text(angle=90, hjust=1, vjust=1)) +
+  geom_errorbar(aes(ymin=pc-ci, ymax=pc+ci), width=.2) +
   facet_wrap( ~ s_dow) +
   theme(legend.position=c(0.5,0.2))
 # save the plot
