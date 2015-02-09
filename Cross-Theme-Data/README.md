@@ -1,7 +1,9 @@
-DEMAND: Dynamics of Energy, Mobility and Demand
+DEMAND - Cross-Theme Data
 ==================
 
 Various scripts used to analyse data on domestic energy use & social practices as part of the DEMAND centre.
+
+This work involves reviewing and analysing data in support of a number of DEMAND themes.
 
 Unless otherwise indicated this work was funded by RCUK through the End User Energy Demand Centres Programme via the "DEMAND: Dynamics of Energy, Mobility and Demand" Centre:
  * http://www.demand.ac.uk
