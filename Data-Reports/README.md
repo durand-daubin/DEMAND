@@ -1,4 +1,4 @@
-DEMAND - Cross-Theme Data
+DEMAND - Data Reports
 ==================
 
 Various scripts used to analyse data on domestic energy use & social practices as part of the DEMAND centre.
