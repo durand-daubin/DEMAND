@@ -3,7 +3,7 @@ DEMAND Theme 1
 
 Various scripts used to analyse data on domestic energy use & social practices as part of the DEMAND centre
 
-Theme 1 is especially interested in using time use data to analyse energy using 'practices'.
+Theme 1 is especially interested in using time use data to analyse energy using 'practices'. For a selection of results see http://www.demand.ac.uk/tag/theme-1/
 
 Unless otherwise indicated this work was funded by RCUK through the End User Energy Demand Centres Programme via the "DEMAND: Dynamics of Energy, Mobility and Demand" Centre:
  * http://www.demand.ac.uk
