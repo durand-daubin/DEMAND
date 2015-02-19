@@ -5,7 +5,7 @@ Various scripts used to analyse data on domestic energy use & social practices a
 
 Unless otherwise indicated this work was funded by RCUK through the End User Energy Demand Centres Programme via the "DEMAND: Dynamics of Energy, Mobility and Demand" Centre:
  * http://www.demand.ac.uk
- * http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1
+ * http://gtr.rcuk.ac.uk/project/0B657D54-247D-4AD6-9858-64E411D3D06C
 
 ###Terms of Use
 GPL: V2 - http://choosealicense.com/licenses/gpl-2.0/
