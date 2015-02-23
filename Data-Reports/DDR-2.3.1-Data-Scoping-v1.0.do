@@ -3,7 +3,7 @@
 * - focus on leisure and longer duration/special travel
 
 * This work was funded by RCUK through the End User Energy Demand Centres Programme via the
-* "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1)
+* "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, http://gtr.rcuk.ac.uk/project/0B657D54-247D-4AD6-9858-64E411D3D06C)
 
 /*   
 
@@ -28,7 +28,7 @@ GNU General Public License for more details.
 
 local where = "/Users/ben/Documents/Work"local droot = "`where'/Data/Social Science Datatsets/"
 
-local proot "`where'/Projects/RCUK-DEMAND/Data Consultancy/Project 2.3 older people mobile lives"
+local proot "`where'/Projects/RCUK-DEMAND/Data Reports/Project 2.3 older people mobile lives"
 
 local logd = "`proot'/results"
 
@@ -46,16 +46,38 @@ set more off
 
 use "`droot'/MTUS/World 6/processed/MTUS-adult-aggregate-wf.dta", clear
 
+* there will be multiple diary days in some surveys
+duplicates report pid
+
+duplicates drop pid, force
+
 tab countrya
 
-tab year countrya
+tab survey countrya
 
 * UK = 37
-* how many 'older people' in each survey
-tab year ba_age_r if countrya == 37
+* how many 'older people' in each survey?
+* NB: this will be duplicated by
+tab survey ba_age_r if countrya == 37
 
 * MTUS episode data to look at location etc
-use "`droot'/MTUS/World 6/processed/MTUS-adult-aggregate-wf.dta", clear
+* UK only
+use "`droot'/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf.dta", clear
 
+* descriptives
+tab main eloc
+tab eloc survey
+tab mtrav survey
+tab main eloc
+tab mtrav
+tabstat time, by(mtrav) s(mean n min max p5 p50 p95)
+li day month year id s_starttime main sec eloc mtrav in 1/5
+
+use "`droot'/Time Use 2000/processed/diary_data_8_long_v1.0.dta"
+
+* more detailed time use activities
+tab pact
+* much more codes for location
+tab wher
 
 log close
