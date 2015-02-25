@@ -81,8 +81,12 @@ c73312w         double %10.0g                 air-fares (international) - intern
 c_age 
 */
 
+local all_vars "a325 a328 b480 b481 c96111c c96111w c96112c c96112w cc5413 cc5413c cc5413t c73311 c73311c c73311t c73311w c73312 c73312c c73312t c73312w"
+
 * check availability of variables over time
-tab survey_year
+tabstat `all_vars', by(survey_year)
+
+tab c_age
 
 * survey responses
 * package holidays
@@ -90,7 +94,7 @@ tabstat a325 /// purchase via internet - package holidays
 	a328 /// purchase via internet - flights from uk
 	b480 /// holiday package within united kingdom
 	b481 /// holiday package outside united kingdom
-	, by(survey_year) 
+	if c_age > 4, by(survey_year) 
 
 * diary responses - holidays
 tabstat c96111* /// package holidays in the uk, accommodation
