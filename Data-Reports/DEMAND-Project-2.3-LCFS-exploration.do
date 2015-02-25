@@ -100,12 +100,12 @@ tabstat a325 /// purchase via internet - package holidays
 tabstat c96111* /// package holidays in the uk, accommodation
 	c96112* /// package holidays abroad, accommodation
 	cc5413* /// non-package holiday, other travel insurance
-	, by(survey_year)
+	if c_age > 4, by(survey_year)
 
 * diary responses - air fares
 tabstat c73311* /// air fares (within uk)
 	c73312* /// air fares (international)
-	, by(survey_year)
+	if c_age > 4, by(survey_year)
 
 svyset [iw=weighta]
 
@@ -121,7 +121,7 @@ tabout survey_year c_age [iw=weighta] using "`logd'/cc5413t_holiday_non_package_
 	cells(mean cc5413t se) format(3) sum svy replace //  non-package holiday, other travel insurance
 
 * switch to looking at % who reported expenditure on these items (not value of expenditure)
-local zvars "b481 c73312t cc5413t"
+local zvars "a325 a328 b480 b481 cc5413t c73311t c73312t "
 
 foreach v of local zvars {
 	di "* % zero analysis: `v'"
