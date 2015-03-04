@@ -229,7 +229,7 @@ tab a_agegr10_dv
 * NTS
 * https://www.esds.ac.uk/findingData/snDescription.asp?sn=5340
 * first wave
-* analsyed using NESTAR - what a fabtastic tool for avoiding data downlaods!!
+* analsyed using NESTAR - what a fabtastic tool for avoiding data downloads!!
 * http://nesstar.ukdataservice.ac.uk/
 
 ****************************
