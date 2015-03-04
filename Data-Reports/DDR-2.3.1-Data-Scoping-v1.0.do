@@ -230,7 +230,7 @@ tab a_agegr10_dv
 * https://www.esds.ac.uk/findingData/snDescription.asp?sn=5340
 * first wave
 * analsyed using NESTAR - what a fabtastic tool for avoiding data downlaods!!
-* http://nesstar.ukdataservice.ac.uk/webview/index.jsp?v=2&mode=documentation&submode=abstract&study=http://nesstar.ukdataservice.ac.uk:80/obj/fStudy/5340&top=yes
+* http://nesstar.ukdataservice.ac.uk/
 
 ****************************
 * ELSA
