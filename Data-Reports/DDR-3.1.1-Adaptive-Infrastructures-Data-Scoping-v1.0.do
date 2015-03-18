@@ -131,6 +131,7 @@ a101            byte   %8.0g       a101       telephone and\or mobile in househo
 a103            byte   %8.0g       a103       gas electric supplied to accomodation
 a108            byte   %8.0g       a108       washing machine in household
 */
+local vars "a101 a103 a108"
 tabstat a101 a103 a108, by(survey_year) c(v)
 
 /*
@@ -142,6 +143,7 @@ a154            byte   %8.0g       a154       central heating by solid fuel and 
 a155            byte   %8.0g       a155       central heating by calor gas
 a156            byte   %8.0g       a156       other gas central heating
 */
+local vars "`vars' a150 a151 a152 a153 a154 a155 a156"
 tabstat a150 a151 a152 a153 a154 a155 a156, by(survey_year) c(v)
 
 /*
@@ -150,6 +152,7 @@ a167            byte   %8.0g       a167       tumble dryer in household
 a168            byte   %8.0g       a168       microwave oven in household
 a169            byte   %8.0g       a169       dishwasher in household
 */
+local vars "`vars' a164 a167 a168 a169"
 tabstat a164 a167 a168 a169, by(survey_year) c(v)
 
 /*
@@ -163,6 +166,7 @@ a193            byte   %8.0g       a193       internet access via games console
 a194            byte   %8.0g       a194       internet access via other method
 a195            byte   %8.0g       a195       www access via home computer (not after 2002-2003)
 */
+local vars "`vars' a170 a171 a172 a190 a191 a192 a193 a194 a195"
 tabstat a170 a171 a172 a190 a191 a192 a193 a194 a195, by(survey_year) c(v)
 
 /*
@@ -175,6 +179,7 @@ a1661           byte   %8.0g       a1661      home computer in household
 a1701           byte   %8.0g       a1701      dvd player in household (from 2002-2003)
 a1711           byte   %8.0g       LABA       Television in household (replaces a171)
 */
+local vars "`vars' a1641 a1642 a1643 a1644 a1645 a1661 a1701 a1711"
 tabstat a1641 a1642 a1643 a1644 a1645 a1661 a1701 a1711, by(survey_year) c(v)
 
 * purchases of all of the above via diary
@@ -187,7 +192,9 @@ ck1313          double %9.0g                  central heating installation (diy)
 ck1315t         double %9.0g                  purchase of materials for capital
                                                 improvements
 */
+local vars "`vars' c53131t c53132t c53141t ck1313 ck1315t"
 tabstat c53131t c53132t c53141t ck1313 ck1315t, by(survey_year) c(v)
 
+desc `vars'
 
 log close
