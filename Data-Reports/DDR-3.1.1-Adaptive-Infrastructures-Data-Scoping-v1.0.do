@@ -1,6 +1,7 @@
 **************************************************************
 * Data Exploration for DEMAND Theme 3.1 - adaptive infrastructures
-* - focus on Stocksbridge & Stevenage
+* - focus on Stocksbridge & Stevenage (case studies)
+* - trends in take-up of gas & electricity appliances
 
 * This work was funded by RCUK through the End User Energy Demand Centres Programme via the
 * "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, http://gtr.rcuk.ac.uk/project/0B657D54-247D-4AD6-9858-64E411D3D06C)
@@ -27,8 +28,9 @@ GNU General Public License for more details.
 */
 
 local where = "/Users/ben/Documents/Work"local proot "`where'/Projects/RCUK-DEMAND/Data Reports/Project 3.1 Adapting Infrastructure"
-local gisroot "`where'/Data/GIS data/UK Census/"
+local gisroot "`where'/Data/GIS data/UK Census"
 local croot = "`where'/Data/Social Science Datatsets/UK Census"
+local lcfsroot = "`where'/Data/Social Science Datatsets/Expenditure and Food Survey/processed"
 
 local logd = "`proot'/results"
 
@@ -117,5 +119,75 @@ gen pc_central_heat = n_central_heat/n_hh_spaces
 gen pc_no_central_heat = n_no_central_heat/n_hh_spaces
 lab val case_studies case_studies
 tabstat n_hh_spaces pc_central_heat pc_no_central_heat, by(case_studies) s(sum mean n min max) format(%9.0f)
+
+********************************************
+* trends in take-up of gas & electricuty appliances - regional if possible
+* test LC&FS
+
+use "`lcfsroot'/EFS-2001-2010-extract-BA.dta", clear
+
+/*
+a101            byte   %8.0g       a101       telephone and\or mobile in household
+a103            byte   %8.0g       a103       gas electric supplied to accomodation
+a108            byte   %8.0g       a108       washing machine in household
+*/
+tabstat a101 a103 a108, by(survey_year) c(v)
+
+/*
+a150            byte   %8.0g       a150       central heating by electricity
+a151            byte   %8.0g       a151       central heating by gas
+a152            byte   %8.0g       a152       central heating by oil
+a153            byte   %8.0g       a153       central heating by solid fuel
+a154            byte   %8.0g       a154       central heating by solid fuel and oil
+a155            byte   %8.0g       a155       central heating by calor gas
+a156            byte   %8.0g       a156       other gas central heating
+*/
+tabstat a150 a151 a152 a153 a154 a155 a156, by(survey_year) c(v)
+
+/*
+a164            byte   %8.0g       a164       fridge-freezer or deep freezer in hhold
+a167            byte   %8.0g       a167       tumble dryer in household
+a168            byte   %8.0g       a168       microwave oven in household
+a169            byte   %8.0g       a169       dishwasher in household
+*/
+tabstat a164 a167 a168 a169, by(survey_year) c(v)
+
+/*
+a170            byte   %8.0g       a170       compact disc player in household
+a171            byte   %8.0g       a171       tv set in household (not after 2009)
+a172            byte   %8.0g       a172       internet connection in household
+a190            byte   %8.0g       a190       internet access via home computer
+a191            byte   %8.0g       a191       internet access via digital tv
+a192            byte   %8.0g       a192       internet access via mobile phone
+a193            byte   %8.0g       a193       internet access via games console
+a194            byte   %8.0g       a194       internet access via other method
+a195            byte   %8.0g       a195       www access via home computer (not after 2002-2003)
+*/
+tabstat a170 a171 a172 a190 a191 a192 a193 a194 a195, by(survey_year) c(v)
+
+/*
+a1641           byte   %8.0g       a1641      satellite receiver in household
+a1642           byte   %8.0g       a1642      cable receiver in household
+a1643           byte   %8.0g       a1643      satellite receiver in household
+a1644           byte   %10.0g                 TV connection by Broadband (from 2003-2004)
+a1645           byte   %10.0g                 TV received by Aerial (from 2003-2004)
+a1661           byte   %8.0g       a1661      home computer in household
+a1701           byte   %8.0g       a1701      dvd player in household (from 2002-2003)
+a1711           byte   %8.0g       LABA       Television in household (replaces a171)
+*/
+tabstat a1641 a1642 a1643 a1644 a1645 a1661 a1701 a1711, by(survey_year) c(v)
+
+* purchases of all of the above via diary
+/*
+c53131t         double %9.0g                  gas cookers
+c53132t         double %9.0g                  electric cookers, combined gas electric
+
+c53141t         double %9.0g                  heaters, air conditioners, shower units
+ck1313          double %9.0g                  central heating installation (diy)
+ck1315t         double %9.0g                  purchase of materials for capital
+                                                improvements
+*/
+tabstat c53131t c53132t c53141t ck1313 ck1315t, by(survey_year) c(v)
+
 
 log close
