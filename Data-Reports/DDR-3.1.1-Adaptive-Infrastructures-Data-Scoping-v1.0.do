@@ -30,6 +30,7 @@ GNU General Public License for more details.
 local where = "/Users/ben/Documents/Work"local proot "`where'/Projects/RCUK-DEMAND/Data Reports/Project 3.1 Adapting Infrastructure"
 local gisroot "`where'/Data/GIS data/UK Census"
 local croot = "`where'/Data/Social Science Datatsets/UK Census"
+local imdroot "`where'/Data/Social Science Datatsets/Indices of Deprivation"
 local lcfsroot = "`where'/Data/Social Science Datatsets/Expenditure and Food Survey/processed"
 
 local logd = "`proot'/results"
@@ -89,7 +90,7 @@ preserve
 	gen pc_no_central_heat = n_no_central_heat/n_hh_spaces
 	lab val case_studies case_studies
 	tabstat n_hh_spaces pc_central_heat pc_no_central_heat, by(case_studies) s(sum mean n min max) format(%9.0f)
-	
+	save "`where'/Projects/RCUK-DEMAND/Data Reports/Project 3.1 Adapting Infrastructure/data/2011_LSOA_LUT.dta", replace
 	* Now MSOA level
 	collapse (sum) count n* (mean) case_studies, ///
 		by(msoa11cd msoa11nm parncp11cd parncp11nm lad11cd lad11nm)
@@ -119,6 +120,20 @@ gen pc_central_heat = n_central_heat/n_hh_spaces
 gen pc_no_central_heat = n_no_central_heat/n_hh_spaces
 lab val case_studies case_studies
 tabstat n_hh_spaces pc_central_heat pc_no_central_heat, by(case_studies) s(sum mean n min max) format(%9.0f)
+
+******************************
+* Test NAPTAN
+
+******************************
+* Test IMD access to services scores over time
+use "`imdroot'/English ID 2004/Sub-Domains.dta", clear
+merge 1:1 zonecode using "`imdroot'/English ID 2007/Sub-Domains of the Access Domain IMD 2007.dta", ///
+	gen(m_imd2007) keepusing(imd2007_geog*)
+merge 1:1 zonecode using "`imdroot'/English ID 2010/ID-2010-indices-domains.dta", ///
+	gen(m_imd2010) keepusing(imd2010_geog*)
+
+
+stop
 
 ********************************************
 * trends in take-up of gas & electricuty appliances - regional if possible
