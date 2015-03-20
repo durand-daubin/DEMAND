@@ -131,9 +131,12 @@ merge 1:1 zonecode using "`imdroot'/English ID 2007/Sub-Domains of the Access Do
 	gen(m_imd2007) keepusing(imd2007_geog*)
 merge 1:1 zonecode using "`imdroot'/English ID 2010/ID-2010-indices-domains.dta", ///
 	gen(m_imd2010) keepusing(imd2010_geog*)
+graph matrix  imd2004_geog_barriers_score imd2007_geog_barriers_score imd2010_geog_barriers_score if laname == "Stevenage", half
 
+su imd2004_geog_barriers_score imd2007_geog_barriers_score imd2010_geog_barriers_score if laname == "Stevenage"
 
-stop
+* well they correlate but why are the 2010 score different in magnitude?
+
 
 ********************************************
 * trends in take-up of gas & electricuty appliances - regional if possible
