@@ -1,5 +1,6 @@
 **************************************************************
 * Data Exploration for DEMAND Theme 3.1 - adaptive infrastructures
+* - http://www.demand.ac.uk/research-themes/theme-3-managing-infrastructures-of-supply-and-demand/3-1-adapting-infrastructure-for-a-lower-carbon-society/
 * - focus on Stocksbridge & Stevenage (case studies)
 * - trends in take-up of gas & electricity appliances
 
@@ -41,7 +42,7 @@ local version "1.0"
 
 capture log close
 
-log using "`logd'/DDR-3.1.1-Data-Scoping-v`version'.smcl", replace
+log using "`logd'/DDR-3.1.1-Adapting-Infrastructures-Data-Scoping-v`version'.smcl", replace
 
 set more off
 
