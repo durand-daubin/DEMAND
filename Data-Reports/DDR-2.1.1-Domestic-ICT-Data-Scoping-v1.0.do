@@ -27,7 +27,7 @@ GNU General Public License for more details.
 
 */
 
-local where = "/Users/ben/Documents/Work"local droot = "`where'/Data/Social Science Datatsets/"
+local where = "/Users/ben/Documents/Work"local droot = "`where'/Data/Social Science Datatsets"
 
 local proot "`where'/Projects/RCUK-DEMAND/Data Reports/Project 2.1 Domestic ICT"
 
@@ -68,36 +68,66 @@ use "`droot'/MTUS/World 6/MTUS-adult-episode.dta", clear
 
 * descriptives
 * change values < 1 (i.e. missing) to missing
-local tvars "alone child sppart oad eloc"
+local tvars "alone eloc"
 mvdecode `tvars', mv(-9/-1)
+
+* this is quite slow
 foreach v of local tvars {
 	di "Testing `v'"
 	table survey country, c(mean `v')
 }
-li day month year id s_starttime main sec eloc alone in 1/5
+li day month year id start epnum main sec eloc alone in 1/5
+
+* get list of main acts
+lab li MAIN
+lab li SEC
+
+tab main year if countrya == 37
 
 ****************************
 * ONS TU 2000
 * https://www.esds.ac.uk/findingData/snDescription.asp?sn=4504
-use "`droot'/Time Use 2000/processed/diary_data_8_long_v1.0.dta"
+use "`droot'/UK Time Use 2000/processed/diary_data_8_long_v1.0.dta", clear
 
 * more detailed time use activities
-tab pact
-* much more codes for location
-tab wher
+* trick to get tabstat to give us full results even if codes missing for secondary acts
+gen pact_count = 1 if pact !=.
+gen sact_count = 1 if pact !=.
 
-* episodes file - but still in wide format!
-* use "`droot'/Time Use 2000/processed/diary_data_8_long_v1.0.dta"
+label li act1_144
 
+table pact, c(sum pact_count sum sact_count)
+
+****************************
+* Home OnLine 1999-2001
+* http://discover.ukdataservice.ac.uk/catalogue/?sn=4607
+
+* not an episode file
+use "`droot'/BT Digital Living/HoL Survey/Corrected diary files/afinal_slots_corr.dta", clear
+desc awpri*
+tabstat awpri*, s(N mean) c(s)
+desc awsec*
+tabstat awsec*, s(N mean) c(s)
+
+****************************
+* e-Living 2002
+* http://discover.ukdataservice.ac.uk/catalogue/?sn=4728 
+use "`droot'/eLiving/stata6/eliv-w2-converted-time-use-slots.dta", clear
+
+desc bact*r
+tabstat bact*r, by(bcountry)
 ****************************
 * ONS TU 2005
 * https://www.esds.ac.uk/findingData/snDescription.asp?sn=5592
-use "`droot'/Time Use 2005/processed/timeusefinal_for_archive_diary_long_v2.0.dta"
+use "`droot'/UK Time Use 2005/processed/timeusefinal_for_archive_diary_long_v2.0.dta"
 
-tab pact 
-tab lact
+gen pact_count = 1 if pact !=.
+gen sact_count = 1 if pact !=.
+
+table pact, c(sum pact_count sum sact_count)
 
 label li pact144
+
 
 ****************************
 * EFS/LCFS
