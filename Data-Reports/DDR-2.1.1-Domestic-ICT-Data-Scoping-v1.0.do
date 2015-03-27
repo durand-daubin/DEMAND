@@ -73,16 +73,18 @@ use "$droot/MTUS/World 6/MTUS-adult-episode.dta", clear
 local tvars "alone eloc"
 mvdecode `tvars', mv(-9/-1)
 
-gen alone_count = 0
-replace alone_count = 1 if alone_count != .
+gen alone_count = 0 if alone == .
+replace alone_count = 1 if alone != .
+tab alone alone_count, mi
 
-gen eloc_count = 0
-replace eloc_count = 1 if alone_count != .
+gen eloc_count = 0 if eloc == .
+replace eloc_count = 1 if eloc != .
+tab eloc eloc_count, mi
 
 * this is quite slow
 local tvars "alone_count eloc_count"
 foreach v of local tvars {
-	di "Testing `v'"
+	di "Testing if we know about `v'"
 	table survey country, c(mean `v')
 }
 
@@ -220,6 +222,7 @@ merge m:1 temperature_id using "$droot/EFUS-2011/March 2014/stata11/temperature/
 merge m:1 temperature_id using "$droot/EFUS-2011/March 2014/stata11/temperature/temperature_meter_reading_weight.dta", nogen
 merge m:1 temperature_id using "$droot/EFUS-2011/March 2014/stata11/temperature/temperature_weight.dta", nogen
 
+save "$droot/EFUS-2011/processed/efus-2011-m2014-merged.dta", replace
 
 gen monitor_sample = 0
 replace monitor_sample = 1 if emonitor_id != ""
