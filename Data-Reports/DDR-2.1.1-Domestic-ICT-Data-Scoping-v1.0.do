@@ -192,37 +192,34 @@ outsheet using "`proot'/LCFS-internet-COICOP-all-years.csv", comma replace
 * http://discover.ukdataservice.ac.uk/catalogue/?sn=7471
 * March 2014 version
 * really should just match all of them together - won;t make a very big file!
-use "$droot/EFUS-2011/March 2014/stata11/interview/cooking_and_appliances.dta", clear
-
-lookfor tv
-
-tab q103
+use "$droot/EFUS-2011/November 2014/stata11/matching_file/matching_file.dta", clear
 
 * quite amazingly this data does not seem to have any of the EHS variables attached to it (in this version)
 * so we have virtually no data on the occupants at all
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/matching_file/matching_file.dta", gen(m_match)
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/alternative_heating_derived.dta", nogen
-* merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/alternative_heating.dta", nogen // this has data for multiple rooms per house
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/conservatories.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/dwelling_improvements.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/hot_water.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/interview_weight.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/lighting.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/main_heating_derived.dta", nogen
-* merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/main_heating.dta", nogen // this has data for multiple rooms per house
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/monitoring.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/mop_and_tariffs.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/overheating_and_cooling.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/supplementary_heating_derived.dta", nogen
-* merge 1:1 interview_id using "$droot/EFUS-2011/March 2014/stata11/interview/supplementary_heating.dta", nogen // this has data for multiple rooms per house
-merge m:1 meter_id using "$droot/EFUS-2011/March 2014/stata11/meter_reading/meter_read_weight.dta", nogen
-merge m:1 meter_id using "$droot/EFUS-2011/March 2014/stata11/meter_reading/metered_consumption.dta", nogen
-merge m:1 temperature_id using "$droot/EFUS-2011/March 2014/stata11/temperature/mean_room_temperatures.dta", nogen
-merge m:1 temperature_id using "$droot/EFUS-2011/March 2014/stata11/temperature/temperature_heating_patterns.dta", nogen
-merge m:1 temperature_id using "$droot/EFUS-2011/March 2014/stata11/temperature/temperature_meter_reading_weight.dta", nogen
-merge m:1 temperature_id using "$droot/EFUS-2011/March 2014/stata11/temperature/temperature_weight.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/alternative_heating_derived.dta", nogen
+* merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/alternative_heating.dta", nogen // this has data for multiple rooms per house
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/conservatories.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/cooking_and_appliances.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/dwelling_improvements.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/hot_water.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/interview_weight.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/lighting.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/main_heating_derived.dta", nogen
+* merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/main_heating.dta", nogen // this has data for multiple rooms per house
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/monitoring.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/mop_and_tariffs.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/overheating_and_cooling.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/rooms.dta", nogen
+merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/supplementary_heating_derived.dta", nogen
+* merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/supplementary_heating.dta", nogen // this has data for multiple rooms per house
+merge m:1 meter_id using "$droot/EFUS-2011/November 2014/stata11/meter_reading/meter_read_weight.dta", nogen
+merge m:1 meter_id using "$droot/EFUS-2011/November 2014/stata11/meter_reading/metered_consumption.dta", nogen
+merge m:1 temperature_id using "$droot/EFUS-2011/November 2014/stata11/temperature/mean_room_temperatures.dta", nogen
+merge m:1 temperature_id using "$droot/EFUS-2011/November 2014/stata11/temperature/temperature_heating_patterns.dta", nogen
+merge m:1 temperature_id using "$droot/EFUS-2011/November 2014/stata11/temperature/temperature_meter_reading_weight.dta", nogen
+merge m:1 temperature_id using "$droot/EFUS-2011/November 2014/stata11/temperature/temperature_weight.dta", nogen
 
-save "$droot/EFUS-2011/processed/efus-2011-m2014-merged.dta", replace
+save "$droot/EFUS-2011/processed/efus-2011-nov2014-merged.dta", replace
 
 gen monitor_sample = 0
 replace monitor_sample = 1 if emonitor_id != ""
