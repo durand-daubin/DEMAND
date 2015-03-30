@@ -289,7 +289,7 @@ if `do_halfhour_episodes' {
 
 restore
 
-preserve
+*preserve
 *************************
 * sampled data
 if `do_halfhour_samples' {
@@ -338,8 +338,8 @@ if `do_halfhour_samples' {
 	
 	* collapse to add up the sampled laundry by half hour
 	* use the byvars we're interested in (or could re-merge with aggregated file)
-	
-	collapse (sum) laundry_* (mean) propwt, by(diarypid survey day month year s_halfhour ba_birth_cohort ba_age_r sex emp empstat)
+
+	collapse (sum) laundry_* (mean) propwt, by(diarypid pid survey day month year s_halfhour ba_birth_cohort ba_age_r sex emp empstat)
 	* because the different surveys have different reporting periods we need to just count at least 1 laundry in the half hour
 	lab val emp EMP
 	lab val empstat EMPSTAT
@@ -389,9 +389,39 @@ if `do_halfhour_samples' {
 	
 	*repeat by day for 2005
 	table s_halfhour empstat day if survey == 2005 & sex == 2 [iw=propwt], by(any_laundry_all)
+	
+	* analysis by laundry type
+	* sunday morning
 
+	* set time variable so can select by time
+	xtset diarypid s_halfhour, delta(30 mins)
+	* only code for laundry within year
+	gen laundry_timing = 5 if any_laundry_all == 1 // other
+	replace laundry_timing = 1 if any_laundry_all == 1 & day == 1 & tin(10:00, 12:00) // sunday morning
+	replace laundry_timing = 2 if any_laundry_all == 1 & day > 1 & day < 6 & tin(11:00, 15:00) // weekday mid-day
+	replace laundry_timing = 3 if any_laundry_all == 1 & tin(16:30, 20:30) // evening peak
+	replace laundry_timing = 4 if any_laundry_all == 1 & tin(00:00, 01:30) // night-time
+	replace laundry_timing = 4 if any_laundry_all == 1 & tin(22:30, 23:30) // night-time
+
+	tab laundry_timing, gen(laundry_timing)
+
+	* check for missing	
+	table s_halfhour laundry_timing any_laundry_all, mi
+	
+	lab def laundry_timing 0 "No laundry" 1 "Sunday morning" 2 "Weekday mid-day" 3 "Evening peak" 4 "Night-time" 5 "Other"
+	lab val laundry_timing laundry_timing
+	tab laundry_timing survey [iw=propwt], col
+	table laundry_timing ba_age_r survey [iw=propwt]
+	table laundry_timing empstat survey [iw=propwt]
+
+	*collapse to single person
+	collapse (sum) laundry_timing (mean) propwt, by(pid survey day month year ba_birth_cohort ba_age_r sex emp empstat)
+	tab laundry_timing survey [iw=propwt], col
+
+	stop
 } 
-restore
+*restore
+
 *************************
 * sequences
 if `do_sequences' {
