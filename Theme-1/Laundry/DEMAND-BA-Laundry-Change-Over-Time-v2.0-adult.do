@@ -1,11 +1,12 @@
 *******************************************
-* Script to use MTUS World 6 time-use data (www.timeuse.org/mtus UK subset) to examine:
+* Script to use a number of datasets to examine:
 * - distributions of laundry in 1975 & 2005
 * - changing laundry practices
 
-* data already in long format (but episodes)
-
-* also uses EFS 2005-6 to analyse uptake of washers/dryers
+* uses:
+* - MTUS World 6 time-use data (www.timeuse.org/mtus UK subset) - data already in long format (but episodes)
+* - EFS 2005-6 to analyse uptake of washers/dryers
+* - SPRG water practices survey
 
 * This work was funded by RCUK through the End User Energy Demand Centres Programme via the
 * "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1)
@@ -34,22 +35,29 @@ GNU General Public License for more details.
 clear all
 
 * change these to run this script on different PC
-local where "/Users/ben/Documents/Work"
-local droot "`where'/Data/Social Science Datatsets"
+* use globals so can re-run parts of the script
+
+global where "/Users/ben/Documents/Work"
+global droot "$where/Data/Social Science Datatsets"
+
 * LCFS/EFS
-local efspath "`droot'/Expenditure and Food Survey/processed"
+global efspath "$droot/Expenditure and Food Survey/processed"
 
-* location of time-use diary data
-local mtuspath "`droot'/MTUS/World 6/processed"
-local dfile "MTUS-adult-episode-UK-only"
+* MTUS
+global mtuspath "$droot/MTUS/World 6/processed"
 
-local proot "`where'/Projects/RCUK-DEMAND/Theme 1"
-local rpath "`proot'/results/MTUS"
+* SPRG
+global sprgpath "$where/Projects/ESRC-SPRG/WP4-Micro_water/data/sprg_survey/data/safe/v6"
+
+* where to put results
+global proot "$where/Projects/RCUK-DEMAND/Theme 1"
+global rpath "$proot/results/MTUS"
 
 * version
-local version = "v1.2-all-hhs"
-local filter "_all"
+global version = "v1.2-all-hhs"
 * weights the final counts
+* which subgroup of mtus are we interested in?
+global mtusfilter "_all"
 
 *local version "v1.1-singles"
 *local filter "if hhtype == 1"
@@ -68,8 +76,9 @@ local filter "_all"
 
 capture log close
 
-log using "`rpath'/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-`version'-adult.smcl", replace
+log using "$rpath/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-`version'-adult.smcl", replace
 
+* control what gets done
 local do_halfhour_episodes = 0
 local do_halfhour_samples = 1
 local do_sequences = 0
@@ -79,7 +88,7 @@ set more off
 
 **********
 * LCFS data for tumble dryer uptake levels to 2005
-use "`efspath'/EFS-2001-2010-extract-BA.dta", clear
+use "$efspath/EFS-2005-2006-extract-BA.dta", clear
 lookfor tumble weight
 tab year a167 [iw=weighta], row
 
@@ -88,6 +97,25 @@ tab a167 c_nchild [iw=weighta] if year == 2005, col
 tab a167 c_nearners [iw=weighta] if year == 2005, col
 tab a167 c_empl [iw=weighta] if year == 2005, col
 
+**********
+* SPRG data on laundry practices
+use "$sprgpath/8369-clt-050312-v6-wf-safe.dta", clear
+
+desc q27*
+
+rename q27_sum sum_q27
+
+* 1 = yes, 2 = no
+recode q27* (2=0)
+
+* use mean to get % who said yes to each
+su q27* [iw=weight_respondent2], sep(0)
+
+* mean number of 'yes' responses
+su sum_q27 [iw=weight_respondent2]
+
+* distribution
+tab sum_q27 [iw=weight_respondent2]
 
 **********************************
 * codes of interest
@@ -98,7 +126,7 @@ tab a167 c_empl [iw=weighta] if year == 2005, col
 * 2005:	Main/Sec21 Laundry, ironing, clothing repair <- Pact=7 (washing clothes)
 
 * start with processing the aggregate (survey) data
-use "`mtuspath'/MTUS-adult-aggregate-UK-only-wf.dta", clear
+use "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", clear
 
 * drop all bad cases
 keep if badcase == 0
@@ -116,7 +144,7 @@ svyset [iw=propwt]
 svy: mean main18 main20 main21 main22, over(survey sex)
 
 * keep whatever sample we define above
-keep `filter'
+keep $mtusfilter
 
 * number of diary days by hh type
 * svy: tab hhtype survey, col count
@@ -179,9 +207,10 @@ preserve
 if `do_halfhour_episodes' {
 	*************************
 	* merge in the episode data
+	* do analysis at episode level
 	* egen diarypid = group(countrya survey swave msamp hldid persid day)
 	* egen pid = group(countrya survey swave msamp hldid persid)
-	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf.dta", ///
+	merge 1:m diarypid using "$mtuspath/MTUS-adult-episode-UK-only-wf.dta", ///
 		gen(m_aggvars)
 	
 	* won't match the dropped years	& badcases
@@ -309,9 +338,12 @@ restore
 *preserve
 *************************
 * sampled data
+* this requires the 10 minute sampling process implemented in XXX to have been run over the MTUS first
+
 if `do_halfhour_samples' {
 	* merge in the sampled data
-	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", ///
+	* do analysis by collapsing 10 minute sampled data to half hours
+	merge 1:m diarypid using "$mtuspath/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", ///
 		gen(m_aggvars)
 		
 	* set up half-hour variable
@@ -355,9 +387,8 @@ if `do_halfhour_samples' {
 	
 	* collapse to add up the sampled laundry by half hour
 	* use the byvars we're interested in (or could re-merge with aggregated file)
-
 	collapse (sum) laundry_* (mean) propwt, by(diarypid pid survey day month year s_halfhour ///
-		ba_birth_cohort ba_age_r sex emp empstat nchild)
+		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild)
 	* because the different surveys have different reporting periods we need to just count at least 1 laundry in the half hour
 	lab val emp EMP
 	lab val empstat EMPSTAT
@@ -379,6 +410,13 @@ if `do_halfhour_samples' {
 	
 	di "* all"
 	svy: tab survey any_laundry_all, row ci
+	
+	* by gender for all laundry reported
+	 svy: tab survey sex if any_laundry_all == 1, ci row
+	
+	* gender & age
+	svy: tab ba_age_r sex if any_laundry_all == 1 & survey == 1974, ci row
+	svy: tab ba_age_r sex if any_laundry_all == 1 & survey == 2005, ci row
 	
 	* Separate days
 	table survey day [iw=propwt], by(any_laundry_all)
@@ -415,9 +453,9 @@ if `do_halfhour_samples' {
 	xtset diarypid s_halfhour, delta(30 mins)
 	* only code for laundry within year
 	gen laundry_timing = 5 if any_laundry_all == 1 // other
-	replace laundry_timing = 1 if any_laundry_all == 1 & day == 1 & tin(10:00, 12:00) // sunday morning
-	replace laundry_timing = 2 if any_laundry_all == 1 & day > 1 & day < 6 & tin(11:00, 15:00) // weekday mid-day
-	replace laundry_timing = 3 if any_laundry_all == 1 & tin(16:30, 20:30) // evening peak
+	replace laundry_timing = 1 if any_laundry_all == 1 & day == 1 & tin(08:00, 12:00) // sunday morning
+	replace laundry_timing = 2 if any_laundry_all == 1 & day > 1 & day < 6 & tin(09:00, 12:00) // weekday morning
+	replace laundry_timing = 3 if any_laundry_all == 1 & day > 1 & day < 6 & tin(17:00, 20:00) // weekday evening peak
 	replace laundry_timing = 4 if any_laundry_all == 1 & tin(00:00, 01:30) // night-time
 	replace laundry_timing = 4 if any_laundry_all == 1 & tin(22:30, 23:30) // night-time
 
@@ -426,20 +464,43 @@ if `do_halfhour_samples' {
 	* check for missing	
 	table s_halfhour laundry_timing any_laundry_all, mi
 	
-	lab def laundry_timing 0 "No laundry" 1 "Sunday morning" 2 "Weekday mid-day" 3 "Evening peak" 4 "Night-time" 5 "Other"
+	lab def laundry_timing 1 "Sunday morning 09:00-12:00" 2 "Weekday morning 09:00-12:00" 3 "Weekday evening peak 17:00-20:00" 4 "Night-time 22:30-01:30" 5 "Other"
 	lab val laundry_timing laundry_timing
 	tab laundry_timing survey [iw=propwt], col
-	table laundry_timing ba_age_r survey [iw=propwt]
-	table laundry_timing empstat survey [iw=propwt]
-	table laundry_timing nchild survey [iw=propwt]
-
+	svy:tab laundry_timing survey, col ci
+	table laundry_timing ba_age_r survey [iw=propwt], col
+	table laundry_timing empstat survey [iw=propwt], col
+	table laundry_timing ba_nchild survey [iw=propwt], col
+	
 	* collapse to single person record
 	* remember 1974/5 = 1 week diary
-	collapse (sum) laundry_timing_* (mean) propwt, by(pid survey ///
-		ba_birth_cohort ba_age_r sex emp empstat nchild)
+	collapse (sum) laundry_timing_* any_laundry_all (mean) propwt, by(pid survey ///
+		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild)
+	recode any_laundry_all (1/max=1)
 	recode laundry_timing_1 (1/max=1)
-
-	stop
+	recode laundry_timing_2 (1/max=1)
+	recode laundry_timing_3 (1/max=1)
+	recode laundry_timing_4 (1/max=1)
+	recode laundry_timing_5 (1/max=1)
+	
+	*how many people are in multiple types?
+	egen nlaundry_types = rowtotal( laundry_timing_*)
+	svy: tab nlaundry_types survey, col
+	
+	* what % of respondents in each?
+	svy: mean laundry_timing_*, over(survey)
+	* % of launderers
+	svy: mean laundry_timing_* if any_laundry_all == 1, over(survey)
+	
+	foreach v of numlist 1/4 {
+		logit laundry_timing_`v' sex ib4.empstat i.ba_age_r i.ba_nchild if survey == 1974
+		est store laundry_timing_`v'_1974
+		logit laundry_timing_`v' sex ib4.empstat i.ba_age_r i.ba_nchild if survey == 2005
+		est store laundry_timing_`v'_2005
+	}
+	estout laundry_*_2005 using "$rpath/laundry_type_1974_regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
+	estout laundry_*_2005 using "$rpath/laundry_type_2005_regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
+		
 } 
 *restore
 
@@ -447,7 +508,7 @@ if `do_halfhour_samples' {
 * sequences
 if `do_sequences' {
 	* back to the episodes
-	merge 1:m diarypid using "`dpath'/MTUS-adult-episode-UK-only-wf.dta", ///
+	merge 1:m diarypid using "$mtuspath/MTUS-adult-episode-UK-only-wf.dta", ///
 		gen(m_aggvars)
 	* this won't have matched the dropped years	& badcases
 	* tab m_aggvars survey
@@ -490,8 +551,8 @@ if `do_sequences' {
 		
 		lab val before_laundry_`a' after_laundry_`a' MAIN
 		 
-		qui: tabout before_laundry_`a' survey [iw=propwt] using "`rpath'/before-laundry-by-survey.txt", replace
-		qui: tabout after_laundry_`a' survey [iw=propwt] using "`rpath'/after-laundry-by-survey.txt", replace
+		qui: tabout before_laundry_`a' survey [iw=propwt] using "$rpath/before-laundry-by-survey.txt", replace
+		qui: tabout after_laundry_`a' survey [iw=propwt] using "$rpath/after-laundry-by-survey.txt", replace
 	}
 	tab laundry_all
 	* create a sequence variable (horrible kludge but hey, it works :-)
@@ -516,7 +577,7 @@ if `do_sequences' {
 		qui: return li
 		
 		li in 1/5
-		outsheet using "`rpath'/laundry-sequences-by-survey-wide.txt", replace
+		outsheet using "$rpath/laundry-sequences-by-survey-wide.txt", replace
 		* totals
 		* the number of different sequences will probably vary by sample size - more potential variation
 		su _freq*, sep(0)
