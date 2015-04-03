@@ -62,9 +62,22 @@ set more off
 
 **********************************
 * Codes of interest
-* Main/Sec21 Laundry, ironing, clothing repair
-* 
+local main18l "18: Food preparation, cooking"
+local main20l "20: Cleaning"
+local main21l "21: Laundry, ironing, clothing repair"
+local main57l "57: Listen to music or other audio content"local main58l "58: Listen to radio"local main59l "59: Watch TV, video, DVD, streamed film"local main60l "60: Computer games"local main61l "61: E-mail, surf internet, computing"
+local main62l "62: No activity, imputed or recorded transport"local main63l "63: Travel to/from work"local main64l "64: Education travel"local main65l "65: Voluntary/civic/religious travel"local main66l "66: Child/adult care travel"local main67l "67: Shop, person/hhld care travel"local main68l "68: Other travel"
 
+* 57 58 59 60 61 62 63 64 65 66 67 68
+global acts "18 20 21"
+
+local main_acts ""
+local sec_acts ""
+
+foreach a of global acts {
+	local main_acts = "`main_acts' main`a'"
+	local sec_acts = "`sec_acts' sec`a'"
+}
 * start with processing the aggregate (survey) data
 use "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", clear
 
@@ -81,7 +94,7 @@ svyset [iw=propwt]
 * this is minutes per day not episodes
 * check 18 (Cooking) & 20 (Cleaning) & 22 (maintain home/vehicle) against laundry
 * seems to under-report laundry in 1974, esp for women?
-svy: mean main18 main20 main21 main22, over(survey sex)
+tabstat `main_acts', by(survey)
 
 * keep whatever sample we define above
 keep $mtusfilter
@@ -93,189 +106,13 @@ keep $mtusfilter
 * 1974 = 7 day dairy
 svy: tab id survey, col count
 
-/* already done in input file
-
-* hh size recode & test
-recode hhldsize (1=1) (2=2) (3=3) (4=4) (5/max=5), gen(ba_hhsize)
-lab var ba_hhsize "Recoded household size"
-lab def ba_hhsize 1 "1" 2 "2" 3 "3" 4 "4" 5 "5+"
-lab var ba_hhsize ba_hhsize
-
-* svy: tab ba_hhsize survey, col count
-
-* main7 & main8 = paid work
-gen ba_4hrspaidwork = 0
-* mark those who worked more than 4 hours that day
-replace ba_4hrspaidwork = 1 if main7 > 240
-
-* set up n child & n people variables
-recode nchild (0=0) (1=1) (2=2) (3/max=3), gen(ba_nchild)
-lab var ba_nchild "Recoded nchild"
-lab def ba_nchild 0 "0" 1 "1" 2 "2" 3 "3+"
-lab val ba_nchild ba_nchild
-recode hhldsize (0=0) (1=1) (2=2) (3=3) (4=4) (5/max=5), gen(ba_npeople)
-lab def ba_npeople 0 "0" 1 "1" 2 "2" 3 "3" 4 "4" 5 "5+"
-lab val ba_npeople ba_npeople
-
-* age categories
-egen ba_age_r = cut(age), at(16,24,34,44,54,64,74,84)
-lab var ba_age_r "Recoded age -> decades"
-tab ba_age_r
-
-* age cohorts
-gen ba_birthyear = year - age
-egen ba_birth_cohort = cut(ba_birthyear), at(1890,1900,1910,1920,1930,1940,1950,1960,1970,1980)
-tab ba_birth_cohort survey
-* NB - max age = 80 so older cohorts missing from 2005
-
-* weekday variable
-gen ba_weekday = 0
-replace ba_weekday = 1 if day > 1 & day < 7
-
-*/
-
-
 * keep only the vars we want to keep memory required low
-keep sex age main7 main21 hhtype empstat emp unemp student retired propwt survey day month year ///
+keep sex age `main_acts' hhtype empstat emp unemp student retired propwt survey day month year ///
 	hhldsize famstat nchild *pid ba*
 
 * number of diary-days
 svy: tab survey, obs
 
-preserve
-
-if `do_halfhour_episodes' {
-	*************************
-	* merge in the episode data
-	* do analysis at episode level
-	* egen diarypid = group(countrya survey swave msamp hldid persid day)
-	* egen pid = group(countrya survey swave msamp hldid persid)
-	merge 1:m diarypid using "$mtuspath/MTUS-adult-episode-UK-only-wf.dta", ///
-		gen(m_aggvars)
-	
-	* won't match the dropped years	& badcases
-	tab m_aggvars survey
-	
-	* keep the matched cases
-	keep if m_aggvars == 3
-	
-	* number of episodes per day
-	svy: tab day survey, obs col
-	
-	* overall durations
-	gen duration = s_endtime - s_starttime
-	format duration %tcHH:MM
-	tab duration survey [iw=propwt]
-
-	***************
-	* Laundry
-	
-	* define laundry
-	gen laundry_p = 0
-	lab var laundry_p "Main act = laundry (21)"
-	replace laundry_p = 1 if main == 21
-	
-	gen laundry_s = 0
-	lab var laundry_s "Secondary act = laundry (21)"
-	replace laundry_s = 1 if sec == 21
-	
-	gen laundry_all = 0
-	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
-	
-	* check % episodes which are laundry
-	* NB reporting frame shorter in 2005 (10 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
-	* row %
-	tab survey laundry_p [iw=propwt]
-	tab survey laundry_s [iw=propwt]
-	* all
-	tab survey laundry_all [iw=propwt]
-	
-	* check duration of laundry
-	* before we do this mere together episodes that are contiguous (e.g. laundry (s) then laundry(p) -> 1 episode)
-	* same approach as for dinner
-	* calculate duration
-	gen laundry_duration = duration if laundry_all == 1
-	format laundry_duration %tcHH:MM
-	* count back & forward maxcount episodes within the same diary day to check if they are also laundry 
-	* indicates something changed - primary/secondary act or location or who with etc
-	* add on duration if previous and subsequent episodes are also laundry and location is unchanged
-	* NB: if you make maxcount > 1 then you could have episodes of eating separated by a long episode of something else
-	local maxcount = 1
-	
-	* This is vital - we have to have the episodes in diary & time order!
-	sort diarypid start
-
-	foreach n of numlist 1/`maxcount' {
-		local prev = `n' - 1
-		di "* Now = `n', previous = `prev'"
-		di "* Before"
-		su laundry_duration
-		bysort survey diarypid: replace laundry_duration = laundry_duration + duration[_n-`n'] if laundry_all == 1 & ///
-			laundry_all[_n-`n'] == 1 & eloc == eloc[_n-`n']
-		bysort survey diarypid: replace laundry_duration = laundry_duration + duration[_n+`n'] if laundry_all == 1 & ///
-			laundry_all[_n+`n'] == 1 & eloc == eloc[_n+`n']
-		di "* After"
-		su laundry_duration
-	}
-	
-	
-	* Means are probably not going to tell us much given the differences in recording frames
-	* Use table instead as durations are so 'rounded'
-	* even so have to allow for differences in recording frames
-	table laundry_duration sex survey [iw=propwt]
-	
-	* age cohort differences in incidence of laundry
-	table ba_birth_cohort laundry_all survey [iw=propwt]
-	
-	
-	* leave this empty to skip the (time consuming) aggregations & table outputs
-	local vars "21"
-	local l5 "meals_work"
-	local l6 "meals_oth"
-	local l18 "food_prep"
-	local l21 "laundry"
-	local l59 "tv_video"
-	local l60 "computer_games"
-	local l61 "computer_internet"
-	
-	*************************
-	* Aggregation to half hours
-	* logic: the time use diaries rarely have the same duration of recorded time slot, 1974 = 30 mins, 2005 = 10 mins for example
-	* To make comparison easier we need to use the lowest common multiple - in this case 30 minutes
-	* We have already set up a variable (s_halfhour) which is the stata episode start-time converted into a stata half hour
-	* i.e. if s_starttime = 21:24 s_halfhour =  21:00, if s_starttime = 21:44 s_halfhour =  21:30 etc
-	
-	* Note that where the diary has episodes shorter than 30 minutes we may get more than 1 episode of laundry 
-	* reported per half hour
-	* Check
-	duplicates tag s_halfhour diarypid laundry_all, gen(laundry_dup_flag)
-	table laundry_dup_flag laundry_all survey
-	
-	* We'd expect them all to occur in 2005 but they don't suggesting the 1974 -> MTUS conversion process has creates
-	* some episodes shorter than 30 minutes
-	* In any case we do need to watch out for situations where we sum the number of episodes per halfhour as 
-	* we may have more episodes in 2005 due to the smaller recording time frame.
-	
-	* Note that where the diary has episodes shorter than 30 minutes we may get more than 1 episode reported per half hour
-	* We will also miss longer episodes that started this half-hour and are continuing in the next half hour
-	
-	* This will record all episodes that started within the half hour but it won't catch episodes that started before and
-	* are long-lasting. So it is good for looking at the distribution of episodes that are short, like laundry (mostly)
-	* It does NOT work for longer-lasting episodes like sleep or paid work
-	di "* Tables for all days"
-	* All years, all days
-	table s_halfhour survey laundry_all [iw=propwt]
-	
-	* Separate days
-	table survey day [iw=propwt], by(laundry_all)
-	
-	* days by half hour
-	table s_halfhour survey day [iw=propwt], by(laundry_all)	
-}
-
-restore
-
-*preserve
 *************************
 * sampled data
 * this requires the 10 minute sampling process implemented in XXX to have been run over the MTUS first
@@ -298,81 +135,81 @@ if `do_halfhour_samples' {
 	lab var s_halfhour "Episode starts during the half hour following"
 	format s_halfhour %tcHH:MM
 	
-	* define laundry
-	gen laundry_p = 0
-	lab var laundry_p "Main act = laundry (21)"
-	replace laundry_p = 1 if pact == 21
-	
-	gen laundry_s = 0
-	lab var laundry_s "Secondary act = laundry (21)"
-	replace laundry_s = 1 if sact == 21
-	
-	gen laundry_all = 0
-	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
-	
 	* this is the number of 10 minute samples by survey & day of the week
 	tab survey day [iw=propwt]
+
+	* loop over the acts of interest
+	foreach act of global acts {
+		di "Processing: `act' = `main`act'l'"
+		gen pri_`act' = 0
+		lab var pri_`act' "Main act: `main`act'l'"
+		replace pri_`act' = 1 if pact == `act'
 	
-	* check % samples which are laundry
-	* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
-	di "* main"
-	tab survey laundry_p [iw=propwt]
-	di "* secondary"
-	tab survey laundry_s [iw=propwt]
-	di "* all"
-	tab survey laundry_all [iw=propwt]
+		gen sec_`act' = 0
+		lab var sec_`act' "Secondary act: `main`act'l'"
+		replace sec_`act' = 1 if pact == `act'
 	
-	* keep 1974 & 2005 only
-	keep if survey == 1974 | survey == 2005
+		gen all_`act' = 0
+		replace all_`act' = 1 if pri_`act' == 1 | sec_`act' == 1
+		lab var all_`act' "All: `main`act'l'"
 	
+		* check % samples which are act
+		* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
+		di "* main"
+		tab survey  pri_`act' [iw=propwt]
+		di "* secondary"
+		tab survey  sec_`act' [iw=propwt]
+		di "* all"
+		tab survey  all_`act' [iw=propwt]
+	
+		* keep 1974 & 2005 only
+		keep if survey == 1974 | survey == 2005
+	}
 	* collapse to add up the sampled laundry by half hour
 	* use the byvars we're interested in (or could re-merge with aggregated file)
-	collapse (sum) laundry_* (mean) propwt, by(diarypid pid survey day month year s_halfhour ///
+	collapse (sum) pri_* sec_* all_* (mean) propwt, by(diarypid pid survey day month year s_halfhour ///
 		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild)
 	* because the different surveys have different reporting periods we need to just count at least 1 laundry in the half hour
 	lab val emp EMP
 	lab val empstat EMPSTAT
-	local acts "p s all"
-	foreach a of local acts {
-		gen any_laundry_`a' = 0
-		replace any_laundry_`a' = 1 if laundry_`a' > 0
+	local prim "pri sec all"
+	* count any occurence of the act
+	foreach a of local prim {
+		foreach act of global acts {
+			gen `a'_any_`act' = 0
+			replace `a'_any_`act' = 1 if `a'_`act' > 0
+		}
 	}
+	
 	* the number of half hour data points by survey & day
 	tab survey day [iw=propwt]
 	
+	* set survey
 	svyset [iw=propwt]
-	* the distribution of laundry by survey
-	di "* primary"
-	svy: tab survey any_laundry_p, row ci
 	
-	di "* secondary"
-	svy: tab survey any_laundry_p, row ci
+	* loop over acts producing stats
+	foreach a of global acts {
+		* the distribution by survey
+		di "* primary"
+		svy: tab survey pri_any_`act', row ci
 	
-	di "* all"
-	svy: tab survey any_laundry_all, row ci
+		di "* secondary"
+		svy: tab survey sec_any_`act', row ci
 	
-	* by gender for all laundry reported
-	 svy: tab survey sex if any_laundry_all == 1, ci row
+		di "* all"
+		svy: tab survey all_any_`act', row ci
+		di "* Tables for all days"
+		
+		* All years, all days
+		table s_halfhour survey all_any_`act' [iw=propwt]
+		tabout s_halfhour survey using "$rpath/laundry_type_1974_regressions.txt", c(mean all_any_`act') svy replace
+		stop
+		* days by half hour
+		table s_halfhour survey day [iw=propwt], by(any_laundry_all)	
 	
-	* gender & age
-	svy: tab ba_age_r sex if any_laundry_all == 1 & survey == 1974, ci row
-	svy: tab ba_age_r sex if any_laundry_all == 1 & survey == 2005, ci row
+	}
 	
-	* Separate days
-	table survey day [iw=propwt], by(any_laundry_all)
-
-	* days by gender
-	table survey day sex [iw=propwt], by(any_laundry_all)
 	
-	* laundry by employment status if female
-	table survey day empstat if sex == 2 & any_laundry_all == 1 [iw=propwt]
-	
-	di "* Tables for all days"
-	* All years, all days
-	table s_halfhour survey any_laundry_all [iw=propwt]
-	
-	* days by half hour
-	table s_halfhour survey day [iw=propwt], by(any_laundry_all)	
 
 	* seasons
 	recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
