@@ -115,7 +115,9 @@ svy: tab survey, obs
 
 *************************
 * sampled data
-* this requires the 10 minute sampling process implemented in XXX to have been run over the MTUS first
+* this requires the 10 minute sampling process implemented in 
+* https://github.com/dataknut/MTUS/blob/master/process-MTUS-W6-convert-to-X-min-samples-v1.0-adult.do
+* to have been run over the MTUS first with X set to 10
 
 if `do_halfhour_samples' {
 	* merge in the sampled data
@@ -188,7 +190,7 @@ if `do_halfhour_samples' {
 	svyset [iw=propwt]
 	
 	* loop over acts producing stats
-	foreach a of global acts {
+	foreach act of global acts {
 		* the distribution by survey
 		di "* primary"
 		svy: tab survey pri_any_`act', row ci
@@ -202,7 +204,7 @@ if `do_halfhour_samples' {
 		
 		* All years, all days
 		table s_halfhour survey all_any_`act' [iw=propwt]
-		tabout s_halfhour survey using "$rpath/laundry_type_1974_regressions.txt", c(mean all_any_`act') svy replace
+		tabout s_halfhour survey using "$rpath/all_any_`act'_by_time_year.txt", c(mean all_any_`act') svy replace
 		stop
 		* days by half hour
 		table s_halfhour survey day [iw=propwt], by(any_laundry_all)	
@@ -279,106 +281,7 @@ if `do_halfhour_samples' {
 	estout laundry_*_2005 using "$rpath/laundry_type_2005_regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
 		
 } 
-*restore
-
-*************************
-* sequences
-if `do_sequences' {
-	* back to the episodes
-	merge 1:m diarypid using "$mtuspath/MTUS-adult-episode-UK-only-wf.dta", ///
-		gen(m_aggvars)
-	* this won't have matched the dropped years	& badcases
-	* tab m_aggvars survey
-	
-	* keep the matched cases
-	keep if m_aggvars == 3
-	
-	* define laundry
-	gen laundry_p = 0
-	lab var laundry_p "Main act = laundry (21)"
-	replace laundry_p = 1 if main == 21
-	
-	gen laundry_s = 0
-	lab var laundry_s "Secondary act = laundry (21)"
-	replace laundry_s = 1 if sec == 21
-	
-	gen laundry_all = 0
-	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
-
-	* we can't use the lag notation and xtset as there are various time periods represented in the data
-	* and we would need to set up some fake (or real!) dates to attach the start times to.
-	* we could do this but we don't really need to.
-	
-	* we want to use episodes not time slots (as we are ignoring duration here)
-
-	* This is vital - we have to have the episodes in diary & time order!
-	sort diarypid start
-	
-	* we are NOT going to worry about sequential episodes which are both laundry_all as this will indicate
-	* that something changed - most likely a switch of laundry from primary to secondary activity (or vice versa)
-	* this may be of interest in itself
-
-	local acts "all"
-	foreach a of local acts {
-		* make sure we do this within diaries otherwise we might get a 'before' or 'after' belonging to a previous day (for multi day diaries)
-		* or to someone else (for 1 day diaries or the first day)!
-		
-		qui: by diarypid: gen before_laundry_`a' = main[_n-1] if laundry_`a' == 1
-		qui: by diarypid: gen after_laundry_`a' = main[_n+1] if laundry_`a' == 1
-		
-		lab val before_laundry_`a' after_laundry_`a' MAIN
-		 
-		qui: tabout before_laundry_`a' survey [iw=propwt] using "$rpath/before-laundry-by-survey.txt", replace
-		qui: tabout after_laundry_`a' survey [iw=propwt] using "$rpath/after-laundry-by-survey.txt", replace
-	}
-	tab laundry_all
-	* create a sequence variable (horrible kludge but hey, it works :-)
-	egen laundry_seq = concat(before_laundry_all laundry_all after_laundry_all) if laundry_all == 1 , punct("_") 
-	
-	* get frequencies of sequencies (this will be a very big table)
-	* the few which have missing (.) before laundry indicate nothing recorded before hand which seems a bit odd?
-	
-	tab laundry_seq
-	
-	preserve
-		* contract doesn't like iw - only allows fw (which need to be integers)
-		* so these will be unweighted
-		contract laundry_seq survey, nomiss
-		qui: tab laundry_seq
-		
-		qui: return li
-		di "For laundry_seq after contract : N = " r(N) ", r = " r(r)
-
-		* reshape it to get the frequencies per survey into columns
-		qui: reshape wide _freq, i(laundry_seq) j(survey)
-		qui: return li
-		
-		li in 1/5
-		outsheet using "$rpath/laundry-sequences-by-survey-wide.txt", replace
-		* totals
-		* the number of different sequences will probably vary by sample size - more potential variation
-		su _freq*, sep(0)
-		tabstat _freq*, s(n sum)
-		* top in 1974?
-		gsort - _freq1974
-		li in 1/10, sep(0)
-		* top in 2005?
-		gsort - _freq2005
-		li in 1/10, sep(0)
-		
-		
-	restore
-	
-	/*
-		* try using the sqset commands
-		
-		* tell it to look at sequences
-		sqset main diarypid s_starttime
-			
-		* top 20 sequences
-		sqtab survey if before_laundry ! = 1 | after_laundry ! = 1, ranks(1/20) 
-	*/	
-} 
+restore
 
 * we're back to the main survey aggregate file here.
 * drop diary duplicates & do some basic stats
