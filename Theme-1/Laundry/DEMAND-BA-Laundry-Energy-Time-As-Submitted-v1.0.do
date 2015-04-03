@@ -165,7 +165,9 @@ svy: tab survey, obs
 preserve
 *************************
 * sampled data
-* this requires the 10 minute sampling process implemented in XXX to have been run over the MTUS first
+* this requires the 10 minute sampling process implemented in 
+* https://github.com/dataknut/MTUS/blob/master/process-MTUS-W6-convert-to-X-min-samples-v1.0-adult.do
+* to have been run over the MTUS first with X set to 10
 
 if `do_halfhour_samples' {
 	* merge in the sampled data
