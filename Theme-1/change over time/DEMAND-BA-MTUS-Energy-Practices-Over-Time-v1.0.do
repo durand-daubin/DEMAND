@@ -204,7 +204,7 @@ if `do_halfhour_samples' {
 		
 		* All years, all days
 		table s_halfhour survey all_any_`act' [iw=propwt]
-		tabout s_halfhour survey using "$rpath/all_any_`act'_by_time_year.txt", c(mean all_any_`act') svy replace
+		tabout s_halfhour survey using "$rpath/all_any_`act'_by_time_year.txt", c(mean all_any_`act') svy sum replace format(%9.4g)
 		stop
 		* days by half hour
 		table s_halfhour survey day [iw=propwt], by(any_laundry_all)	
