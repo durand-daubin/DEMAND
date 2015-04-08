@@ -52,7 +52,7 @@ global mtusfilter "_all"
 
 capture log close
 
-log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-`version'.smcl", replace
+log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version.smcl", replace
 
 * control what gets done
 local do_halfhour_samples = 1
@@ -180,6 +180,7 @@ if `do_halfhour_samples' {
 		foreach act of global acts {
 			gen `a'_any_`act' = 0
 			replace `a'_any_`act' = 1 if `a'_`act' > 0
+			lab var `a'_any_`act' "`main`act'l'"
 		}
 	}
 	
@@ -191,24 +192,26 @@ if `do_halfhour_samples' {
 	
 	* loop over acts producing stats
 	foreach act of global acts {
-		* the distribution by survey
-		di "* primary"
+		di "* Distribution by survey (includes all acts)"
+		di "* primary `act' (`main`act'l')"
 		svy: tab survey pri_any_`act', row ci
 	
-		di "* secondary"
+		di "* secondary `act' (`main`act'l')"
 		svy: tab survey sec_any_`act', row ci
 	
-		di "* all"
+		di "* all `act' (`main`act'l')"
 		svy: tab survey all_any_`act', row ci
-		di "* Tables for all days"
 		
-		* All years, all days
-		table s_halfhour survey all_any_`act' [iw=propwt]
-		tabout s_halfhour survey using "$rpath/all_any_`act'_by_time_year.txt", c(mean all_any_`act') svy sum replace format(%9.4g)
-		stop
-		* days by half hour
-		table s_halfhour survey day [iw=propwt], by(any_laundry_all)	
-	
+		** distributions for just given act (to get relative distributions of the act that was reported)
+		di "Distributions for just reported `act' (`main`act'l')"
+		* all days by gender
+		svy: tab sex survey if all_any_`act' == 1
+		* all days by time
+		svy: tab s_halfhour survey if all_any_`act' == 1
+		* all days by time & survey (sum)
+		tabout s_halfhour survey using "$rpath/all_any_`act'_sum_by_time_year.txt" ///
+			if all_any_`act' == 1, ///
+			c(sum all_any_`act') sum format(4) replace
 	}
 	
 	
