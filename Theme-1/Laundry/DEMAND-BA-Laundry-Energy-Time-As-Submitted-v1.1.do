@@ -149,7 +149,7 @@ keep sex age main7 main21 hhtype empstat emp unemp student retired propwt survey
 svy: tab survey, obs
 
 
-preserve
+*preserve
 *************************
 * sampled data
 * this requires the 10 minute sampling process implemented in 
@@ -179,31 +179,60 @@ if `do_halfhour_samples' {
 	lab var laundry_p "Main act = laundry (21)"
 	replace laundry_p = 1 if pact == 21
 	
+	gen laundry_ph = 0
+	lab var laundry_ph "Main act = laundry (21) at home"
+	replace laundry_ph = 1 if pact == 21 & (eloc == 1 | eloc == 2) // NB placement of brackets is vital!!
+ 
+	gen laundry_nh = 0
+	lab var laundry_nh "Main act = laundry (21) not at home"
+	replace laundry_nh = 1 if pact == 21 & (eloc != 1 & eloc != 2)
+
 	gen laundry_s = 0
 	lab var laundry_s "Secondary act = laundry (21)"
 	replace laundry_s = 1 if sact == 21
 	
+	gen laundry_sh = 0
+	lab var laundry_sh "Secondary act = laundry (21) at home"
+	replace laundry_sh = 1 if sact == 21 & (eloc == 1 | eloc == 2)
+
+	gen laundry_snh = 0
+	lab var laundry_snh "Secondary act = laundry (21) at home"
+	replace laundry_snh = 1 if sact == 21 & (eloc != 1 & eloc != 2)
+
 	gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
-	
 	lab var laundry_all "Any act = laundry (21)"
 	
+	gen laundry_allh = 0
+	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2)
+	lab var laundry_allh "Any act = laundry (21) at home"
+
+	gen laundry_allnh = 0
+	replace laundry_allnh = 1 if laundry_all == 1 & (eloc != 1 & eloc != 2)
+	lab var laundry_allnh "Any act = laundry (21) not at home"
+	
+	* distribution of locations
+	tab eloc survey,  col nof
 	* done at home or elsewhere?
-	tab survey eloc if laundry_all == 1 [iw=propwt],  mi
+	tab eloc survey if laundry_all == 1,  col nof
 	
 	* a lot of 1974 done 'elsewhere'?
-	
+	* can we work out where?
+	bysort survey: tab sact pact if eloc == 9 & laundry_all == 1
+	* a bit - for the most part there is no recorded secondary actitivy if main = laundry
+	bysort survey: tab mtrav if eloc == 9 & laundry_all == 1
+	* we'll assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
+	replace laundry_allh = 1 if laundry_all == 1 & (pact == 48 | sact == 48)
+	stop
 	* this is the number of 10 minute samples by survey & day of the week
 	tab survey day [iw=propwt]
 	
-	* check % of episodes which are laundry
+	* check % of sampled X minute points which are laundry
 	* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
-	di "* main"
-	tab survey laundry_p [iw=propwt]
-	di "* secondary"
-	tab survey laundry_s [iw=propwt]
 	di "* all"
-	tab survey laundry_all [iw=propwt]
+	tab survey laundry_all [iw=propwt], row
+	tab survey laundry_allh [iw=propwt], row
+	tab survey laundry_allnh [iw=propwt], row
 	
 	* which years could we use?
 	tab month survey [iw=propwt]
@@ -217,36 +246,32 @@ if `do_halfhour_samples' {
 	
 	* keep 1974 & 2005 only
 	keep if survey == 1974 | survey == 2005
-	
+		
 	* collapse to add up the sampled laundry by half hour
 	* use the byvars we're interested in (or could re-merge with aggregated file)
 	collapse (sum) laundry_* (mean) propwt, by(diarypid pid survey day month year s_halfhour ///
-		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild eloc)
+		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild)
 	* because the different surveys have different reporting periods we need to just count at least 1 laundry in the half hour
 	lab val emp EMP
 	lab val empstat EMPSTAT
-	local acts "p s all"
+	local acts "all allh allnh"
 	foreach a of local acts {
 		gen any_laundry_`a' = 0
 		replace any_laundry_`a' = 1 if laundry_`a' > 0
 	}
-	* the number of half hour data points by survey & day
-	tab survey day [iw=propwt]
 	
+	* set the weight
 	svyset [iw=propwt]
-	* the distribution of laundry by survey and location
-	di "* primary"
-	svy: tab eloc survey if any_laundry_p == 1, col ci
 	
-	di "* secondary"
-	svy: tab eloc survey if any_laundry_s == 1, col ci
-	
-	di "* all"
-	svy: tab eloc survey if any_laundry_all == 1, col ci
+	* the number of half hour data points by survey & day
+	svy: tab survey day
 
-	* by gender for all laundry reported
-	svy: tab survey sex if any_laundry_all == 1, ci row
-	
+	di "* the distribution of 'at least 1 reported reported laundry instance' by survey"
+
+	svy: tab sex survey if any_laundry_all == 1, col ci
+	svy: tab sex survey if any_laundry_allh == 1, col ci
+	svy: tab sex survey if any_laundry_allnh == 1, col ci
+		
 	* gender & age
 	svy: tab ba_age_r sex if any_laundry_all == 1 & survey == 1974, ci row
 	svy: tab ba_age_r sex if any_laundry_all == 1 & survey == 2005, ci row
