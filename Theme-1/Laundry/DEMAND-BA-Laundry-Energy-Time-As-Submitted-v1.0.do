@@ -349,7 +349,7 @@ replace ba_working_age = 0 if age > 65 & sex == 1
 * check
 table ba_age_r ba_working_age sex
 
-* Propoprtion of women in work
+* Proportion of women in work
 tab survey empstat [iw=propwt] if ba_working_age == 1 & sex == 2, row
 
 di "Done!"
