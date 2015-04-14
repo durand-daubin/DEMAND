@@ -54,34 +54,18 @@ global proot "$where/Projects/RCUK-DEMAND/Theme 1"
 global rpath "$proot/results/MTUS"
 
 * version
-global version = "v1.2-all-hhs"
+global version = "v1.0"
 * weights the final counts
+
 * which subgroup of mtus are we interested in?
 global mtusfilter "_all"
-
-*local version "v1.1-singles"
-*local filter "if hhtype == 1"
-* single person hhs only
-
-*local version "v1.1-all-hhs-sanity-check"
-*local filter "_all"
-* counts if 1 or more acts (sanity check)
-
-*local version = "v1.1-all-hhs"
-* local filter "_all"
-* adds in secondary acts
- 
-* local version = "v1.0-main"
-* counts main acts only
 
 capture log close
 
 log using "$rpath/DEMAND-BA-MTUS-W6-Laundry-Change-Over-Time-$version-adult.smcl", replace
 
 * control what gets done
-local do_halfhour_episodes = 0
 local do_halfhour_samples = 1
-local do_sequences = 0
 
 * make script run without waiting for user input
 set more off
@@ -199,10 +183,17 @@ if `do_halfhour_samples' {
 	gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
 	
+	lab var laundry_all "Any act = laundry (21)"
+	
+	* done at home or elsewhere?
+	tab survey eloc if laundry_all == 1 [iw=propwt],  mi
+	
+	* a lot of 1974 done 'elsewhere'?
+	
 	* this is the number of 10 minute samples by survey & day of the week
 	tab survey day [iw=propwt]
 	
-	* check % samples which are laundry
+	* check % of episodes which are laundry
 	* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
 	di "* main"
 	tab survey laundry_p [iw=propwt]
@@ -211,13 +202,23 @@ if `do_halfhour_samples' {
 	di "* all"
 	tab survey laundry_all [iw=propwt]
 	
+	* which years could we use?
+	tab month survey [iw=propwt]
+	
+	* 1974 = Feb, Mar & Aug,Sept -> has winter & summer
+	* 1984 = winter only
+	* 1987 = early summer only
+	* 1995 = May
+	* 2000 = all year
+	* 2005 = each season (March, June, Sept, Nov)
+	
 	* keep 1974 & 2005 only
 	keep if survey == 1974 | survey == 2005
 	
 	* collapse to add up the sampled laundry by half hour
 	* use the byvars we're interested in (or could re-merge with aggregated file)
 	collapse (sum) laundry_* (mean) propwt, by(diarypid pid survey day month year s_halfhour ///
-		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild)
+		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild eloc)
 	* because the different surveys have different reporting periods we need to just count at least 1 laundry in the half hour
 	lab val emp EMP
 	lab val empstat EMPSTAT
@@ -230,18 +231,18 @@ if `do_halfhour_samples' {
 	tab survey day [iw=propwt]
 	
 	svyset [iw=propwt]
-	* the distribution of laundry by survey
+	* the distribution of laundry by survey and location
 	di "* primary"
-	svy: tab survey any_laundry_p, row ci
+	svy: tab eloc survey if any_laundry_p == 1, col ci
 	
 	di "* secondary"
-	svy: tab survey any_laundry_p, row ci
+	svy: tab eloc survey if any_laundry_s == 1, col ci
 	
 	di "* all"
-	svy: tab survey any_laundry_all, row ci
+	svy: tab eloc survey if any_laundry_all == 1, col ci
 	
 	* by gender for all laundry reported
-	 svy: tab survey sex if any_laundry_all == 1, ci row
+	svy: tab survey sex if any_laundry_all == 1, ci row
 	
 	* gender & age
 	svy: tab ba_age_r sex if any_laundry_all == 1 & survey == 1974, ci row
