@@ -54,7 +54,7 @@ global proot "$where/Projects/RCUK-DEMAND/Theme 1"
 global rpath "$proot/results/MTUS"
 
 * version
-global version = "v1.0"
+global version = "v1.0-all-locs"
 * weights the final counts
 
 * which subgroup of mtus are we interested in?
