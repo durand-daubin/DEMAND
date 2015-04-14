@@ -215,10 +215,17 @@ if `do_halfhour_samples' {
 	* keep 1974 & 2005 only
 	keep if survey == 1974 | survey == 2005
 	
+	* check for duplicates
+	duplicates report diarypid ba_starttime
+	* none
+	
+	duplicates report diarypid s_halfhour
+	* three -> because each s_halfhour value can stand for x:10 x:20 x:30
 	* collapse to add up the sampled laundry by half hour
+
 	* use the byvars we're interested in (or could re-merge with aggregated file)
 	collapse (sum) laundry_* (mean) propwt, by(diarypid pid survey day month year s_halfhour ///
-		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild eloc)
+		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild)
 	* because the different surveys have different reporting periods we need to just count at least 1 laundry in the half hour
 	lab val emp EMP
 	lab val empstat EMPSTAT
@@ -233,13 +240,13 @@ if `do_halfhour_samples' {
 	svyset [iw=propwt]
 	* the distribution of laundry by survey and location
 	di "* primary"
-	svy: tab eloc survey if any_laundry_p == 1, col ci
+	svy: tab survey if any_laundry_p == 1, col ci
 	
 	di "* secondary"
-	svy: tab eloc survey if any_laundry_s == 1, col ci
+	svy: tab survey if any_laundry_s == 1, col ci
 	
 	di "* all"
-	svy: tab eloc survey if any_laundry_all == 1, col ci
+	svy: tab survey if any_laundry_all == 1, col ci
 	
 	* by gender for all laundry reported
 	svy: tab survey sex if any_laundry_all == 1, ci row
@@ -256,7 +263,10 @@ if `do_halfhour_samples' {
 	
 	* laundry by employment status if female
 	table survey day empstat if sex == 2 & any_laundry_all == 1 [iw=propwt]
-	
+		
+	* set time variable so can select by time & also tables should look nicer
+	xtset diarypid s_halfhour, delta(30 mins) format(%tcHH:MM)
+
 	di "* Tables for all days"
 	* All years, all days
 	table s_halfhour survey any_laundry_all [iw=propwt]
@@ -279,8 +289,6 @@ if `do_halfhour_samples' {
 	* analysis by laundry type
 	* sunday morning
 
-	* set time variable so can select by time
-	xtset diarypid s_halfhour, delta(30 mins)
 	* only code for laundry within year
 	gen laundry_timing = 5 if any_laundry_all == 1 // other
 	replace laundry_timing = 1 if any_laundry_all == 1 & day == 1 & tin(08:00, 12:00) // sunday morning
