@@ -54,10 +54,10 @@ global proot "$where/Projects/RCUK-DEMAND/Theme 1"
 global rpath "$proot/results/MTUS"
 
 * version
-global version = "v1.1"
+global version = "v1.1-at-home"
 * excludes any laundry "not at home or someone else's home" (eloc = 1 or 2)
 
-global version = "v1.0"
+* global version = "v1.0-all-locs"
 * weights the final counts
 
 * which subgroup of mtus are we interested in?
@@ -243,9 +243,6 @@ if `do_halfhour_samples' {
 	
 	di "* all"
 	svy: tab eloc survey if any_laundry_all == 1, col ci
-	
-	* drop if not at home/others' home
-	keep if eloc == 1 | eloc == 2
 
 	* by gender for all laundry reported
 	svy: tab survey sex if any_laundry_all == 1, ci row
@@ -263,6 +260,14 @@ if `do_halfhour_samples' {
 	* laundry by employment status if female
 	table survey day empstat if sex == 2 & any_laundry_all == 1 [iw=propwt]
 	
+	* keep if at home/others' home
+	* if we don't do this then we may have multiple records for different locations but the same
+	* s_halfhour and the xtset comman breaks
+	keep if eloc == 1 | eloc == 2
+
+	* set time variable so can select by time
+	xtset diarypid s_halfhour, delta(30 mins) format(%tcHH:MM)
+
 	di "* Tables for all days"
 	* All years, all days
 	table s_halfhour survey any_laundry_all [iw=propwt]
@@ -285,8 +290,6 @@ if `do_halfhour_samples' {
 	* analysis by laundry type
 	* sunday morning
 
-	* set time variable so can select by time
-	xtset diarypid s_halfhour, delta(30 mins)
 	* only code for laundry within year
 	gen laundry_timing = 5 if any_laundry_all == 1 // other
 	replace laundry_timing = 1 if any_laundry_all == 1 & day == 1 & tin(08:00, 12:00) // sunday morning
@@ -355,7 +358,7 @@ replace ba_working_age = 0 if age > 65 & sex == 1
 * check
 table ba_age_r ba_working_age sex
 
-* Propoprtion of women in work
+* Proportion of women in work
 tab survey empstat [iw=propwt] if ba_working_age == 1 & sex == 2, row
 
 di "Done!"
