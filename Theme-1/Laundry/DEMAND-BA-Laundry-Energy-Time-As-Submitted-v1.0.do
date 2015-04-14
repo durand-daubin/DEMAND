@@ -193,7 +193,7 @@ if `do_halfhour_samples' {
 	* this is the number of 10 minute samples by survey & day of the week
 	tab survey day [iw=propwt]
 	
-	* check % of episodes which are laundry
+	* check % of sampled X minute points which are laundry
 	* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
 	di "* main"
 	tab survey laundry_p [iw=propwt]
