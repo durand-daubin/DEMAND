@@ -255,6 +255,7 @@ if `do_halfhour_samples' {
 	foreach a of local acts {
 		gen any_laundry_`a' = 0
 		replace any_laundry_`a' = 1 if laundry_`a' > 0
+		lab var any_laundry_`a' "`a' $version"
 	}
 	
 	* set the weight
