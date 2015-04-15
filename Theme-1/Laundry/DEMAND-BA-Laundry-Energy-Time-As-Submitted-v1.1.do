@@ -212,7 +212,7 @@ if `do_halfhour_samples' {
 	* that doesn't help - all not travelling
 
 	gen laundry_allh = 0
-	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2 )
+	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2 ) // specifically at home or someone else's home (the latter not set in 1974/2005)
 	* we'll also assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
 	replace laundry_allh = 1 if laundry_all == 1 & (pact == 48 | sact == 48)
 	lab var laundry_allh "Any act = laundry (21) at someone's home"	
