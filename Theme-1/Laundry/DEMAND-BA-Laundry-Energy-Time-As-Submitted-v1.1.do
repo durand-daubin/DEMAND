@@ -189,41 +189,19 @@ if `do_halfhour_samples' {
 	lab var laundry_p "Main act = laundry (21)"
 	replace laundry_p = 1 if pact == 21
 	
-	gen laundry_ph = 0
-	lab var laundry_ph "Main act = laundry (21) at home"
-	replace laundry_ph = 1 if pact == 21 & (eloc == 1 | eloc == 2) // NB placement of brackets is vital!!
- 
-	gen laundry_nh = 0
-	lab var laundry_nh "Main act = laundry (21) not at home"
-	replace laundry_nh = 1 if pact == 21 & (eloc != 1 & eloc != 2)
-
 	gen laundry_s = 0
 	lab var laundry_s "Secondary act = laundry (21)"
 	replace laundry_s = 1 if sact == 21
-	
-	gen laundry_sh = 0
-	lab var laundry_sh "Secondary act = laundry (21) at home"
-	replace laundry_sh = 1 if sact == 21 & (eloc == 1 | eloc == 2)
-
-	gen laundry_snh = 0
-	lab var laundry_snh "Secondary act = laundry (21) at home"
-	replace laundry_snh = 1 if sact == 21 & (eloc != 1 & eloc != 2)
 
 	gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
 	lab var laundry_all "Any act = laundry (21)"
-	
-	gen laundry_allh = 0
-	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2)
-	lab var laundry_allh "Any act = laundry (21) at home"
 
-	gen laundry_allnh = 0
-	replace laundry_allnh = 1 if laundry_all == 1 & (eloc != 1 & eloc != 2)
-	lab var laundry_allnh "Any act = laundry (21) not at home"
-	
-	* distribution of locations
+ 
+ 	* distribution of locations
 	tab eloc survey,  col nof
-	* done at home or elsewhere?
+	
+	* laundry done at home or elsewhere?
 	tab eloc survey if laundry_all == 1,  col nof
 	
 	* a lot of 1974 done 'elsewhere'?
@@ -232,9 +210,16 @@ if `do_halfhour_samples' {
 	* a bit - for the most part there is no recorded secondary actitivy if main = laundry
 	bysort survey: tab mtrav if eloc == 9 & laundry_all == 1
 	* that doesn't help - all not travelling
-	
-	* we'll assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
+
+	gen laundry_allh = 0
+	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2 )
+	* we'll also assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
 	replace laundry_allh = 1 if laundry_all == 1 & (pact == 48 | sact == 48)
+	lab var laundry_allh "Any act = laundry (21) at someone's home"	
+
+	gen laundry_allnh = 0
+	replace laundry_allnh = 1 if laundry_all == 1 & (eloc != 1 & eloc != 2) & (pact != 48 & sact != 48)
+	lab var laundry_allnh "Any act = laundry (21) not at home"
 	
 	* this is the number of 10 minute samples by survey & day of the week
 	tab survey day [iw=propwt]
@@ -355,7 +340,7 @@ if `do_halfhour_samples' {
 		replace laundry_timing_`a' = 4 if any_laundry_`a' == 1 & tin(00:00, 01:30) // night-time
 		replace laundry_timing_`a' = 4 if any_laundry_`a' == 1 & tin(22:30, 23:30) // night-time
 	
-		tab laundry_timing_`a', gen(laundry_timing__`a')
+		tab laundry_timing_`a', gen(laundry_timing_`a')
 	
 		* check for missing	
 		table s_halfhour laundry_timing_`a' any_laundry_`a', mi
@@ -371,32 +356,34 @@ if `do_halfhour_samples' {
 		* collapse to single person record
 		* note that this does not mean classifying 1 person to 1 'type' - a person can display multiple laundry types
 		* remember 1974/5 = 1 week diary
-		collapse (sum) laundry_timing_* any_laundry_all* (mean) propwt, by(pid survey ///
-			ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild)
-		recode any_laundry_all any_laundry_allh any_laundry_allnh (1/max=1)
-		recode laundry_timing_`a'_1 (1/max=1)
-		recode laundry_timing_`a'_2 (1/max=1)
-		recode laundry_timing_`a'_3 (1/max=1)
-		recode laundry_timing_`a'_4 (1/max=1)
-		recode laundry_timing_`a'_5 (1/max=1)
-		
-		*how many people are in multiple types?
-		egen nlaundry_types_`a' = rowtotal(laundry_timing_`a'_*)
-		svy: tab nlaundry_types_`a' survey, col
-		
-		* what % of respondents in each?
-		svy: mean laundry_timing_`a'_*, over(survey)
-		* % of launderers
-		svy: mean laundry_timing_`a'_* if any_laundry_all == 1, over(survey)
-		
-		foreach v of numlist 1/4 {
-			logit laundry_timing_`a'_`v' sex ib4.empstat i.ba_age_r i.ba_nchild if survey == 1974
-			est store laundry_timing_`a'_`v'_1974
-			logit laundry_timing_`a'_`v' sex ib4.empstat i.ba_age_r i.ba_nchild if survey == 2005
-			est store laundry_timing_`a'_`v'_2005
-		}
-		estout laundry_`a'_*_2005 using "$rpath/laundry_type_`a'_1974_$version-regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
-		estout laundry_`a'_*_2005 using "$rpath/laundry_type_`a'_2005_$version-regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
+		preserve
+			collapse (sum) laundry_timing_* any_laundry_all* (mean) propwt, by(pid survey ///
+				ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild)
+			recode any_laundry_all any_laundry_allh any_laundry_allnh (1/max=1)
+			recode laundry_timing_`a'1 (1/max=1)
+			recode laundry_timing_`a'2 (1/max=1)
+			recode laundry_timing_`a'3 (1/max=1)
+			recode laundry_timing_`a'4 (1/max=1)
+			recode laundry_timing_`a'5 (1/max=1)
+			
+			*how many people are in multiple types?
+			egen nlaundry_types_`a' = rowtotal(laundry_timing_`a'_*)
+			svy: tab nlaundry_types_`a' survey, col
+			
+			* what % of respondents in each?
+			svy: mean laundry_timing_`a'_*, over(survey)
+			* % of launderers
+			svy: mean laundry_timing_`a'_* if any_laundry_all == 1, over(survey)
+			
+			foreach v of numlist 1/4 {
+				logit laundry_timing_`a'_`v' sex ib4.empstat i.ba_age_r i.ba_nchild if survey == 1974
+				est store laundry_timing_`a'_`v'_1974
+				logit laundry_timing_`a'_`v' sex ib4.empstat i.ba_age_r i.ba_nchild if survey == 2005
+				est store laundry_timing_`a'_`v'_2005
+			}
+			estout laundry_`a'_*_2005 using "$rpath/laundry_type_`a'_1974_$version-regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
+			estout laundry_`a'_*_2005 using "$rpath/laundry_type_`a'_2005_$version-regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
+		restore
 	}
 } 
 
