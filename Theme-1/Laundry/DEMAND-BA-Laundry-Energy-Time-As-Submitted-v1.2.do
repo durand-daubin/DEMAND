@@ -193,41 +193,19 @@ if `do_halfhour_samples' {
 	lab var laundry_p "Main act = laundry (21)"
 	replace laundry_p = 1 if pact == 21
 	
-	gen laundry_ph = 0
-	lab var laundry_ph "Main act = laundry (21) at home"
-	replace laundry_ph = 1 if pact == 21 & (eloc == 1 | eloc == 2) // NB placement of brackets is vital!!
- 
-	gen laundry_nh = 0
-	lab var laundry_nh "Main act = laundry (21) not at home"
-	replace laundry_nh = 1 if pact == 21 & (eloc != 1 & eloc != 2)
-
 	gen laundry_s = 0
 	lab var laundry_s "Secondary act = laundry (21)"
 	replace laundry_s = 1 if sact == 21
-	
-	gen laundry_sh = 0
-	lab var laundry_sh "Secondary act = laundry (21) at home"
-	replace laundry_sh = 1 if sact == 21 & (eloc == 1 | eloc == 2)
-
-	gen laundry_snh = 0
-	lab var laundry_snh "Secondary act = laundry (21) at home"
-	replace laundry_snh = 1 if sact == 21 & (eloc != 1 & eloc != 2)
 
 	gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
 	lab var laundry_all "Any act = laundry (21)"
-	
-	gen laundry_allh = 0
-	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2)
-	lab var laundry_allh "Any act = laundry (21) at home"
 
-	gen laundry_allnh = 0
-	replace laundry_allnh = 1 if laundry_all == 1 & (eloc != 1 & eloc != 2)
-	lab var laundry_allnh "Any act = laundry (21) not at home"
-	
-	* distribution of locations
+ 
+ 	* distribution of locations
 	tab eloc survey,  col nof
-	* done at home or elsewhere?
+	
+	* laundry done at home or elsewhere?
 	tab eloc survey if laundry_all == 1,  col nof
 	
 	* a lot of 1974 done 'elsewhere'?
@@ -236,9 +214,18 @@ if `do_halfhour_samples' {
 	* a bit - for the most part there is no recorded secondary actitivy if main = laundry
 	bysort survey: tab mtrav if eloc == 9 & laundry_all == 1
 	* that doesn't help - all not travelling
-	
-	* we'll assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
+
+	gen laundry_allh = 0
+	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2 | eloc == 9) // assume 'other loc' = someone's home 
+	* we'll also assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
 	replace laundry_allh = 1 if laundry_all == 1 & (pact == 48 | sact == 48)
+	lab var laundry_allh "Any act = laundry (21) at someone's home"	
+
+	/*
+	gen laundry_allnh = 0
+	replace laundry_allnh = 1 if laundry_all == 1 & (eloc != 1 & eloc != 2) & (pact != 48 & sact != 48)
+	lab var laundry_allnh "Any act = laundry (21) not at home"
+	*/
 	
 	* this is the number of 10 minute samples by survey & day of the week
 	tab survey day [iw=propwt]
@@ -248,7 +235,6 @@ if `do_halfhour_samples' {
 	di "* all"
 	tab survey laundry_all [iw=propwt], row
 	tab survey laundry_allh [iw=propwt], row
-	tab survey laundry_allnh [iw=propwt], row
 	
 	* which years could we use?
 	tab month survey [iw=propwt]
