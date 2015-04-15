@@ -279,9 +279,7 @@ if `do_halfhour_samples' {
 		di "* Income"
 		recode income (-9=4)
 		lab def INCOME 4 "Not known", add
-
 		svy: tab income survey if any_laundry_`a' == 1, col ci
-		stop 
 		
 		di "*******"
 		di "* Sex"
