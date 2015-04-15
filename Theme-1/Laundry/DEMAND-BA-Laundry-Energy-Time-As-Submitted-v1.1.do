@@ -319,7 +319,7 @@ if `do_halfhour_samples' {
 	* set time variable so can select by time
 	xtset diarypid s_halfhour, delta(30 mins) format(%tcHH:MM)
 
-	* just compare all with all at (a) home
+	* time of day comparisons
 	local acts "all allh allnh"
 	foreach a of local acts {
 		di "*****************************"
@@ -342,7 +342,7 @@ if `do_halfhour_samples' {
 		di "*repeat by day for 2005 for: any_laundry_`a'"
 		table s_halfhour empstat day if survey == 2005 & sex == 2 [iw=propwt], by(any_laundry_`a')
 	}
-	stop
+	local acts "all allh"
 	foreach a of local acts {
 		* analysis by laundry type
 		* sunday morning
@@ -395,8 +395,8 @@ if `do_halfhour_samples' {
 			logit laundry_timing_`a'_`v' sex ib4.empstat i.ba_age_r i.ba_nchild if survey == 2005
 			est store laundry_timing_`a'_`v'_2005
 		}
-		estout laundry_`a'_*_2005 using "$rpath/laundry_type_`a'_1974_regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
-		estout laundry_`a'_*_2005 using "$rpath/laundry_type_`a'_2005_regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
+		estout laundry_`a'_*_2005 using "$rpath/laundry_type_`a'_1974_$version-regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
+		estout laundry_`a'_*_2005 using "$rpath/laundry_type_`a'_2005_$version-regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
 	}
 } 
 
