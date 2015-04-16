@@ -145,6 +145,10 @@ keep $mtusfilter
 * 1974 = 7 day dairy
 svy: tab id survey, col count
 
+* change order of income variable
+recode income (-9=4)
+lab def INCOME 4 "Not known", add
+
 
 * keep only the vars we want to keep memory required low
 keep sex age main7 main21 hhtype empstat income emp unemp student retired propwt survey day month year ///
@@ -199,18 +203,19 @@ if `do_halfhour_samples' {
 
  
  	* distribution of locations
-	tab eloc survey,  col nof
+	svy: tab eloc survey,  col nof
 	
 	* laundry done at home or elsewhere?
-	tab eloc survey if laundry_all == 1,  col nof
+	svy: tab eloc survey if laundry_all == 1,  col nof
 	
-	* a lot of 1974 done 'elsewhere'?
+	* a lot of 1974 done at 'other locations'?
 	* can we work out where?
 	bysort survey: tab sact pact if eloc == 9 & laundry_all == 1
 	* a bit - for the most part there is no recorded secondary actitivy if main = laundry
 	bysort survey: tab mtrav if eloc == 9 & laundry_all == 1
 	* that doesn't help - all not travelling
-
+	* NB "someone else's home is not set for 1974/2005" - maybe these are the 'other' locations?
+	
 	gen laundry_allh = 0
 	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2 ) // specifically at home or someone else's home (the latter not set in 1974/2005)
 	* we'll also assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
@@ -230,6 +235,9 @@ if `do_halfhour_samples' {
 	tab survey laundry_all [iw=propwt], row
 	tab survey laundry_allh [iw=propwt], row
 	tab survey laundry_allnh [iw=propwt], row
+	
+	* test who does laundry elsewhere
+	logit laundry_allnh i.sex i.ba_age_r i.empstat i.income if survey == 1974, cluster(pid)
 	
 	* which years could we use?
 	tab month survey [iw=propwt]
@@ -264,6 +272,9 @@ if `do_halfhour_samples' {
 	* the number of half hour data points by survey & day
 	svy: tab survey day		
 	
+	* test who does laundry elsewhere under the 'at least 1' measure
+	logit any_laundry_allnh i.sex i.ba_age_r i.empstat i.income if survey == 1974, cluster(pid)
+
 	* loop through locations
 	local acts "all allh allnh"
 	foreach a of local acts {
@@ -277,8 +288,6 @@ if `do_halfhour_samples' {
 		di "*******"
 		di "* Tables for: any_laundry_`a' = 1"
 		di "* Income"
-		recode income (-9=4)
-		lab def INCOME 4 "Not known", add
 		svy: tab income survey if any_laundry_`a' == 1, col ci
 		
 		di "*******"
@@ -298,6 +307,10 @@ if `do_halfhour_samples' {
 		di "* Days by gender & survey for any_laundry_`a' =1 - used for Fig 3 "
 		table day sex survey if any_laundry_`a' == 1 [iw=propwt]
 	
+		di "*******"
+		di "* Employment status by survey for any_laundry_`a' = 1"
+		table empstat survey if any_laundry_`a' == 1 [iw=propwt]
+
 		di "*******"
 		di "* Days by survey & employment status if female for any_laundry_`a' = 1 - used for Figs 4 & 5"
 		table day empstat survey if sex == 2 & any_laundry_`a' == 1 [iw=propwt]
