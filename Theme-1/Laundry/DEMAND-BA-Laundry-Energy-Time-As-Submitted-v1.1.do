@@ -203,12 +203,17 @@ if `do_halfhour_samples' {
 
  
  	* distribution of locations
-	svy: tab eloc survey,  col nof
+	svy: tab eloc survey,  col
 	
 	* laundry done at home or elsewhere?
-	svy: tab eloc survey if laundry_all == 1,  col nof
+	svy: tab eloc survey if laundry_all == 1,  col
 	
 	* a lot of 1974 done at 'other locations'?
+	* test who does laundry at 'other locations'
+	gen laundry_all_other = 0
+	replace laundry_all_other  = 1 if laundry_all == 1 & eloc == 9
+	logit laundry_all_other i.sex i.ba_age_r i.empstat i.income if survey == 1974, cluster(pid)
+
 	* can we work out where?
 	bysort survey: tab sact pact if eloc == 9 & laundry_all == 1
 	* a bit - for the most part there is no recorded secondary actitivy if main = laundry
@@ -235,9 +240,6 @@ if `do_halfhour_samples' {
 	tab survey laundry_all [iw=propwt], row
 	tab survey laundry_allh [iw=propwt], row
 	tab survey laundry_allnh [iw=propwt], row
-	
-	* test who does laundry elsewhere
-	logit laundry_allnh i.sex i.ba_age_r i.empstat i.income if survey == 1974, cluster(pid)
 	
 	* which years could we use?
 	tab month survey [iw=propwt]
@@ -272,9 +274,6 @@ if `do_halfhour_samples' {
 	* the number of half hour data points by survey & day
 	svy: tab survey day		
 	
-	* test who does laundry elsewhere under the 'at least 1' measure
-	logit any_laundry_allnh i.sex i.ba_age_r i.empstat i.income if survey == 1974, cluster(pid)
-
 	* loop through locations
 	local acts "all allh allnh"
 	foreach a of local acts {
