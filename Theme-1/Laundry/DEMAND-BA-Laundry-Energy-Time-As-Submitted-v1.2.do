@@ -55,10 +55,10 @@ global rpath "$proot/results/MTUS"
 
 * version
 global version = "v1.2-at-home"
-* includes 'other location' in 'at someone's home' as cannot be set in 1974/2005 and it is _not_ at servbices/shop (i.e. laundrette)
+* assumes "other location" = someone else's house (as it is not laundrette and "other person's house" is not defined for 1974 & 2005
 
 * global version = "v1.1-at-home"
-* compares all locations with any laundry "not at home or someone else's home" (eloc = 1 or 2)
+* excludes any laundry "not at home or someone else's home" (eloc = 1 or 2)
 
 * global version = "v1.0-all-locs"
 * weights the final counts
@@ -148,6 +148,10 @@ keep $mtusfilter
 * 1974 = 7 day dairy
 svy: tab id survey, col count
 
+* change order of income variable
+recode income (-9=4)
+lab def INCOME 4 "Not known", add
+
 
 * keep only the vars we want to keep memory required low
 keep sex age main7 main21 hhtype empstat income emp unemp student retired propwt survey day month year ///
@@ -202,27 +206,32 @@ if `do_halfhour_samples' {
 
  
  	* distribution of locations
-	tab eloc survey,  col nof
+	svy: tab eloc survey,  col
 	
 	* laundry done at home or elsewhere?
-	tab eloc survey if laundry_all == 1,  col nof
+	svy: tab eloc survey if laundry_all == 1,  col
 	
-	* a lot of 1974 done 'elsewhere'?
+	* a lot of 1974 done at 'other locations'?
+	* test who does laundry at 'other locations'
+	gen laundry_all_other = 0
+	replace laundry_all_other  = 1 if laundry_all == 1 & eloc == 9
+	logit laundry_all_other i.sex i.ba_age_r i.empstat i.income if survey == 1974, cluster(pid)
+
 	* can we work out where?
 	bysort survey: tab sact pact if eloc == 9 & laundry_all == 1
 	* a bit - for the most part there is no recorded secondary actitivy if main = laundry
 	bysort survey: tab mtrav if eloc == 9 & laundry_all == 1
 	* that doesn't help - all not travelling
-
+	* NB "someone else's home is not set for 1974/2005" - maybe these are the 'other' locations?
+	
 	gen laundry_allh = 0
-	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2 | eloc == 9) // specifically at home or someone else's home (the latter not set in 1974/2005) OR 'other location'
-	* i.e. we are assuming that as it is 'other location' and it is NOT at services/shop then it must be someone else's home as this could not be set in these two diaries
+	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2 | eloc == 9) // specifically at home or someone else's home (the latter not set in 1974/2005)
 	* we'll also assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
 	replace laundry_allh = 1 if laundry_all == 1 & (pact == 48 | sact == 48)
 	lab var laundry_allh "Any act = laundry (21) at someone's home"	
 
 	gen laundry_allnh = 0
-	replace laundry_allnh = 1 if laundry_all == 1 & (eloc != 1 & eloc != 2) & (pact != 48 & sact != 48)
+	replace laundry_allnh = 1 if laundry_all == 1 & (eloc != 1 & eloc != 2 & eloc != 9) & (pact != 48 & sact != 48)
 	lab var laundry_allnh "Any act = laundry (21) not at home"
 	
 	* this is the number of 10 minute samples by survey & day of the week
@@ -277,13 +286,11 @@ if `do_halfhour_samples' {
 		di "*****************************"
 		di "* 'at least 1 reported reported laundry instance' for: any_laundry_`a'"
 		svy: tab any_laundry_`a' survey , col ci
-		
+
 		di "*******"
 		di "* Tables for: any_laundry_`a' = 1"
 		di "* Income"
-		recode income (-9=4)
-		lab def INCOME 4 "Not known", add
-		tab income survey if any_laundry_allnh == 1, col
+		svy: tab income survey if any_laundry_`a' == 1, col ci
 		
 		di "*******"
 		di "* Sex"
@@ -302,6 +309,10 @@ if `do_halfhour_samples' {
 		di "* Days by gender & survey for any_laundry_`a' =1 - used for Fig 3 "
 		table day sex survey if any_laundry_`a' == 1 [iw=propwt]
 	
+		di "*******"
+		di "* Employment status by survey for any_laundry_`a' = 1"
+		table empstat survey if any_laundry_`a' == 1 [iw=propwt]
+
 		di "*******"
 		di "* Days by survey & employment status if female for any_laundry_`a' = 1 - used for Figs 4 & 5"
 		table day empstat survey if sex == 2 & any_laundry_`a' == 1 [iw=propwt]
