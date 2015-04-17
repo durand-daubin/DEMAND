@@ -155,7 +155,7 @@ lab def INCOME 4 "Not known", add
 
 * keep only the vars we want to keep memory required low
 keep sex age main7 main21 hhtype empstat income emp unemp student retired propwt survey day month year ///
-	hhldsize famstat nchild *pid ba*
+	hhldsize famstat nchild hhldsize *pid ba*
 
 * number of diary-days
 svy: tab survey, obs
@@ -178,7 +178,22 @@ if `do_halfhour_samples' {
 	* do analysis by collapsing 10 minute sampled data to half hours
 	merge 1:m diarypid using "$mtuspath/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", ///
 		gen(m_aggvars)
-		
+	
+	* which years could we use?
+	* NB - we need full years or at least quarters/all seasons for laundry as it may well be seasonally variant.
+	tab month survey [iw=propwt]
+	
+	* 1974 = Feb, Mar & Aug,Sept -> has winter & summer
+	* 1984 = winter only
+	* 1987 = early summer only
+	* 1995 = May
+	* 2000 = all year
+	* 2005 = each season (March, June, Sept, Nov)
+	
+	* keep 1974 & 2005 only as problems with coverage in all others
+	* could pool 1984 & 1987 but 1995 useless (May!)
+	keep if survey == 1974 | survey == 2005
+	
 	* set up half-hour variable
 	gen ba_hourt = hh(s_starttime)
 	gen ba_minst = mm(s_starttime)
@@ -203,19 +218,14 @@ if `do_halfhour_samples' {
 	gen laundry_all = 0
 	replace laundry_all = 1 if laundry_p == 1 | laundry_s == 1
 	lab var laundry_all "Any act = laundry (21)"
-
  
  	* distribution of locations
-	svy: tab eloc survey,  col
+	svy: tab eloc survey,  count col
 	
 	* laundry done at home or elsewhere?
-	svy: tab eloc survey if laundry_all == 1,  col
+	svy: tab eloc survey,  count col
 	
 	* a lot of 1974 done at 'other locations'?
-	* test who does laundry at 'other locations'
-	gen laundry_all_other = 0
-	replace laundry_all_other  = 1 if laundry_all == 1 & eloc == 9
-	logit laundry_all_other i.sex i.ba_age_r i.empstat i.income if survey == 1974, cluster(pid)
 
 	* can we work out where?
 	bysort survey: tab sact pact if eloc == 9 & laundry_all == 1
@@ -224,184 +234,220 @@ if `do_halfhour_samples' {
 	* that doesn't help - all not travelling
 	* NB "someone else's home is not set for 1974/2005" - maybe these are the 'other' locations?
 	
-	gen laundry_allh = 0
-	replace laundry_allh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2 | eloc == 9) // specifically at home or someone else's home (the latter not set in 1974/2005)
-	* we'll also assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
-	replace laundry_allh = 1 if laundry_all == 1 & (pact == 48 | sact == 48)
-	lab var laundry_allh "Any act = laundry (21) at someone's home"	
+	gen laundry_rh = 0
+	replace laundry_rh = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2) // definitely at home
+	
+	gen laundry_sh = 0
+	replace laundry_sh = 1 if laundry_all == 1 & (eloc == 5) // definitely at shops/services
+	
+	gen laundry_oth = 0
+	replace laundry_oth = 1 if laundry_all == 1 & (eloc == 9) // definitely at other location
 
-	gen laundry_allnh = 0
-	replace laundry_allnh = 1 if laundry_all == 1 & (eloc != 1 & eloc != 2 & eloc != 9) & (pact != 48 & sact != 48)
-	lab var laundry_allnh "Any act = laundry (21) not at home"
+	* set defined locations
+	gen laundry_h = 0
+	replace laundry_h = 1 if laundry_all == 1 & (eloc == 1 | eloc == 2 | eloc == 9) // specifically at home or someone else's home (the latter not set in 1974/2005)
+	* we'll also assume that visiting/receiving friends whilst laundry is at someone's home - doesn't really matter whose for this paper
+	replace laundry_h = 1 if laundry_all == 1 & (pact == 48 | sact == 48)
+	lab var laundry_h "Any act = laundry (21) at someone's home"	
+
+	gen laundry_nh = 0
+	replace laundry_nh = 1 if laundry_all == 1 & (eloc != 1 & eloc != 2 & eloc != 9) & (pact != 48 & sact != 48)
+	lab var laundry_nh "Any act = laundry (21) not at home"
 	
 	* this is the number of 10 minute samples by survey & day of the week
 	tab survey day [iw=propwt]
 	
-	* check % of sampled X minute points which are laundry
-	* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
+	di "* check % of sampled X minute points which are laundry"
+	di "* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)"
 	di "* all"
 	tab survey laundry_all [iw=propwt], row
-	tab survey laundry_allh [iw=propwt], row
-	tab survey laundry_allnh [iw=propwt], row
-	
-	* which years could we use?
-	tab month survey [iw=propwt]
-	
-	* 1974 = Feb, Mar & Aug,Sept -> has winter & summer
-	* 1984 = winter only
-	* 1987 = early summer only
-	* 1995 = May
-	* 2000 = all year
-	* 2005 = each season (March, June, Sept, Nov)
-	
-	* keep 1974 & 2005 only
-	keep if survey == 1974 | survey == 2005
-		
+	di "* home ($version)"
+	tab survey laundry_h [iw=propwt], row
+	di "* not at home ($version)"
+	tab survey laundry_nh [iw=propwt], row
+			
+	*********************
 	* collapse to add up the sampled laundry by half hour
 	* use the byvars we're interested in (or could re-merge with aggregated file)
-	collapse (sum) laundry_* (mean) propwt, by(diarypid pid survey day month year s_halfhour ///
-		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild income)
 	* because the different surveys have different reporting periods we need to just count at least 1 laundry in the half hour
-	lab val emp EMP
-	lab val empstat EMPSTAT
-	local acts "all allh allnh"
-	foreach a of local acts {
-		gen any_laundry_`a' = 0
-		replace any_laundry_`a' = 1 if laundry_`a' > 0
-		lab var any_laundry_`a' "`a' $version"
-	}
-	
-	* set the weight
-	svyset [iw=propwt]
-	
-	* the number of half hour data points by survey & day
-	svy: tab survey day		
-	
-	* loop through locations
-	local acts "all allh allnh"
-	foreach a of local acts {
-		di "*****************************"
-		di "*****************************"
 		
-		di "*****************************"
-		di "* 'at least 1 reported reported laundry instance' for: any_laundry_`a'"
-		svy: tab any_laundry_`a' survey , col ci
+	collapse (sum) laundry_* (mean) propwt, by(diarypid pid survey day month year s_halfhour ///
+		ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild income hhldsize)
 
-		di "*******"
-		di "* Tables for: any_laundry_`a' = 1"
-		di "* Income"
-		svy: tab income survey if any_laundry_`a' == 1, col ci
+		lab val emp EMP
+		lab val empstat EMPSTAT
 		
-		di "*******"
-		di "* Sex"
-		svy: tab sex survey if any_laundry_`a' == 1, col ci		
-		di "* Sex & age"
-		di "* 1974 (if any_laundry_`a' = 1)"
-		svy: tab ba_age_r sex if any_laundry_`a' == 1 & survey == 1974, ci row
-		di "* 2005 (if any_laundry_`a' = 1)"
-		svy: tab ba_age_r sex if any_laundry_`a' == 1 & survey == 2005, ci row
-	
-		di "*******"
-		di "* Days by survey for any_laundry_`a' = 1 - Fig 2"
-		svy: tab day survey if any_laundry_`a' == 1, ci col
-
-		di "*******"
-		di "* Days by gender & survey for any_laundry_`a' =1 - used for Fig 3 "
-		table day sex survey if any_laundry_`a' == 1 [iw=propwt]
-	
-		di "*******"
-		di "* Employment status by survey for any_laundry_`a' = 1"
-		table empstat survey if any_laundry_`a' == 1 [iw=propwt]
-
-		di "*******"
-		di "* Days by survey & employment status if female for any_laundry_`a' = 1 - used for Figs 4 & 5"
-		table day empstat survey if sex == 2 & any_laundry_`a' == 1 [iw=propwt]
-
-	}
-	
-	* set time variable so can select by time
-	xtset diarypid s_halfhour, delta(30 mins) format(%tcHH:MM)
-
-	* time of day comparisons
-	local acts "all allh allnh"
-	foreach a of local acts {
-		di "*****************************"
-		di "* Tables for: any_laundry_`a'"
-		table s_halfhour survey any_laundry_`a' [iw=propwt]
-	
-		di "* days by half hour for: any_laundry_`a'"
-		table s_halfhour survey day [iw=propwt], by(any_laundry_`a')	
-
-		/* seasons - leave out for now (small N)
-		recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
-		* check
-		* tab month season
-		table s_halfhour survey season [iw=propwt], by(any_laundry_`a')
-		*/
+		* set the weight
+		svyset [iw=propwt]
 		
-		di "* by half hour & employment status for women for: any_laundry_`a'"
-		table s_halfhour empstat survey if sex == 2 [iw=propwt], by(any_laundry_`a')
+		* the number of half hour data points by survey & day
+		svy: tab survey day		
+		
+		*  do original locations
+		local acts "all rh sh oth"
+
+		foreach a of local acts {
+			di "* Adding up 'at least 1' & basic stats for laundry_`a' ($version)"
+			gen any_laundry_`a' = 0
+			replace any_laundry_`a' = 1 if laundry_`a' > 0
+			lab var any_laundry_`a' "`a' $version"
+			di "* overall prevalence of 'any laundry in a half hour' - any_laundry_`a' ($version)"
+			di "* counts (any_laundry_`a' $version)"
+			svy: tab any_laundry_`a' survey, count format(%9.2f)
+			di "* proportions (any_laundry_`a' $version)"
+			svy: tab any_laundry_`a' survey, col ci
+			di "* proportions by sex (any_laundry_`a' == 1 $version)" 
+			svy: tab sex survey if any_laundry_`a' == 1, col ci
+		}
+		di "* test who does laundry at 'other locations' at half hour level"
+		logit any_laundry_oth i.sex i.ba_age_r i.ba_nchild hhldsize i.empstat i.income if survey == 1974, cluster(pid)
+		
+		* now do the defined/derived locations
+		local acts "h nh"
+		foreach a of local acts {
+			di "* Adding up 'at least 1' & basic stats for laundry_`a' ($version)"
+			gen any_laundry_`a' = 0
+			replace any_laundry_`a' = 1 if laundry_`a' > 0
+			lab var any_laundry_`a' "`a' $version"
+			di "* overall prevalence of 'any laundry in a half hour' - any_laundry_`a' ($version)"
+			di "* counts (any_laundry_`a' $version)"
+			svy: tab any_laundry_`a' survey, count format(%9.2f)
+			di "* proportions (any_laundry_`a' $version)"
+			svy: tab any_laundry_`a' survey, col ci
+			di "* proportions by sex (any_laundry_`a' == 1 $version)" 
+			svy: tab sex survey if any_laundry_`a' == 1, col ci
+		}
+
+		
 	
-		di "*repeat by day for 2005 for: any_laundry_`a'"
-		table s_halfhour empstat day if survey == 2005 & sex == 2 [iw=propwt], by(any_laundry_`a')
-	}
-	local acts "all allh"
-	foreach a of local acts {
-		* analysis by laundry type
-		preserve
-			gen laundry_timing_`a' = 5 if any_laundry_`a' == 1 // other
-			replace laundry_timing_`a' = 1 if any_laundry_`a' == 1 & day == 1 & tin(08:00, 12:00) // sunday morning
-			replace laundry_timing_`a' = 2 if any_laundry_`a' == 1 & day > 1 & day < 6 & tin(09:00, 12:00) // weekday morning
-			replace laundry_timing_`a' = 3 if any_laundry_`a' == 1 & day > 1 & day < 6 & tin(17:00, 20:00) // weekday evening peak
-			replace laundry_timing_`a' = 4 if any_laundry_`a' == 1 & tin(00:00, 01:30) // night-time
-			replace laundry_timing_`a' = 4 if any_laundry_`a' == 1 & tin(22:30, 23:30) // night-time
-		
-			tab laundry_timing_`a', gen(laundry_timing_`a')
-		
-			* check for missing	
-			table s_halfhour laundry_timing_`a' any_laundry_`a', mi
+			  
+		* loop through locations
+		local acts "all h nh"
+		foreach a of local acts {
+			di "*****************************"
+			di "*****************************"
 			
-			lab def laundry_timing 1 "Sunday morning 09:00-12:00" 2 "Weekday morning 09:00-12:00" 3 "Weekday evening peak 17:00-20:00" 4 "Night-time 22:30-01:30" 5 "Other"
-			lab val laundry_timing_`a' laundry_timing
-			tab laundry_timing_`a' survey [iw=propwt], col
-			svy:tab laundry_timing_`a' survey, col ci
-			table laundry_timing_`a' ba_age_r survey [iw=propwt], col
-			table laundry_timing_`a' empstat survey [iw=propwt], col
-			table laundry_timing_`a' ba_nchild survey [iw=propwt], col
+			di "*****************************"
+			di "* 'at least 1 reported reported laundry instance' for: any_laundry_`a'"
+			svy: tab any_laundry_`a' survey , col ci
+	
+			di "*******"
+			di "* Tables for: any_laundry_`a' = 1"
+			di "* Income"
+			svy: tab income survey if any_laundry_`a' == 1, col ci
 			
-			* collapse to single person record
-			* note that this does not mean classifying 1 person to 1 'type' - a person can display multiple laundry types
-			* remember 1974/5 = 1 week diary
+			di "*******"
+			di "* Sex"
+			svy: tab sex survey if any_laundry_`a' == 1, col ci		
+			di "* Sex & age"
+			di "* 1974 (if any_laundry_`a' = 1)"
+			svy: tab ba_age_r sex if any_laundry_`a' == 1 & survey == 1974, ci row
+			di "* 2005 (if any_laundry_`a' = 1)"
+			svy: tab ba_age_r sex if any_laundry_`a' == 1 & survey == 2005, ci row
 		
-			collapse (sum) laundry_timing_* any_laundry_all* (mean) propwt, by(pid survey ///
-				ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild)
+			di "*******"
+			di "* Days by survey for any_laundry_`a' = 1 - Fig 2"
+			svy: tab day survey if any_laundry_`a' == 1, ci col
+	
+			di "*******"
+			di "* Days by gender & survey for any_laundry_`a' =1 - used for Fig 3 "
+			table day sex survey if any_laundry_`a' == 1 [iw=propwt]
+		
+			di "*******"
+			di "* Employment status by survey for any_laundry_`a' = 1"
+			table empstat survey if any_laundry_`a' == 1 [iw=propwt]
+	
+			di "*******"
+			di "* Days by survey & employment status if female for any_laundry_`a' = 1 - used for Figs 4 & 5"
+			bysort survey: table day empstat if sex == 2 & any_laundry_`a' == 1 [iw=propwt]
+	
+		}
+		
+		* set time variable so can select by time
+		xtset diarypid s_halfhour, delta(30 mins) format(%tcHH:MM)
+	
+		* time of day comparisons
+		local acts "all h nh"
+		foreach a of local acts {
+			di "*****************************"
+			di "* Tables for: any_laundry_`a'"
+			table s_halfhour survey any_laundry_`a' [iw=propwt]
+		
+			di "* days by half hour for: any_laundry_`a'"
+			table s_halfhour survey day [iw=propwt], by(any_laundry_`a')	
+	
+			/* seasons - leave out for now (small N)
+			recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
+			* check
+			* tab month season
+			table s_halfhour survey season [iw=propwt], by(any_laundry_`a')
+			
+			* by employment status - not used (small n esp if just for women)
+			di "* by half hour & employment status for women for: any_laundry_`a'"
+			table s_halfhour empstat survey if sex == 2 [iw=propwt], by(any_laundry_`a')
+		
+			di "*repeat by day for 2005 for: any_laundry_`a'"
+			table s_halfhour empstat day if survey == 2005 & sex == 2 [iw=propwt], by(any_laundry_`a')
+			*/
+		}
+		local acts "h"
+		foreach a of local acts {
+			* analysis by laundry type
+			preserve
+				gen laundry_timing_`a' = 5 if any_laundry_`a' == 1 // other
+				replace laundry_timing_`a' = 1 if any_laundry_`a' == 1 & day == 1 & tin(08:00, 12:00) // sunday morning
+				replace laundry_timing_`a' = 2 if any_laundry_`a' == 1 & day > 1 & day < 6 & tin(09:00, 12:00) // weekday morning
+				replace laundry_timing_`a' = 3 if any_laundry_`a' == 1 & day > 1 & day < 6 & tin(17:00, 20:00) // weekday evening peak
+				replace laundry_timing_`a' = 4 if any_laundry_`a' == 1 & tin(00:00, 01:30) // night-time
+				replace laundry_timing_`a' = 4 if any_laundry_`a' == 1 & tin(22:30, 23:30) // night-time
+			
+				tab laundry_timing_`a', gen(laundry_timing_`a')
+			
+				* check for missing	
+				table s_halfhour laundry_timing_`a' any_laundry_`a'
+				tab laundry_timing_`a' survey, mi
 				
-				recode any_laundry_all any_laundry_allh any_laundry_allnh (1/max=1)
-				recode laundry_timing_`a'1 (1/max=1)
-				recode laundry_timing_`a'2 (1/max=1)
-				recode laundry_timing_`a'3 (1/max=1)
-				recode laundry_timing_`a'4 (1/max=1)
-				recode laundry_timing_`a'5 (1/max=1)
+				lab def laundry_timing 1 "Sunday morning 09:00-12:00" 2 "Weekday morning 09:00-12:00" 3 "Weekday evening peak 17:00-20:00" 4 "Night-time 22:30-01:30" 5 "Other"
+				lab val laundry_timing_`a' laundry_timing
+				tab laundry_timing_`a' survey [iw=propwt], col
+				svy:tab laundry_timing_`a' survey, col ci
+				*table laundry_timing_`a' ba_age_r survey [iw=propwt], col
+				table laundry_timing_`a' empstat survey [iw=propwt], col
+				*table laundry_timing_`a' ba_nchild survey [iw=propwt], col
 				
-				*how many people are in multiple types?
-				egen nlaundry_types_`a' = rowtotal(laundry_timing_`a'*)
-				svy: tab nlaundry_types_`a' survey, col
-				
-				* what % of respondents in each?
-				svy: mean laundry_timing_`a'*, over(survey)
-				* % of launderers
-				svy: mean laundry_timing_`a'* if any_laundry_all == 1, over(survey)
-				
-				foreach v of numlist 1/4 {
-					logit laundry_timing_`a'`v' sex ib4.empstat i.ba_age_r i.ba_nchild if survey == 1974
-					est store laundry_timing_`a'`v'_1974
-					logit laundry_timing_`a'`v' sex ib4.empstat i.ba_age_r i.ba_nchild if survey == 2005
-					est store laundry_timing_`a'`v'_2005
-				}
-				estout laundry_timing_`a'*_2005 using "$rpath/laundry_type_`a'_1974_$version-regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
-				estout laundry_timing_`a'*_2005 using "$rpath/laundry_type_`a'_2005_$version-regressions.txt", cells("b ci_l ci_u se _star") stats(N r2_p chi2 p ll) replace
-		restore
-	}
+				di "* collapse to single person record"
+				* note that this does not mean classifying 1 person to 1 'type' - a person can display multiple laundry types
+				* remember 1974/5 = 1 week diary
+			
+				collapse (sum) laundry_timing_* any_laundry_* (mean) propwt, by(pid survey ///
+					ba_birth_cohort ba_age_r ba_nchild sex emp empstat nchild hhldsize)
+					
+					recode any_laundry_all any_laundry_h any_laundry_nh (1/max=1)
+					recode laundry_timing_`a'1 (1/max=1)
+					recode laundry_timing_`a'2 (1/max=1)
+					recode laundry_timing_`a'3 (1/max=1)
+					recode laundry_timing_`a'4 (1/max=1)
+					recode laundry_timing_`a'5 (1/max=1)
+					
+					di "* how many people are in multiple types? (nlaundry_types_`a' $version)"
+					egen nlaundry_types_`a' = rowtotal(laundry_timing_`a'*)
+					svy: tab nlaundry_types_`a' survey, col
+					
+					* what % of respondents in each?
+					svy: mean laundry_timing_`a'*, over(survey)
+					* % of launderers
+					svy: mean laundry_timing_`a'* if any_laundry_all == 1, over(survey)
+					
+					foreach v of numlist 1/4 {
+						logit laundry_timing_`a'`v' sex ib4.empstat i.ba_age_r i.ba_nchild hhldsize if survey == 1974
+						est store laundry_timing_`a'`v'_1974
+						logit laundry_timing_`a'`v' sex ib4.empstat i.ba_age_r i.ba_nchild hhldsize if survey == 2005
+						est store laundry_timing_`a'`v'_2005
+					}
+					estout laundry_timing_`a'*_2005 using "$rpath/laundry_type_`a'_1974_$version-regressions.txt", cells("b ci_l ci_u se p _star") stats(N r2_p chi2 p ll) replace
+					estout laundry_timing_`a'*_2005 using "$rpath/laundry_type_`a'_2005_$version-regressions.txt", cells("b ci_l ci_u se p _star") stats(N r2_p chi2 p ll) replace
+			restore
+		}
 } 
 
 
