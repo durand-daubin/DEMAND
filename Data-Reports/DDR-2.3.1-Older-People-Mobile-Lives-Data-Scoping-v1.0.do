@@ -234,6 +234,14 @@ tab a_agegr10_dv
 * http://nesstar.ukdataservice.ac.uk/
 
 ****************************
+* BSA
+* http://discover.ukdataservice.ac.uk/series/?sn=200006
+* 2012
+* analsyed using NESTAR - what a fabtastic tool for avoiding data downloads!!
+* http://nesstar.ukdataservice.ac.uk/
+
+
+****************************
 * ELSA
 * https://www.esds.ac.uk/findingData/snDescription.asp?sn=5050
 * Wave 6 for age distributions
