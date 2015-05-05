@@ -113,25 +113,24 @@ lab def p389_quart 0 "Lowest 25%" 1 "25% - 49%" 2 "50% - 74%" 3 "Highest 25%"
 lab val p389_quart p389_quart
 
 foreach v of local testvars {
-	di "* Tables for `v'"
+	di "* Tables for `v'"	
 	foreach byv of local byvars {
 		di "* -> Tables for `v' by `byv'"
 		qui: tabout ba_sampyear `byv' using "$logd/`v'_by_year_`byv'.txt", ///
 			cells(mean `v' se) ///
 			format(3) ///
 			replace sum svy 
-	}
-	* repeat but for disposable income quartiles within age groups
-	* tabout does not do 3 way tables but we can fool it into creating them using
-	* http://www.ianwatson.com.au/stata/tabout_tutorial.pdf p35
-	levelsof p389_quart, local(qlevels)
-	local qlabels: value label p389_quart
-	*local heading = ""
-	
-	foreach byv of local byvars {
+
 		di "* --> Tables for `v' by `byv' and p389_quart"
+		* disposable income quartiles within age groups
+		* tabout does not do 3 way tables but we can fool it into creating them using
+		* http://www.ianwatson.com.au/stata/tabout_tutorial.pdf p35
+
 		local qcount = 0
 		local filemethod = "replace"
+		levelsof p389_quart, local(qlevels)
+		local qlabels: value label p389_quart
+	
 		foreach l of local qlevels {	
 			if `qcount' > 0 {
 				* we already made one pass so now append
@@ -156,14 +155,41 @@ foreach v of local exp_vars {
 	gen `v'_pr = `v'/p630tp
 	foreach byv of local byvars {
 		*table survey_year c_age [iw=weighta] , c(mean `v'_pr)
-		qui: tabout survey_year `byv' using "$logd/`v'_pr_mean_by_`byv'.txt", ///
+		qui: tabout ba_sampyear `byv' using "$logd/`v'_pr_mean_by_year_`byv'.txt", ///
 			cells(mean `v'_pr se) ///
 			format(3) sum svy replace
+		
+		di "* --> Tables for `v' by `byv' and p389_quart"
+		* disposable income quartiles within age groups
+		* tabout does not do 3 way tables but we can fool it into creating them using
+		* http://www.ianwatson.com.au/stata/tabout_tutorial.pdf p35
+
+		local qcount = 0
+		local filemethod = "replace"
+		levelsof p389_quart, local(qlevels)
+		local qlabels: value label p389_quart
+	
+		foreach l of local qlevels {	
+			if `qcount' > 0 {
+				* we already made one pass so now append
+				local filemethod = "append"	
+				*local heading = "h1(nil) h2(nil)"
+			}
+			local vlabel : label `qlabels' `l'
+			qui: tabout ba_sampyear `byv' if p389_quart == `l' using "$logd/`v'_pr_mean_by_year_`byv'_p389_quart.txt", `filemethod' ///
+				h3("Income quartile: `vlabel'") ///
+				cells(mean `v'_pr se) ///
+				format(3) ///
+				sum svy 
+			local qcount = `qcount' + 1
+		}
 	}
 } 
 
 * sample size tables
 tab ba_sampyear c_age
 tab ba_sampyear ba_birth_cohort
+* distribution of income quartiles
+tab c_age p389_quart, row nof
 
 log close
