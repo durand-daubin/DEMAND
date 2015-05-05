@@ -31,7 +31,7 @@ global where = "/Users/ben/Documents/Work"global droot = "$where/Data/Social Sc
 
 global proot "$where/Projects/RCUK-DEMAND/Data Reports/Project 2.3 older people mobile lives"
 
-local logd = "$proot/results"
+global logd = "$proot/results"
 
 local version "1.0"
 * version 1.0
@@ -39,7 +39,7 @@ local version "1.0"
 
 capture log close
 
-log using "`logd'/DDR-2.3.2-Data-Analysis-v`version'.smcl", replace
+log using "$logd/DDR-2.3.2-Data-Analysis-v`version'.smcl", replace
 
 set more off
 
@@ -102,18 +102,68 @@ svyset [iw = weighta]
 
 * check availability of variables over time
 * non UK flights
-tabstat *_non_uk_flights c73312t* , by(survey_year)
+tabstat *_non_uk_flights c73312t* , by(ba_sampyear)
 
+svy: mean *_non_uk_flights, over( ba_sampyear)
 
+local testvars "n_non_uk_flights any_non_uk_flights"
+local byvars "c_age ba_birth_cohort"
+
+lab def p389_quart 0 "Lowest 25%" 1 "25% - 49%" 2 "50% - 74%" 3 "Highest 25%"
+lab val p389_quart p389_quart
+
+foreach v of local testvars {
+	di "* Tables for `v'"
+	foreach byv of local byvars {
+		di "* -> Tables for `v' by `byv'"
+		qui: tabout ba_sampyear `byv' using "$logd/`v'_by_year_`byv'.txt", ///
+			cells(mean `v' se) ///
+			format(3) ///
+			replace sum svy 
+	}
+	* repeat but for disposable income quartiles within age groups
+	* tabout does not do 3 way tables but we can fool it into creating them using
+	* http://www.ianwatson.com.au/stata/tabout_tutorial.pdf p35
+	levelsof p389_quart, local(qlevels)
+	local qlabels: value label p389_quart
+	*local heading = ""
+	
+	foreach byv of local byvars {
+		di "* --> Tables for `v' by `byv' and p389_quart"
+		local qcount = 0
+		local filemethod = "replace"
+		foreach l of local qlevels {	
+			if `qcount' > 0 {
+				* we already made one pass so now append
+				local filemethod = "append"	
+				*local heading = "h1(nil) h2(nil)"
+			}
+			local vlabel : label `qlabels' `l'
+			qui: tabout ba_sampyear `byv' if p389_quart == `l' using "$logd/`v'_by_year_`byv'_p389_quart.txt", `filemethod' ///
+				h3("Income quartile: `vlabel'") ///
+				cells(mean `v' se) ///
+				format(3) ///
+				sum svy 
+			local qcount = `qcount' + 1
+		}
+	}
+}
 
 * look at % expenditure
-foreach v of local zvars {
+foreach v of local exp_vars {
 	di "* % expenditure analysis: `v'"
 	* % of all expenditure
-	gen `v'_pr = `v'/p630p
-	table survey_year c_age [iw=weighta] , c(mean `v'_pr)
-	tabout survey_year c_age [iw=weighta] using "`logd'/`v'_pr_mean.txt", cells(mean `v'_pr se) format(3) sum svy replace
+	gen `v'_pr = `v'/p630tp
+	foreach byv of local byvars {
+		*table survey_year c_age [iw=weighta] , c(mean `v'_pr)
+		qui: tabout survey_year `byv' using "$logd/`v'_pr_mean_by_`byv'.txt", ///
+			cells(mean `v'_pr se) ///
+			format(3) sum svy replace
+	}
 } 
 
+* sample size tables
+tab ba_sampyear c_age
+tab ba_sampyear ba_birth_cohort
 
 log close
