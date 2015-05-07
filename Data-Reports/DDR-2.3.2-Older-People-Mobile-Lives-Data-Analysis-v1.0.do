@@ -42,8 +42,8 @@ local version "1.0"
 
 * control flow
 local do_lcfs 0
-local do_bsa 0
 local do_ips 1
+local do_bsa 0
 
 set more off
 
@@ -122,7 +122,7 @@ if `do_lcfs' {
 		di "* Tables for `v'"	
 		foreach byv of local byvars {
 			di "* -> Tables for `v' by `byv'"
-			qui: tabout ba_sampyear `byv' using "$logd/`v'_by_year_`byv'.txt", ///
+			qui: tabout ba_sampyear `byv' using "$logd/LCFS-`v'_by_year_`byv'.txt", ///
 				cells(mean `v' se) ///
 				format(3) ///
 				replace sum svy 
@@ -144,7 +144,7 @@ if `do_lcfs' {
 					*local heading = "h1(nil) h2(nil)"
 				}
 				local vlabel : label `qlabels' `l'
-				qui: tabout ba_sampyear `byv' if p389_quart == `l' using "$logd/`v'_by_year_`byv'_p389_quart.txt", `filemethod' ///
+				qui: tabout ba_sampyear `byv' if p389_quart == `l' using "$logd/LCFS-`v'_by_year_`byv'_p389_quart.txt", `filemethod' ///
 					h3("Income quartile: `vlabel'") ///
 					cells(mean `v' se) ///
 					format(3) ///
@@ -161,7 +161,7 @@ if `do_lcfs' {
 		gen `v'_pr = `v'/p630tp
 		foreach byv of local byvars {
 			*table survey_year c_age [iw=weighta] , c(mean `v'_pr)
-			qui: tabout ba_sampyear `byv' using "$logd/`v'_pr_mean_by_year_`byv'.txt", ///
+			qui: tabout ba_sampyear `byv' using "$logd/LCFS-`v'_pr_mean_by_year_`byv'.txt", ///
 				cells(mean `v'_pr se) ///
 				format(3) sum svy replace
 			
@@ -182,7 +182,7 @@ if `do_lcfs' {
 					*local heading = "h1(nil) h2(nil)"
 				}
 				local vlabel : label `qlabels' `l'
-				qui: tabout ba_sampyear `byv' if p389_quart == `l' using "$logd/`v'_pr_mean_by_year_`byv'_p389_quart.txt", `filemethod' ///
+				qui: tabout ba_sampyear `byv' if p389_quart == `l' using "$logd/LCFS-`v'_pr_mean_by_year_`byv'_p389_quart.txt", `filemethod' ///
 					h3("Income quartile: `vlabel'") ///
 					cells(mean `v'_pr se) ///
 					format(3) ///
@@ -203,8 +203,76 @@ else {
 }
 
 if `do_ips' {
+	di "*-> do_ips = `do_ips' so running IPS analysis"
+	****************************
+	* UK IPS International Passenger Survey: 
+	* http://discover.ukdataservice.ac.uk/series/?sn=2000025
+	* use data pre-created using https://github.com/dataknut/IPS/blob/master/UK-IPS-time-series-extract.do
+	use "$droot/UK International Passenger Survey/processed/IPS-2001-2013-extract-BA.dta", clear
+		
+	svyset [iw=fweight]
+	/*
+	There are eight ÔflowsÕ, as follows:	1. Overseas residents departing UK via air	2. UK residents departing UK via air	3. Overseas residents arriving in UK via air	4. UK residents arriving in UK via air	5. Overseas residents departing UK via sea or tunnel 
+	6. UK residents departing UK via sea or tunnel	7. Overseas residents arriving in UK via sea or tunnel 
+	8. UK residents arriving in UK via sea or tunnel
+	The overseas travel and tourism estimates published by ONS use only flows 1,4,5,8, i.e. those on which the visit is being completed. 
+	These cases contain a range of detail about the visit
+	*/
+	
+	* we are going to focus only on UK residents leaving
+	gen ba_flight_dep = 0
+	replace ba_flight_dep = 1 if flow == 2
+	lab var ba_flight_dep "UK residents departing UK via air"
+	
+	gen ba_sea_dep = 0
+	replace ba_sea_dep = 1 if flow == 6
+	lab var ba_sea_dep "UK residents departing UK via sea or tunnel"
+
+	* leisure etc purposes
+	label li purp
+	recode purp (1=1 "Holiday") (2=2 "Cruise") (61/62=3 "Visiting friends & family") (nonm = 4 "Other"), gen(ba_purp)
+	 
+	local testvars = "ba_flight_dep ba_sea_dep"
+	local byvars = "ba_age"
+	foreach v of local testvars {
+		di "* Tables for `v'"	
+		foreach byv of local byvars {
+			di "* -> Tables for `v' by `byv'"
+			qui: tabout year `byv' using "$logd/IPS-`v'_by_year_`byv'.txt", ///
+				cells(mean `v' se) ///
+				format(3) ///
+				replace sum svy 
+		}
+		di "* --> Tables for `v' by `byv' and purpose"
+		* disposable income quartiles within age groups
+		* tabout does not do 3 way tables but we can fool it into creating them using
+		* http://www.ianwatson.com.au/stata/tabout_tutorial.pdf p35
+
+		local qcount = 0
+		local filemethod = "replace"
+		levelsof ba_purp, local(ba_purpl)
+		local qlabels: value label ba_purp
+	
+		foreach l of local qlevels {	
+			if `qcount' > 0 {
+				* we already made one pass so now append
+				local filemethod = "append"	
+				*local heading = "h1(nil) h2(nil)"
+			}
+			local vlabel : label `qlabels' `l'
+			qui: tabout year `byv' if ba_purp == `l' using "$logd/IPS-`v'_pr_mean_by_year_`byv'_ba_purp.txt", `filemethod' ///
+				h3("Purpose: `vlabel'") ///
+				cells(mean `v' se) ///
+				format(3) ///
+				sum svy 
+			local qcount = `qcount' + 1
+		}
+
+	}
+
 
 }
+
 else {
 	di "*-> do_ips = `do_ips' so skipping IPS analysis"
 }
