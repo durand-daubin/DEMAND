@@ -1,4 +1,4 @@
-**************************************************************
+/***************************************************************
 * Data Exploration for DEMAND Theme 2.3 - older people's mobile lives
 * - http://www.demand.ac.uk/research-themes/theme-2-how-end-use-practices-change/2-3-older-people-and-mobile-lives/
 * - focus on leisure and longer duration/special travel
@@ -6,7 +6,10 @@
 * This work was funded by RCUK through the End User Energy Demand Centres Programme via the
 * "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, http://gtr.rcuk.ac.uk/project/0B657D54-247D-4AD6-9858-64E411D3D06C)
 
-/*   
+Latest version can be found at:
+
+https://github.com/dataknut/DEMAND/blob/master/Data-Reports/DDR-2.3.2-Older-People-Mobile-Lives-Data-Analysis-v1.0.do
+   
 
 Copyright (C) 2014  University of Southampton
 
@@ -25,7 +28,7 @@ GNU General Public License for more details.
 
 #YMMV - http://en.wiktionary.org/wiki/YMMV
 
-*/
+****************************************************************/
 
 global where = "/Users/ben/Documents/Work"global droot = "$where/Data/Social Science Datatsets/"
 
