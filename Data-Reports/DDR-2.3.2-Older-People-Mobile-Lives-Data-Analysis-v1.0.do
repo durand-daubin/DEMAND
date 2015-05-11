@@ -210,7 +210,10 @@ if `do_ips' {
 	* use data pre-created using https://github.com/dataknut/IPS/blob/master/UK-IPS-time-series-extract.do
 	use "$droot/UK International Passenger Survey/processed/IPS-2001-2013-extract-BA.dta", clear
 		
-	svyset [iw=fweight]
+	* do NOT use the weight - this appears to be a grossing not a non-response weight
+	* all analyses are unweighted so no CI etc
+	* svyset [iw=fweight]
+	
 	/*
 	There are eight ÔflowsÕ, as follows:	1. Overseas residents departing UK via air	2. UK residents departing UK via air	3. Overseas residents arriving in UK via air	4. UK residents arriving in UK via air	5. Overseas residents departing UK via sea or tunnel 
 	6. UK residents departing UK via sea or tunnel	7. Overseas residents arriving in UK via sea or tunnel 
@@ -219,58 +222,72 @@ if `do_ips' {
 	These cases contain a range of detail about the visit
 	*/
 	
-	* we are going to focus only on UK residents leaving
-	gen ba_flight_dep = 0
-	replace ba_flight_dep = 1 if flow == 2
-	lab var ba_flight_dep "UK residents departing UK via air"
+	* we're interested in flows 4 & 8 and they have been pre-coded in the extraction script
+	* keep them to save memory etc
+	keep if ba_flight_ar == 1 | ba_sea_ar == 1
 	
-	gen ba_sea_dep = 0
-	replace ba_sea_dep = 1 if flow == 6
-	lab var ba_sea_dep "UK residents departing UK via sea or tunnel"
-
-	* leisure etc purposes
-	label li purp
-	recode purp (1=1 "Holiday") (2=2 "Cruise") (61/62=3 "Visiting friends & family") (nonm = 4 "Other"), gen(ba_purp)
-	 
-	local testvars = "ba_flight_dep ba_sea_dep"
-	local byvars = "ba_age"
+	* test for air & sea/tunnel arrivals seperately
+	local testvars = "ba_flight_ar ba_sea_ar"
+	* test by age g roup & age cohort seperately
+	local byvars = "ba_age ba_birth_cohort"
+	* loop over the two forms
 	foreach v of local testvars {
-		di "* Tables for `v'"	
+		di "* Tables for `v' == Yes"	
+		* basic table for purpose by age
+		qui: tabout year ba_purp if `v' == 1 using "$logd/IPS-`v'_by_year_ba_purp_unw.txt", ///
+			cells(row) ///
+			format(3) ///
+			replace 
+
 		foreach byv of local byvars {
 			di "* -> Tables for `v' by `byv'"
-			qui: tabout year `byv' using "$logd/IPS-`v'_by_year_`byv'.txt", ///
-				cells(mean `v' se) ///
-				format(3) ///
-				replace sum svy 
-		}
-		di "* --> Tables for `v' by `byv' and purpose"
-		* disposable income quartiles within age groups
-		* tabout does not do 3 way tables but we can fool it into creating them using
-		* http://www.ianwatson.com.au/stata/tabout_tutorial.pdf p35
 
-		local qcount = 0
-		local filemethod = "replace"
-		levelsof ba_purp, local(ba_purpl)
-		local qlabels: value label ba_purp
+			qui: tabout year `byv' if `v' == 1 using "$logd/IPS-`v'_by_year_`byv'_unw.txt", ///
+				cells(row) ///
+				format(3) ///
+				replace
+				
+			di "* -> Tables for `v' by `byv' but only if ba_purp != (4) other"
+			qui: tabout year `byv' if `v' == 1 & (ba_purp >= 1 & ba_purp <= 3) using "$logd/IPS-`v'_by_year_leisure_purpose_`byv'_unw.txt", ///
+				cells(row) ///
+				format(3) ///
+				replace 
+
+			
+			di "* --> Tables for `v' by `byv' and purpose"
+			* tabout does not do 3 way tables but we can fool it into creating them using
+			* http://www.ianwatson.com.au/stata/tabout_tutorial.pdf p35
 	
-		foreach l of local qlevels {	
-			if `qcount' > 0 {
-				* we already made one pass so now append
-				local filemethod = "append"	
-				*local heading = "h1(nil) h2(nil)"
+			local qcount = 0
+			local filemethod = "replace"
+			levelsof `byv', local(ba_levels)
+			local plabels: value label `byv'
+		
+			foreach l of local ba_levels {	
+				if `qcount' > 0 {
+					* we already made one pass so now append
+					local filemethod = "append"	
+					*local heading = "h1(nil) h2(nil)"
+				}
+				local vlabel : label `plabels' `l'
+				* table by year & age & purpose for flights or sea arrivals
+				* this should give the % of each age group who reported a given purpose in each year
+				qui: tabout year ba_purp if `v' == 1 & `byv' == `l' using "$logd/IPS-`v'_by_year_ba_purp_`byv'_unw.txt",  ///
+					h3("Age group: `vlabel'") ///
+					cells(row) ///
+					format(3) ///
+					`filemethod' 
+				local qcount = `qcount' + 1
 			}
-			local vlabel : label `qlabels' `l'
-			qui: tabout year `byv' if ba_purp == `l' using "$logd/IPS-`v'_pr_mean_by_year_`byv'_ba_purp.txt", `filemethod' ///
-				h3("Purpose: `vlabel'") ///
-				cells(mean `v' se) ///
-				format(3) ///
-				sum svy 
-			local qcount = `qcount' + 1
+			
 		}
-
 	}
-
-
+	* sample size tables
+	tab year ba_age if ba_flight_ar == 1
+	tab year ba_age if ba_sea_ar == 1
+	* distribution of purpose
+	tab year ba_purp if ba_flight_ar == 1
+	tab year ba_purp if ba_sea_ar == 1
 }
 
 else {
