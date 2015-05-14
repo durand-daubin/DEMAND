@@ -242,6 +242,7 @@ tab INDDIV
 use "$droot/Labour Force Survey/2013/stata/uk2013yv2_annual.dta", clear
 
 * no labels!!
-* used nesstar version instead
+* used nesstar version instead:
+* http://nesstar.ukdataservice.ac.uk/webview/index.jsp?v=2&mode=documentation&submode=abstract&study=http://nesstar.ukdataservice.ac.uk:80/obj/fStudy/7692&top=yes
 
 log close
