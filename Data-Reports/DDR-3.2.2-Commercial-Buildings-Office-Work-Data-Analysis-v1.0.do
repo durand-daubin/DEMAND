@@ -42,6 +42,8 @@ log using "$logd/DDR-3.2.2-Data-Analysis-v`version'.smcl", replace
 
 * control flow
 local do_agg 0
+local do_episodes 0
+local do_sampled 1
 
 set more off
 
@@ -141,33 +143,126 @@ if `do_agg' {
 
 keep pid diarypid workhrs emp office_worker propwt
 
-merge 1:m diarypid using "$droot/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf.dta"
+if `do_episodes' {
+	preserve
+		merge 1:m diarypid using "$droot/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf.dta"
 
 
-recode main (7 8 9 11 12 13 = 1) (else = 0), gen(work_m)
-recode sec (7 8 9 11 12 13 = 1) (else = 0), gen(work_s)
+		recode main (7 8 9 11 12 13 = 1) (else = 0), gen(work_m)
+		recode sec (7 8 9 11 12 13 = 1) (else = 0), gen(work_s)
+		
+		egen work = rowtotal(work_*)
+		
+		* this will have a value of 0 if no work, 1 if work as main or sec and 2 if work as main AND sec
+		* recode slightly
+		recode work (2=1)
+		
+		svyset [iw = propwt]
+		
+		** descriptives
+		local tvars "eloc"
+					
+		* tabout does not do 3 way tables but we can fool it into creating them using
+		* http://www.ianwatson.com.au/stata/tabout_tutorial.pdf p35
+		
+		local count = 0
+		local filemethod = "replace"
+		levelsof office_worker, local(levels)
+		*di "* levels: `levels'"
+		local labels: value label office_worker
+		*di "* labels: `labels'"
+		foreach v of local tvars {
+			di "* Processing `v'"
+			foreach l of local levels {	
+				if `count' > 0 {
+					* we already made one pass so now append
+					local filemethod = "append"	
+					*local heading = "h1(nil) h2(nil)"
+				}
+				local vlabel : label `labels' `l'
+				di "*-> Level: `l' (`vlabel')"
+				* if episode = work
+				qui: tabout `v' survey if work == 1 & office_worker == `l' ///
+					using "$logd/MTUS_`v'_work_by_year.txt", `filemethod' ///
+					h3("Worker: `vlabel'") ///
+					cells(col se) ///
+					format(3) ///
+					svy 
+				local count = `count' + 1
+			}
+		}
+		
+		
+		* sample rows
+		li day month year id s_starttime main sec eloc mtrav in 1/5
+		
+		* office work = at home or at work location (assume 'office')
+		lab li ELOC
+		gen office_work = 0
+		replace office_work = 1 if work == 1 & office_worker == 1 & (eloc == 1 | eloc == 3)
+		
+		* keep office work - not interested in any comparions with not ofice work for now
+		keep if office_work == 1
+		
+		* simple table by time for episodes
+		tabout s_halfhour survey  ///
+			using "$logd/MTUS_episodes_office_work_by_halfhour_per_year.txt", replace ///
+			cells(col se) ///
+			format(3) ///
+			svy
+	restore
+}
 
-egen work = rowtotal(work_*)
+* switch to 'sampled' data
+if `do_sampled' {
+	merge 1:m diarypid using "$droot/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta"
+	recode pact (7 8 9 11 12 13 = 1) (else = 0), gen(work_m)
+	recode sact (7 8 9 11 12 13 = 1) (else = 0), gen(work_s)
+		
+	egen work = rowtotal(work_*)
+		
+	* this will have a value of 0 if no work, 1 if work as main or sec and 2 if work as main AND sec
+	* recode slightly
+	recode work (2=1)
+		
+	* office work = at home or at work location (assume 'office')
+	lab li ELOC
+	gen office_work = 0
+	replace office_work = 1 if work == 1 & office_worker == 1 & (eloc == 1 | eloc == 3)
 
-* this will have a value of 0 if no work, 1 if work as main or sec and 2 if work as main AND sec
-* recode slightly
-recode work (2=1)
+	svyset [iw = propwt]
+	
+	gen ba_hourt = hh(s_starttime)
+	gen ba_minst = mm(s_starttime)
+	
+	gen ba_hh = 0 if ba_minst < 30
+	replace ba_hh = 30 if ba_minst > 29
+	gen ba_sec = 0
+	* sets date to 1969!
+	gen s_halfhour = hms(ba_hourt, ba_hh, ba_sec)
+	lab var s_halfhour "Episode starts during the half hour following"
+	format s_halfhour %tcHH:MM
+	
+	drop ba_hourt ba_minst ba_hh ba_sec
 
-svyset [iw = propwt]
-
-** descriptives
-local tvars "eloc mtrav"
-			
-* tabout does not do 3 way tables but we can fool it into creating them using
-* http://www.ianwatson.com.au/stata/tabout_tutorial.pdf p35
-
-local count = 0
-local filemethod = "replace"
-levelsof office_worker, local(levels)
-*di "* levels: `levels'"
-local labels: value label office_worker
-*di "* labels: `labels'"
-foreach v of local tvars {
+	* keep office work - not interested in any comparions with not ofice work for now
+	keep if office_work == 1
+	
+	* simple table by time for sampled data
+	tabout s_halfhour survey ///
+		using "$logd/MTUS_sampled_office_work_by_halfhour_per_year.txt", replace ///
+		cells(col se) ///
+		format(3) ///
+		svy
+	
+	* split by location
+	* use tabout trick
+	local count = 0
+	local filemethod = "replace"
+	levelsof eloc, local(levels)
+	*di "* levels: `levels'"
+	local labels: value label eloc
+	*di "* labels: `labels'"
 	foreach l of local levels {	
 		if `count' > 0 {
 			* we already made one pass so now append
@@ -175,20 +270,56 @@ foreach v of local tvars {
 			*local heading = "h1(nil) h2(nil)"
 		}
 		local vlabel : label `labels' `l'
-		di "* Level: `l' (`vlabel')"
+		di "*-> Level: `l' (`vlabel')"
 		* if episode = work
-		qui: tabout `v' survey if work == 1 & office_worker == `l' using "$logd/MTUS_`v'_work_by_year.txt", `filemethod' ///
-			h3("Worker: `vlabel'") ///
+		qui: tabout s_halfhour survey if eloc == `l' ///
+			using "$logd/MTUS_sampled_office_work_by_halfhour_per_year_eloc_col_pct.txt", `filemethod' ///
+			h3("Location: `vlabel'") ///
 			cells(col se) ///
+			format(3) ///
+			svy 
+		
+		qui: tabout s_halfhour survey if eloc == `l' ///
+			using "$logd/MTUS_sampled_office_work_by_halfhour_per_year_eloc_freq.txt", `filemethod' ///
+			h3("Location: `vlabel'") ///
+			cells(freq) ///
 			format(3) ///
 			svy 
 		local count = `count' + 1
 	}
+	* look at office work at home by day of week
+		* use tabout trick
+	local count = 0
+	local filemethod = "replace"
+	levelsof ba_dow, local(levels)
+	*di "* levels: `levels'"
+	local labels: value label ba_dow
+	*di "* labels: `labels'"
+	foreach l of local levels {	
+		if `count' > 0 {
+			* we already made one pass so now append
+			local filemethod = "append"	
+			*local heading = "h1(nil) h2(nil)"
+		}
+		local vlabel : label `labels' `l'
+		di "*-> Level: `l' (`vlabel')"
+		* if episode = work
+		qui: tabout s_halfhour survey if ba_dow == `l' & eloc == 1 ///
+			using "$logd/MTUS_sampled_office_work_at_home_by_halfhour_per_year_ba_dow_col_pct.txt", `filemethod' ///
+			h3("Location: `vlabel'") ///
+			cells(col se) ///
+			format(3) ///
+			svy 
+		
+		qui: tabout s_halfhour survey if ba_dow == `l' & eloc == 1 ///
+			using "$logd/MTUS_sampled_office_work_at_home_by_halfhour_per_year_ba_dow_freq.txt", `filemethod' ///
+			h3("Location: `vlabel'") ///
+			cells(freq) ///
+			format(3) ///
+			svy 
+		local count = `count' + 1
+	}
+
 }
-
-
-* sample rows
-li day month year id s_starttime main sec eloc mtrav in 1/5
-
 
 log close
