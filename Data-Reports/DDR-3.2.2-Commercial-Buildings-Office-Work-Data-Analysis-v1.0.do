@@ -244,13 +244,24 @@ if `do_sampled' {
 	format s_halfhour %tcHH:MM
 	
 	drop ba_hourt ba_minst ba_hh ba_sec
+	
+	* keep work
+	keep if work == 1
+
+	** simple tables by time for sampled data
+	* proportion of work that is office work 
+	tabout s_halfhour survey ///
+		using "$logd/MTUS_sampled_pc_office_work_by_halfhour_per_year.txt", replace ///
+		cells(mean office_work se) ///
+		format(3) ///
+		svy sum
 
 	* keep office work - not interested in any comparions with not ofice work for now
 	keep if office_work == 1
-	
-	* simple table by time for sampled data
+
+	* col % of office work - when is it done?
 	tabout s_halfhour survey ///
-		using "$logd/MTUS_sampled_office_work_by_halfhour_per_year.txt", replace ///
+		using "$logd/MTUS_sampled_distn_office_work_by_halfhour_per_year.txt", replace ///
 		cells(col se) ///
 		format(3) ///
 		svy
