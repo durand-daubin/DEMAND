@@ -194,7 +194,7 @@ if `do_episodes' {
 		
 		
 		* sample rows
-		li day month year id s_starttime main sec eloc mtrav in 1/5
+		li s_dow month year id s_starttime main sec eloc mtrav in 1/5
 		
 		* office work = at home or at work location (assume 'office')
 		lab li ELOC
@@ -302,9 +302,9 @@ if `do_sampled' {
 		* use tabout trick
 	local count = 0
 	local filemethod = "replace"
-	levelsof ba_dow, local(levels)
+	levelsof s_dow, local(levels)
 	*di "* levels: `levels'"
-	local labels: value label ba_dow
+	local labels: value label s_dow
 	*di "* labels: `labels'"
 	foreach l of local levels {	
 		if `count' > 0 {
@@ -314,16 +314,31 @@ if `do_sampled' {
 		}
 		local vlabel : label `labels' `l'
 		di "*-> Level: `l' (`vlabel')"
-		* if episode = work
-		qui: tabout s_halfhour survey if ba_dow == `l' & eloc == 1 ///
-			using "$logd/MTUS_sampled_office_work_at_home_by_halfhour_per_year_ba_dow_col_pct.txt", `filemethod' ///
+		* if episode = work - at home
+		qui: tabout s_halfhour survey if s_dow == `l' & eloc == 1 ///
+			using "$logd/MTUS_sampled_office_work_at_home_by_halfhour_per_year_day_col_pct.txt", `filemethod' ///
 			h3("Location: `vlabel'") ///
 			cells(col se) ///
 			format(3) ///
 			svy 
 		
-		qui: tabout s_halfhour survey if ba_dow == `l' & eloc == 1 ///
-			using "$logd/MTUS_sampled_office_work_at_home_by_halfhour_per_year_ba_dow_freq.txt", `filemethod' ///
+		qui: tabout s_halfhour survey if s_dow == `l' & eloc == 1 ///
+			using "$logd/MTUS_sampled_office_work_at_home_by_halfhour_per_year_day_freq.txt", `filemethod' ///
+			h3("Location: `vlabel'") ///
+			cells(freq) ///
+			format(3) ///
+			svy 
+		
+		* if episode = work - workplace
+		qui: tabout s_halfhour survey if s_dow == `l' & eloc == 3 ///
+			using "$logd/MTUS_sampled_office_work_at_workplace_by_halfhour_per_year_day_col_pct.txt", `filemethod' ///
+			h3("Location: `vlabel'") ///
+			cells(col se) ///
+			format(3) ///
+			svy 
+		
+		qui: tabout s_halfhour survey if s_dow == `l' & eloc == 3 ///
+			using "$logd/MTUS_sampled_office_work_at_workplace_by_halfhour_per_year_day_freq.txt", `filemethod' ///
 			h3("Location: `vlabel'") ///
 			cells(freq) ///
 			format(3) ///
