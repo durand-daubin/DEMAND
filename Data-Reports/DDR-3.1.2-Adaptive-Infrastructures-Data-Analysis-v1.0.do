@@ -1,4 +1,4 @@
-**************************************************************
+/***************************************************************
 * Data Exploration for DEMAND Theme 3.1 - adaptive infrastructures
 * - http://www.demand.ac.uk/research-themes/theme-3-managing-infrastructures-of-supply-and-demand/3-1-adapting-infrastructure-for-a-lower-carbon-society/
 * - focus on Stocksbridge & Stevenage (case studies)
@@ -7,7 +7,9 @@
 * This work was funded by RCUK through the End User Energy Demand Centres Programme via the
 * "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, http://gtr.rcuk.ac.uk/project/0B657D54-247D-4AD6-9858-64E411D3D06C)
 
-/*   
+Latest version can be found at:
+
+https://github.com/dataknut/DEMAND/blob/master/Data-Reports/DDR-3.1.2-Adaptive-Infrastructures-Data-Analysis-v1.0.do
 
 Copyright (C) 2014  University of Southampton
 
@@ -47,9 +49,15 @@ set more off
 ****************************
 * Census Analysis
 * done in excel using bespoke download from Casweb & InFuse
+********************************************
 
 ********************************************
-* trends in take-up of gas & electricuty appliances
+* Trends in take-up of gas & electricity using appliances
+* Uses:
+* FES: http://discover.ukdataservice.ac.uk/series/?sn=200016 (1960, 1970, 1980, 1990)
+* EFS/LCFS: http://discover.ukdataservice.ac.uk/series/?sn=2000028 (2000/1, 2010)
+* You will need to download the relevant years and check filenames etc
+********************************************
 local vars "a101 a102 a103 a104 a105 a108 a110 a141 a150 a151 a152 a153 a154"
 local vars "`vars' a155 a156 a164 a1641 a1642 a1643 a1661 a167 a168 a169 a170 a171 a172 a190 a191 a192 a193 a194 a195"
 local vars "`vars' a1644 a1645 a1701 a1711"
