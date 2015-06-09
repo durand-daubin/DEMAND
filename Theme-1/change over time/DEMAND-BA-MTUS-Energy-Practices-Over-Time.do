@@ -70,8 +70,18 @@ set more off
 local main18l "18: Food preparation, cooking"
 local main20l "20: Cleaning"
 local main21l "21: Laundry, ironing, clothing repair"
-local main57l "57: Listen to music or other audio content"local main58l "58: Listen to radio"local main59l "59: Watch TV, video, DVD, streamed film"local main60l "60: Computer games"local main61l "61: E-mail, surf internet, computing"
-local main62l "62: No activity, imputed or recorded transport"local main63l "63: Travel to/from work"local main64l "64: Education travel"local main65l "65: Voluntary/civic/religious travel"local main66l "66: Child/adult care travel"local main67l "67: Shop, person/hhld care travel"local main68l "68: Other travel"
+local main57l "57: Listen to music or other audio content"
+local main58l "58: Listen to radio"
+local main59l "59: Watch TV, video, DVD, streamed film"
+local main60l "60: Computer games"
+local main61l "61: E-mail, surf internet, computing"
+local main62l "62: No activity, imputed or recorded transport"
+local main63l "63: Travel to/from work"
+local main64l "64: Education travel"
+local main65l "65: Voluntary/civic/religious travel"
+local main66l "66: Child/adult care travel"
+local main67l "67: Shop, person/hhld care travel"
+local main68l "68: Other travel"
 
 * 57 58 59 60 61 62 63 64 65 66 67 68
 global acts "18 20 21"
@@ -111,10 +121,6 @@ keep $mtusfilter
 svy: tab id survey, col count
 * 1974 - 1987 = 7 day diaries but NB 1983/4 diary day may need to be fixed
 
-* keep only the vars we want to keep memory required low
-keep sex age `main_acts' hhtype empstat emp unemp student retired propwt survey day month year ///
-	hhldsize famstat nchild *pid ba*
-
 * number of diary-days
 svy: tab survey, obs
 
@@ -124,13 +130,18 @@ svy: tab survey, obs
 * https://github.com/dataknut/MTUS/blob/master/process-MTUS-W6-convert-to-X-min-samples-v1.0-adult.do
 * to have been run over the MTUS first with X set to 10
 
-
 if `do_halfhour_samples' {
 	* merge in the sampled data
 	* do analysis by collapsing 10 minute sampled data to half hours
-	merge 1:m diarypid using "$mtuspath/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", ///
+	use "$mtuspath/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", clear
+
+	* merge in key variables from survey data
+	* hhtype empstat emp unemp student retired propwt survey day month year hhldsize famstat nchild
+	merge m:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(sex age year propwt) ///
 		gen(m_aggvars)
-		
+	
+	keep if m_aggvars == 3
+
 	* set up half-hour variable
 	gen ba_hourt = hh(s_starttime)
 	gen ba_minst = mm(s_starttime)
@@ -146,13 +157,10 @@ if `do_halfhour_samples' {
 	* seasons
 	recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
 	* check
-	* tab month season
+	tab month season
 
 	* this is the number of 10 minute samples by survey & day of the week
 	tab survey s_dow [iw=propwt]
-
-	* set survey
-	svyset [iw=propwt]
 
 	* loop over the acts of interest
 	foreach act of global acts {
@@ -179,6 +187,13 @@ if `do_halfhour_samples' {
 		tab survey  all_`act' [iw=propwt]	
 	}
 	
+	* keep just the variables we need to save memory
+	* others: month cday diary sex age year season eloc mtrav
+	keep s_halfhour survey all_* diarypid s_dow propwt
+
+	* set survey
+	svyset [iw=propwt]
+
 	* loop over acts producing stats
 	* use tabout method for results by day/year
 	* produce stats per half hour
@@ -187,43 +202,50 @@ if `do_halfhour_samples' {
 		di "* primary `act' (`main`act'l')"
 		
 		* proportion of acts that are activity 
-		tabout s_halfhour survey ///
-			using "$rpath/MTUS_sampled_mean_`act'_by_halfhour_per_year_`version'.txt", replace ///
+		qui: tabout s_halfhour survey ///
+			using "$rpath/MTUS_sampled_mean_`act'_by_halfhour_per_year_$version.txt", replace ///
 			cells(mean all_`act' se) ///
 			format(3) ///
 			svy sum
-			
-		* col % of act - when is it done?
-		tabout s_halfhour survey if all_`act' == 1 ///
-			using "$logd/MTUS_sampled_col_pc_`act'__by_halfhour_per_year_`version'.txt", replace ///
-			cells(col se) ///
-			format(3) ///
-			svy
-			local count = 0
 		
-		* by day of week
-		local filemethod = "replace"
-		levelsof s_dow, local(levels)
-		*di "* levels: `levels'"
-		local labels: value label s_dow
-		*di "* labels: `labels'"
-		foreach l of local levels {	
-			if `count' > 0 {
-				* we already made one pass so now append
-				local filemethod = "append"	
-				*local heading = "h1(nil) h2(nil)"
-			}
-			local vlabel : label `labels' `l'
-			di "*-> Level: `l' (`vlabel')"
-			* use freq as can then summarise across all days
-			qui: tabout s_halfhour survey if s_dow == `l' & all_`act' == 1 ///
-				using "$logd/MTUS_sampled_`act'_by_halfhour_per_year_day_col_freq.txt", `filemethod' ///
-				h3("Day: `vlabel'") ///
-				cells(freq) ///
+		preserve
+			* keep what we want - speeds up tabout
+			keep if all_`act' == 1
+
+			* col % of act - when is it done?
+			qui: tabout s_halfhour survey  ///
+				using "$rpath/MTUS_sampled_col_pc_`act'__by_halfhour_per_year_$version.txt", replace ///
+				cells(col se) ///
 				format(3) ///
-				svy 
-			local count = `count' + 1
-		}
+				svy
+			
+			local count = 0
+			* by day of week
+			local filemethod = "replace"
+			levelsof s_dow, local(levels)
+			*di "* levels: `levels'"
+			local labels: value label s_dow
+			*di "* labels: `labels'"
+			foreach l of local levels {	
+				if `count' > 0 {
+					* we already made one pass so now append
+					local filemethod = "append"	
+					*local heading = "h1(nil) h2(nil)"
+				}
+				local vlabel : label `labels' `l'
+				di "*-> Level: `l' (`vlabel')"
+				* use freq as can then summarise across all days
+				qui: tabout s_halfhour survey if s_dow == `l' ///
+					using "$rpath/MTUS_sampled_`act'_by_halfhour_per_year_day_col_freq_$version.txt", `filemethod' ///
+					h3("Day: `vlabel'") ///
+					cells(freq) ///
+					format(3) ///
+					svy 
+				local count = `count' + 1
+			}
+		restore
+		* get rid of the variables we've used to save memory
+		drop all_`act'
 	}
 	
 } 
