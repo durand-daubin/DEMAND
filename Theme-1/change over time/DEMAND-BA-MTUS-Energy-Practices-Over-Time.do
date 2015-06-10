@@ -226,7 +226,7 @@ if `do_halfhour_samples' {
 				local vlabel `l'
 				di "*-> Level: `l' (`vlabel')"
 				* use row to give % in each halfhour per year
-				qui: tabout s_halfhour `v' if survey == `l' ///
+				qui: tabout s_halfhour `v' if ba_survey == `l' ///
 					using "$rpath/MTUS_sampled_`v'_by_halfhour_per_year_col_$version.txt", `filemethod' ///
 					h3("Survey: `vlabel'") ///
 					cells(row) ///
@@ -241,11 +241,11 @@ if `do_halfhour_samples' {
 	* use tabout method for results by day/year
 	* produce stats per half hour
 	foreach act of global acts {
-		di "* Distribution by survey"
+		di "* Distribution by ba_survey"
 		di "* primary `act' (`main`act'l')"
 
 		* proportion of acts that are activity
-		qui: tabout s_halfhour survey ///
+		qui: tabout s_halfhour ba_survey ///
 			using "$rpath/MTUS_sampled_mean_`act'_by_halfhour_per_year_$version.txt", replace ///
 			cells(mean all_`act' se) ///
 			format(3) ///
@@ -256,7 +256,7 @@ if `do_halfhour_samples' {
 			keep if all_`act' == 1
 
 			* col % of act - when is it done?
-			qui: tabout s_halfhour survey  ///
+			qui: tabout s_halfhour ba_survey  ///
 				using "$rpath/MTUS_sampled_col_pc_`act'_by_halfhour_per_year_$version.txt", replace ///
 				cells(col se) ///
 				format(3) ///
@@ -279,7 +279,7 @@ if `do_halfhour_samples' {
 				local vlabel : label `labels' `l'
 				di "*-> Level: `l' (`vlabel')"
 				* use freq as can then summarise across all days
-				qui: tabout s_halfhour survey if s_dow == `l' ///
+				qui: tabout s_halfhour ba_survey if s_dow == `l' ///
 					using "$rpath/MTUS_sampled_`act'_by_halfhour_per_year_day_col_freq_$version.txt", `filemethod' ///
 					h3("Day: `vlabel'") ///
 					cells(freq) ///
