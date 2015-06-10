@@ -67,6 +67,7 @@ set more off
 
 **********************************
 * Codes of interest
+local main4l "4: Wash/dress/care for self"
 local main18l "18: Food preparation, cooking"
 local main20l "20: Cleaning"
 local main21l "21: Laundry, ironing, clothing repair"
@@ -82,9 +83,10 @@ local main65l "65: Voluntary/civic/religious travel"
 local main66l "66: Child/adult care travel"
 local main67l "67: Shop, person/hhld care travel"
 local main68l "68: Other travel"
+local maincarl "101: Car travel"
 
 * 57 58 59 60 61 62 63 64 65 66 67 68
-global acts "18 20 21"
+global acts "4 18 20 101"
 
 local main_acts ""
 local sec_acts ""
@@ -93,36 +95,6 @@ foreach a of global acts {
 	local main_acts = "`main_acts' main`a'"
 	local sec_acts = "`sec_acts' sec`a'"
 }
-* start with processing the aggregate (survey) data
-use "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", clear
-
-* drop all bad cases
-keep if badcase == 0
-
-* set as survey data for descriptives
-svyset [iw=propwt]
-
-* keep only 1974 & 2005 for simplicity
-* keep if survey == 1974 | survey == 2005
-* no, let's keep them all for birth cohort analysis!
-
-* this is minutes per day not episodes
-* check 18 (Cooking) & 20 (Cleaning) & 22 (maintain home/vehicle) against laundry
-* seems to under-report laundry in 1974, esp for women?
-tabstat `main_acts', by(survey)
-
-* keep whatever sample we define above
-keep $mtusfilter
-
-* number of diary days by hh type
-* svy: tab hhtype survey, col count
-
-* number of diary days by number of days covered
-svy: tab id survey, col count
-* 1974 - 1987 = 7 day diaries but NB 1983/4 diary day may need to be fixed
-
-* number of diary-days
-svy: tab survey, obs
 
 *************************
 * sampled data
@@ -159,6 +131,12 @@ if `do_halfhour_samples' {
 	* check
 	tab month season
 
+	* create new pact/sact codes which will be picked up later in the loops
+	* use fake numbers otherwise it fails
+	* car travel
+	replace pact = 101 if mtrav == 1
+	replace sact = 101 if mtrav == 1
+
 	* this is the number of 10 minute samples by survey & day of the week
 	tab survey s_dow [iw=propwt]
 
@@ -171,7 +149,7 @@ if `do_halfhour_samples' {
 	
 		gen sec_`act' = 0
 		lab var sec_`act' "Secondary act: `main`act'l'"
-		replace sec_`act' = 1 if pact == `act'
+		replace sec_`act' = 1 if sact == `act'
 	
 		gen all_`act' = 0
 		replace all_`act' = 1 if pri_`act' == 1 | sec_`act' == 1
@@ -226,11 +204,12 @@ if `do_halfhour_samples' {
 			*di "* levels: `levels'"
 			local labels: value label s_dow
 			*di "* labels: `labels'"
+			local heading "h1(`main`act'l')"
 			foreach l of local levels {	
 				if `count' > 0 {
 					* we already made one pass so now append
 					local filemethod = "append"	
-					*local heading = "h1(nil) h2(nil)"
+					*ocal heading = "h1(nil) h2(nil)"
 				}
 				local vlabel : label `labels' `l'
 				di "*-> Level: `l' (`vlabel')"
