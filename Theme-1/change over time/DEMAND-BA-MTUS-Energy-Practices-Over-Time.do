@@ -215,20 +215,11 @@ if `do_halfhour_samples' {
 		gen all_`act' = 0
 		replace all_`act' = 1 if pri_`act' == 1 | sec_`act' == 1
 		lab var all_`act' "All: `main`act'l'"
-
-		* check % samples which are act
-		* NB reporting frame longer in 1974 (30 mins) so may be higher frequency (e.g. interruption in 10-20 mins coded)
-		di "* main"
-		tab ba_survey  pri_`act' [iw=propwt], row
-		di "* secondary"
-		tab ba_survey  sec_`act' [iw=propwt], row
-		di "* all"
-		tab ba_survey  all_`act' [iw=propwt], row
 	}
 
 	* keep just the variables we need to save memory
 	* others: month cday diary sex age year season eloc mtrav
-	keep s_halfhour survey all_* diarypid s_dow propwt mtrav eloc pact sact ba_survey ba_age_r
+	keep s_halfhour survey all_* diarypid s_dow propwt mtrav eloc pact sact ba_survey ba_age_r income
 
 	* set survey
 	svyset [iw=propwt]
