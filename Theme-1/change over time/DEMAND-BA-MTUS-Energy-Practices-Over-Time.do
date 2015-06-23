@@ -60,9 +60,9 @@ capture log close
 log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version.smcl", replace
 
 * control what gets done
-local do_aggregated = 0
+local do_aggregated = 0 // table of minutes per main activity
 local do_halfhour_samples = 1
-local do_day = 0
+local do_day = 1
 
 * make script run without waiting for user input
 set more off
@@ -75,9 +75,9 @@ local main20l "20: Cleaning"
 local main21l "21: Laundry, ironing, clothing repair"
 local main57l "57: Listen to music or other audio content"
 local main58l "58: Listen to radio"
-local main59l "59: Watch TV, video, DVD, streamed film"
-local main60l "60: Computer games"
-local main61l "61: E-mail, surf internet, computing"
+local main59l "59: Watch TV, video, DVD, streamed film at home"
+local main60l "60: Computer games at home"
+local main61l "61: E-mail, surf internet, computing at home"
 local main62l "62: No activity, imputed or recorded transport"
 local main63l "63: Travel to/from work"
 local main64l "64: Education travel"
@@ -86,10 +86,15 @@ local main66l "66: Child/adult care travel"
 local main67l "67: Shop, person/hhld care travel"
 local main68l "68: Other travel"
 local main101l "101: Car travel"
+local main102l "102: Car travel ending at home"
+local main103l "103: TV/video/DVD/computer games at home"
+local main104l "104: Computer/Internet at home"
+local main105l "105: Cooking late supper at home"
+local main106l "106: Cooking lunch at home"
 
 * original activities (from MTUS 69 codes)
-* 57 58 59 60 61 62 63 64 65 66 67 68
-local o_acts "4 18 20 21"
+* 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
+local o_acts ""
 
 if `do_aggregated' {
 	* use the aggregated file to test the mins per day for these acts for each survey as context
@@ -112,11 +117,11 @@ if `do_aggregated' {
 	}
 }
 * these are the ones we invented to catch particular acts/practices
-local new_acts "101" // car travel
+local new_acts "101 102 103 104 105 106" // see above
 
 local all_acts = "`o_acts' `new_acts'"
 
-* run the constructor to all activities to the looping list
+* run the constructor to add all activities to the looping list
 foreach a of local all_acts {
 	local main_acts = "`main_acts' main`a'"
 	local sec_acts = "`sec_acts' sec`a'"
@@ -134,10 +139,14 @@ if `do_halfhour_samples' {
 	use "$mtuspath/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", clear
 
 	* merge in key variables from survey data
-	* hhtype empstat emp unemp student retired propwt survey day month year hhldsize famstat nchild
-	merge m:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(sex age year propwt) ///
+	* hhtype empstat emp unemp student retired propwt survey day month year hhldsize famstat ba_4hrspaidwork
+	merge m:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(sex age year ba_hhsize ba_nchild ba_age_r ba_birth_cohort income propwt) ///
 		gen(m_aggvars)
 
+	* fix
+	lab def ba_age_r 16 "16-24" 25 "25-34" 35 "35-44" 45 "45-54" 55 "55-64" 65 "64-74" 75 "75+"
+	lab val ba_age_r ba_age_r
+	
 	keep if m_aggvars == 3
 
 	* set up half-hour variable
@@ -159,11 +168,34 @@ if `do_halfhour_samples' {
 
 	* create new pact/sact codes which will be picked up later in the loops
 	* use fake numbers otherwise it fails
-	* car travel
+	* 101: Car travel
 	replace pact = 101 if mtrav == 1
 	replace sact = 101 if mtrav == 1
+	
+	* 102: Car travel ending at home
+	* needs ts to set
+	tsset diarypid s_starttime, delta(10 mins)
+	* now = car travel & next = at home
+	replace pact = 102 if mtrav == 1 & F.eloc == 1
+	replace sact = 102 if mtrav == 1 & F.eloc == 1
+	
+	* 103: TV/video/DVD/computer games at home
+	replace pact = 103 if (pact == 59 | pact == 60) & eloc == 1
+	replace sact = 103 if (sact == 59 | sact == 60) & eloc == 1
 
-	* create a bespoke survey which mereges 1983 & 1987 again
+	* 104: Computer/Internet at home
+	replace pact = 104 if pact == 61 & eloc == 1
+	replace pact = 104 if sact == 61 & eloc == 1
+
+	* 105: Cooking late supper at home
+	replace pact = 105 if pact == 18 & eloc == 1 & ba_hourt > 21 & ba_hourt <= 23
+	replace sact = 105 if sact == 18 & eloc == 1 & ba_hourt > 21 & ba_hourt <= 23
+
+	* 106: Cooking lunch at home
+	replace pact = 106 if pact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14
+	replace sact = 106 if sact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14
+	
+	* create a bespoke survey which merges 1983 & 1987 again
 	recode survey (1974=1974 "1974") (1983/1987=1985 "1985") (1995 = 1995 "1995") (2000=2000 "2000") (2005=2005 "2005"), gen(ba_survey)
 
 	* this is the number of 10 minute samples by survey & day of the week
@@ -196,7 +228,7 @@ if `do_halfhour_samples' {
 
 	* keep just the variables we need to save memory
 	* others: month cday diary sex age year season eloc mtrav
-	keep s_halfhour survey all_* diarypid s_dow propwt mtrav eloc pact sact ba_survey
+	keep s_halfhour survey all_* diarypid s_dow propwt mtrav eloc pact sact ba_survey ba_age_r
 
 	* set survey
 	svyset [iw=propwt]
@@ -212,8 +244,9 @@ if `do_halfhour_samples' {
 		levelsof ba_survey, local(levels)
 		di "* levels: `levels'"
 
-		local vars "pact lact mtrav"
+		local vars "pact eloc mtrav"
 		foreach v of local vars {
+			di "* Doing big table of `v'"
 			local count = 0
 			* by day of week
 
@@ -227,11 +260,19 @@ if `do_halfhour_samples' {
 				di "*-> Level: `l' (`vlabel')"
 				* use row to give % in each halfhour per year
 				qui: tabout s_halfhour `v' if ba_survey == `l' ///
-					using "$rpath/MTUS_sampled_`v'_by_halfhour_per_year_col_$version.txt", `filemethod' ///
+					using "$rpath/MTUS_sampled_`v'_by_halfhour_ba_survey_col_$version.txt", `filemethod' ///
+					h3("Survey: `vlabel'") ///
+					cells(row) ///
+					format(3)
+									
+				/* survey version (takes a long time!!)
+				qui: tabout s_halfhour `v' if ba_survey == `l' ///
+					using "$rpath/MTUS_sampled_`v'_by_halfhour_ba_survey_col_svy_$version.txt", `filemethod' ///
 					h3("Survey: `vlabel'") ///
 					cells(row) ///
 					format(3) ///
 					svy
+				*/
 				local count = `count' + 1
 			}
 		}
@@ -240,11 +281,13 @@ if `do_halfhour_samples' {
 	* loop over acts producing stats
 	* use tabout method for results by day/year
 	* produce stats per half hour
-	foreach act of global acts {
+	foreach act of local all_acts {
+		di "***********************************"
+		di "* Act: `act' (`main`act'l')"
 		di "* Distribution by ba_survey"
-		di "* primary `act' (`main`act'l')"
-
-		* proportion of acts that are activity
+		bysort ba_survey: table all_`act' ba_age_r [iw=propwt], by(income)
+	
+		di "* proportion (uses mean of 1/0) of acts that are `act' (`main`act'l')"
 		qui: tabout s_halfhour ba_survey ///
 			using "$rpath/MTUS_sampled_mean_`act'_by_halfhour_per_year_$version.txt", replace ///
 			cells(mean all_`act' se) ///
@@ -255,13 +298,14 @@ if `do_halfhour_samples' {
 			* keep what we want - speeds up tabout
 			keep if all_`act' == 1
 
-			* col % of act - when is it done?
+			di "* col % of `act' (`main`act'l') - when is it done?"
 			qui: tabout s_halfhour ba_survey  ///
 				using "$rpath/MTUS_sampled_col_pc_`act'_by_halfhour_per_year_$version.txt", replace ///
 				cells(col se) ///
 				format(3) ///
 				svy
 
+			di "* freq of `act' (`main`act'l') - when is it done by day?"
 			local count = 0
 			* by day of week
 			local filemethod = "replace"
@@ -291,7 +335,6 @@ if `do_halfhour_samples' {
 		* get rid of the variables we've used to save memory
 		drop all_`act'
 	}
-
 }
 
 
