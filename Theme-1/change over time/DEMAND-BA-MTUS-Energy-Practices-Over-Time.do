@@ -48,21 +48,40 @@ global rpath "$proot/results/MTUS"
 
 * version
 global version = "v2.0"
-* changed to tabout method for stats and not aggregating by half hour first (let tabout do th ejob of collapse)
+
 * global version = "v1.0"
 * weights the final counts
-* which subgroup of mtus are we interested in?
-global mtusfilter "_all"
-
 
 capture log close
 
 log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version.smcl", replace
 
+* which subgroup of mtus are we interested in?
+global mtusfilter "_all"
+
 * control what gets done
 local do_aggregated = 0 // table of minutes per main activity
 local do_day = 0 // big tables of all (merged) acts, eloc and mtrav by time of day
-local do_timeofday = 0 // tabout tables for each time use act/practice
+local do_timeofday = 1 // tabout tables for each time use act/practice
+
+* original activities (from MTUS 69 codes)
+* 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
+* add any of them in to refresh the results
+local old_acts ""
+
+* these are the ones we will invent to catch particular acts/practices
+* 100 101 102 103 104 105 106
+* add any of them in to refresh the results
+local new_acts "100 106" // see above
+
+local all_acts = "`old_acts' `new_acts'"
+
+* run the constructor to add all activities to the looping list
+foreach a of local all_acts {
+	local main_acts = "`main_acts' main`a'"
+	local sec_acts = "`sec_acts' sec`a'"
+}
+
 
 * make script run without waiting for user input
 set more off
@@ -94,10 +113,6 @@ local main104l "104 Computer,Internet at home"
 local main105l "105 Cooking late supper at home"
 local main106l "106 Cooking Sunday lunch at home"
 
-* original activities (from MTUS 69 codes)
-* 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
-* add any of them in to refresh the results
-local o_acts ""
 
 if `do_aggregated' {
 	* use the aggregated file to test the mins per day for these acts for each survey as context
@@ -109,7 +124,7 @@ if `do_aggregated' {
 	* has the advantage of providing all seasons for '1985'
 	recode survey (1974=1974 "1974") (1983/1987=1985 "1985") (1995 = 1995 "1995") (2000=2000 "2000") (2005=2005 "2005"), gen(ba_survey)
 
-	foreach act of local o_acts {
+	foreach act of local old_acts {
 		di "* Mean minutes per day - `main`act'l'"
 		tabout ba_survey ///
 		using "$rpath/MTUS_aggregate_uk_`main`act'l'_mean_mins_by_ba_survey_$version.txt", replace ///
@@ -119,18 +134,7 @@ if `do_aggregated' {
 		sum svy
 	}
 }
-* these are the ones we invented to catch particular acts/practices
-* 100 101 102 103 104 105 106
-* add any of them in to refresh the results
-local new_acts "100 106" // see above
 
-local all_acts = "`o_acts' `new_acts'"
-
-* run the constructor to add all activities to the looping list
-foreach a of local all_acts {
-	local main_acts = "`main_acts' main`a'"
-	local sec_acts = "`sec_acts' sec`a'"
-}
 
 *************************
 * sampled data
@@ -289,7 +293,6 @@ foreach act of local all_acts {
 	tab all_`act' s_dow
 }
 
-stop
 * drop primary * secondary vars as we don't use them and they take up a lot of space
 drop pri_*
 drop sec_*
@@ -384,9 +387,7 @@ preserve
 	* relabel
 	lab val ba_age_r ba_age_r
 
-	* need to use codes not varlist so we can get the labels out correctly
-	local tvars "100"
-	foreach p of local tvars {
+	foreach p of local new_acts {
 		di "* Act: `p' (`main`p'l')"
 		di "* Basic test"
 		tab all_`p'
