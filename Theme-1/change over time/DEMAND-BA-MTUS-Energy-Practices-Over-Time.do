@@ -381,7 +381,7 @@ preserve
 	lab val ba_age_r ba_age_r
 
 	* need to use codes not varlist so we can get the labels out correctly
-	local tvars "4 18 20 21 101 102 103 104 105 106"
+	local tvars "100"
 	foreach p of local tvars {
 		di "* Act: `p' (`main`p'l')"
 		di "* Basic test"
