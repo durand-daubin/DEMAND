@@ -92,10 +92,11 @@ local main102l "102 Car travel ending at home"
 local main103l "103 TV, video, DVD, computer games at home"
 local main104l "104 Computer,Internet at home"
 local main105l "105 Cooking late supper at home"
-local main106l "106 Cooking lunch at home"
+local main106l "106 Cooking Sunday lunch at home"
 
 * original activities (from MTUS 69 codes)
 * 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
+* add any of them in to refresh the results
 local o_acts ""
 
 if `do_aggregated' {
@@ -120,7 +121,8 @@ if `do_aggregated' {
 }
 * these are the ones we invented to catch particular acts/practices
 * 100 101 102 103 104 105 106
-local new_acts "100" // see above
+* add any of them in to refresh the results
+local new_acts "100 106" // see above
 
 local all_acts = "`o_acts' `new_acts'"
 
@@ -267,8 +269,8 @@ replace pact = 105 if pact == 18 & eloc == 1 & ba_hourt > 21 & ba_hourt <= 23
 replace sact = 105 if sact == 18 & eloc == 1 & ba_hourt > 21 & ba_hourt <= 23
 
 * 106: Cooking lunch at home
-replace pact = 106 if pact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14
-replace sact = 106 if sact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14
+replace pact = 106 if pact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14 & s_dow == 0
+replace sact = 106 if sact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14 & s_dow == 0
 
 * loop over the acts of interest to construct 'all'
 foreach act of local all_acts {
@@ -284,8 +286,10 @@ foreach act of local all_acts {
 	gen all_`act' = 0
 	replace all_`act' = 1 if pri_`act' == 1 | sec_`act' == 1
 	lab var all_`act' "All: `main`act'l'"
+	tab all_`act' s_dow
 }
 
+stop
 * drop primary * secondary vars as we don't use them and they take up a lot of space
 drop pri_*
 drop sec_*
