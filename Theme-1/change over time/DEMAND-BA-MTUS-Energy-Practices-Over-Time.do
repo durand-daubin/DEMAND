@@ -399,12 +399,21 @@ preserve
 			local vlabel : label `labels' `l'
 			di "*-> Level: `l' of `main`p'l'"
 			* use mean as indicator of prevalence in each age/income cell for each year
+			* age
 			tabout ba_age_r income if ba_survey == `l' ///
 				using "$rpath/MTUS_`main`p'l'_by_age_year_income_$version.txt", `filemethod' ///
 				h3("Year: `vlabel'") ///
 				cells(mean all_`p'_sumc se) ///
 				format(3) ///
 				sum svy
+			* age cohorts
+			tabout ba_birth_cohort income if ba_survey == `l' ///
+				using "$rpath/MTUS_`main`p'l'_by_birth_cohort_year_income_$version.txt", `filemethod' ///
+				h3("Year: `vlabel'") ///
+				cells(mean all_`p'_sumc se) ///
+				format(3) ///
+				sum svy
+
 			local count = `count' + 1
 		}
 	}
