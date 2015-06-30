@@ -86,6 +86,7 @@ local main66l "66 Child, adult care travel"
 local main67l "67 Shop, person or hhld care travel"
 local main68l "68 Other travel"
 * new derived codes
+local main100l "100 Eating at home"
 local main101l "101 Car travel"
 local main102l "102 Car travel ending at home"
 local main103l "103 TV, video, DVD, computer games at home"
@@ -118,7 +119,7 @@ if `do_aggregated' {
 	}
 }
 * these are the ones we invented to catch particular acts/practices
-local new_acts "101 102 103 104 105 106" // see above
+local new_acts "100 101 102 103 104 105 106" // see above
 
 local all_acts = "`o_acts' `new_acts'"
 
@@ -236,6 +237,11 @@ if `do_day' {
 
 * now create new pact/sact codes which will be picked up later in the loops
 * use fake numbers otherwise it fails
+
+* 100 eating at home
+replace pact = 100 if (pact == 5 | pact == 6) & eloc == 1
+replace sact = 100 if (sact == 5 | sact == 6) & eloc == 1
+
 * 101: Car travel
 replace pact = 101 if mtrav == 1
 replace sact = 101 if mtrav == 1
@@ -367,9 +373,9 @@ preserve
 	* now add them up by collapsing again to person level leaving in ba_survey as a check
 	* this should have a max of 48 (act was observed in every 1/2 hour)
 	collapse (sum) all_*_sumc , by(diarypid ba_survey)
-
+stop
   * put some of the survey variables back in
-	merge 1:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(ba_age_r income propwt)
+	merge 1:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(ba_age_r income propwt ba_birth_cohort)
 	* relabel
 	lab val ba_age_r ba_age_r
 
