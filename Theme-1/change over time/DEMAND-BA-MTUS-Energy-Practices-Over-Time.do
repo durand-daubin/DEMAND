@@ -62,7 +62,7 @@ log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version.smcl", repl
 * control what gets done
 local do_aggregated = 0 // table of minutes per main activity
 local do_day = 1 // big tables of all (merged) acts, eloc and mtrav by time of day
-local do_timeofday = 0 // tabout tables for each time use act/practice
+local do_timeofday = 1 // tabout tables for each time use act/practice
 
 * make script run without waiting for user input
 set more off
@@ -96,7 +96,7 @@ local main106l "106 Cooking lunch at home"
 
 * original activities (from MTUS 69 codes)
 * 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
-local o_acts "4 18 20 21"
+local o_acts ""
 
 if `do_aggregated' {
 	* use the aggregated file to test the mins per day for these acts for each survey as context
@@ -119,7 +119,8 @@ if `do_aggregated' {
 	}
 }
 * these are the ones we invented to catch particular acts/practices
-local new_acts "100 101 102 103 104 105 106" // see above
+* 100 101 102 103 104 105 106
+local new_acts "100" // see above
 
 local all_acts = "`o_acts' `new_acts'"
 
