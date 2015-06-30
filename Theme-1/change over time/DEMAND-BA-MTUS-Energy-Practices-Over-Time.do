@@ -61,8 +61,8 @@ log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version.smcl", repl
 
 * control what gets done
 local do_aggregated = 0 // table of minutes per main activity
-local do_day = 1 // big tables of all (merged) acts, eloc and mtrav by time of day
-local do_timeofday = 1 // tabout tables for each time use act/practice
+local do_day = 0 // big tables of all (merged) acts, eloc and mtrav by time of day
+local do_timeofday = 0 // tabout tables for each time use act/practice
 
 * make script run without waiting for user input
 set more off
@@ -374,7 +374,7 @@ preserve
 	* now add them up by collapsing again to person level leaving in ba_survey as a check
 	* this should have a max of 48 (act was observed in every 1/2 hour)
 	collapse (sum) all_*_sumc , by(diarypid ba_survey)
-stop
+
   * put some of the survey variables back in
 	merge 1:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(ba_age_r income propwt ba_birth_cohort)
 	* relabel
