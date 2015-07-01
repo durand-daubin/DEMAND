@@ -152,7 +152,7 @@ merge m:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepus
 	gen(m_aggvars)
 
 * fix
-lab def ba_age_r 16 "16-24" 25 "25-34" 35 "35-44" 45 "45-54" 55 "55-64" 65 "64-74" 75 "75+"
+lab def ba_age_r 16 "16-24" 25 "25-34" 35 "35-44" 45 "45-54" 55 "55-64" 65 "65-74" 75 "75+"
 lab val ba_age_r ba_age_r
 
 keep if m_aggvars == 3
