@@ -427,10 +427,23 @@ preserve
 				sum svy
 
 			local count = `count' + 1
-		}
+		}				
 	}
 restore
 
+* create half-hour by day tables for each year
+
+foreach v of varlist all_* {
+	levelsof ba_survey, local(levels)
+	foreach l of local levels {
+		tabout s_halfhour s_dow if ba_survey == `l' ///
+			using "$rpath/MTUS_`v'_by_day_`l'_$version.txt", replace ///
+			cells(mean all_`p') ///
+			format(3) ///
+			sum svy
+	}
+}
+		
 di "*-->Done!"
 
 log close
