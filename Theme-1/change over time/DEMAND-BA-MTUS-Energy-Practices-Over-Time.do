@@ -72,7 +72,7 @@ local old_acts ""
 * these are the ones we will invent to catch particular acts/practices
 * 100 101 102 103 104 105 106
 * add any of them in to refresh the results
-local new_acts "100 106" // see above
+local new_acts "102" // see above
 
 local all_acts = "`old_acts' `new_acts'"
 
@@ -256,9 +256,9 @@ replace sact = 101 if mtrav == 1
 * 102: Car travel ending at home
 * needs ts to set
 tsset diarypid s_starttime, delta(10 mins)
-* now = car travel & next = at home
-replace pact = 102 if mtrav == 1 & F.eloc == 1
-replace sact = 102 if mtrav == 1 & F.eloc == 1
+* now = at home, last was car travel
+replace pact = 102 if L.mtrav == 1 & eloc == 1
+replace sact = 102 if L.mtrav == 1 & eloc == 1
 
 * 103: TV/video/DVD/computer games at home
 replace pact = 103 if (pact == 59 | pact == 60) & eloc == 1
