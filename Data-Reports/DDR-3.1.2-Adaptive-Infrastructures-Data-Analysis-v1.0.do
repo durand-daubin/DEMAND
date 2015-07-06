@@ -73,10 +73,7 @@ if `do_census' {
 	tabstat no_cc gas_ch electric_ch oil_ch solidfuel_ch other_ch twomore_ch hh_spaces, by(case_studies) s(sum)	
 	
 	merge m:1 lsoacode_2011 using "$censusroot/2011Data/EW/lsoa/processed/2011-LSOA-internet-form-completion-imd-rural-merged.dta", ///
-		gen(imd_m) keepusing(regionname morphologycode morphologyname contextcode contextname combinedcode combinedname ///
-		imdscore incomescore employmentscore healthdeprivationanddisabilitysc educationskillsandtrainingscore ///
-		barrierstohousingandservicesscor crimeanddisorderscore livingenvironmentscore indoorssubdomainscore ///
-		outdoorssubdomainscore geographicalbarrierssubdomainsco widerbarrierssubdomainscore childrenyoungpeoplesubdomainscor skillssubdomainscore idaciscore idaopiscore)
+		gen(imd_m) keepusing(regionname)
 	
 	* check matches again 
 	tab case_studies _merge, mi
@@ -102,10 +99,6 @@ if `do_census' {
 	* test
 	su av_*
 	
-	* convert to %
-	replace pc_electric_ch = pc_electric_ch * 100
-	replace pc_gas_ch = pc_gas_ch * 100
-	
 	* case study areas are OK
 	scatter av_consumption_dom pc_electric_ch if case_studies > 0, by(case_studies) name(scatter_elec_dom)
 	graph export "$logd/graphs/scatter_elec_dom_case_studies.png", replace
@@ -113,30 +106,18 @@ if `do_census' {
 	scatter av_consumption_e7 pc_electric_ch if case_studies > 0, by(case_studies) name(scatter_elec_e7)
 	graph export "$logd/graphs/scatter_elec_e7_case_studies.png", replace
 	
-	scatter av_consumption_g pc_electric_ch if case_studies > 0, by(case_studies) name(scatter_gas_elec_ch)
-	graph export "$logd/graphs/scatter_gas_cons_elec_ch_case_studies.png", replace
-
 	scatter av_consumption_g pc_gas_ch if case_studies > 0, by(case_studies) name(scatter_gas)
 	graph export "$logd/graphs/scatter_gas_case_studies.png", replace
 	
 	* shorten labels
-	lab var case_studies "Case study area"
+	lab var case_studies "case study area"
 	lab var av_consumption_dom "Ordinary electricity"
 	lab var av_consumption_e7 "Economy 7 electricity"
 	lab var av_consumption_g "Gas"
-	
 
 	graph matrix av_consumption_g av_consumption_e7 av_consumption_dom if case_studies > 0, half by(case_studies) name(scatter_all) scale(0.2)
 	graph export "$logd/graphs/matrix_gas_elec_case_studies.png", replace
 
-	* analyse predictors of gas for case study areas
-	* drop overall score  & kids/OA score
-	preserve
-		drop imdscore ida*score
-		regress av_consumption_g pc_gas_ch pc_electric_ch *score if case_studies > 0
-		regress av_consumption_dom pc_gas_ch pc_electric_ch *score if case_studies > 0
-	restore
-	
 	keep lsoacode_2001 lsoacode_2011 av_* pc_* case_studies
 	
 	outsheet using "$deccroot/2009/llsoa-domestic-gas-elec-geo.csv", comma replace
@@ -144,9 +125,8 @@ if `do_census' {
 	* keep the case study areas only for mapping
 	preserve
 		keep if case_studies == 1 | case_studies == 2
-		outsheet using "$proot/data/llsoa-domestic-gas-elec-geo-case-studies.csv", comma replace
+		outsheet using "$deccroot/2009/llsoa-domestic-gas-elec-geo-case-studies.csv", comma replace
 	restore
-	
 }
 
 if `do_lcfs' {
@@ -390,26 +370,6 @@ if `do_lcfs' {
 			}
 		}
 	}
-	* test multifuels
-*	C45411t         double %10.0g                 Coal and coke
-*	C45412t         double %10.0g                 Wood and peat
-	gen buy_coal = 0
-	replace buy_coal = 1 if c45411t > 0
-	gen buy_wood = 0
-	replace buy_wood = 1 if c45412t > 0
-	gen buy_ch_oil = 0
-	replace buy_ch_oil = 1 if b017 > 0
-	gen buy_ch_gas = 0
-	replace buy_ch_gas = 1 if b018 > 0
-	
-	table buy_ch_oil buy_coal buy_wood [iw=weighta]
-	table a150 buy_coal buy_wood [iw=weighta]
-	table a151 buy_coal buy_wood [iw=weighta]
-	table a152 buy_coal buy_wood [iw=weighta]
-	table a153 buy_coal buy_wood [iw=weighta]
-	table a154 buy_coal buy_wood [iw=weighta]
-	table a155 buy_coal buy_wood [iw=weighta]
-	
 }
 
 log close
