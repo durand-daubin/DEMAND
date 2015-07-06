@@ -72,7 +72,7 @@ local old_acts ""
 * these are the ones we will invent to catch particular acts/practices
 * 100 101 102 103 104 105 106
 * add any of them in to refresh the results
-local new_acts "102" // see above
+local new_acts "104" // see above
 
 local all_acts = "`old_acts' `new_acts'"
 
