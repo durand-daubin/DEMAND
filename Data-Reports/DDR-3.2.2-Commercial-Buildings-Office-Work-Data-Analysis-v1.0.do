@@ -45,9 +45,9 @@ capture log close
 log using "$logd/DDR-3.2.2-Data-Analysis-v`version'.smcl", replace
 
 * control flow
-local do_agg 0
+local do_agg 1
 local do_episodes 1
-local do_sampled 0
+local do_sampled 1
 
 set more off
 
@@ -61,6 +61,12 @@ tab survey countrya
 
 * UK = 37
 keep if countrya == 37
+
+* create a bespoke survey which merges 1983 & 1987
+* has the advantage of providing all seasons for '1985'
+recode survey (1974=1974 "1974") (1983/1987=1985 "1985") (1995 = 1995 "1995") (2000=2000 "2000") (2005=2005 "2005"), gen(ba_survey)
+
+tab survey ba_survey
 
 * there will be multiple diary days in some surveys
 * need to average these to get mean minutes in work activities
@@ -85,7 +91,7 @@ quietly mvdecode _all, mv(-9/-1)
 
 label li OCCUP
 
-tab occup survey
+tab occup ba_survey
 
 * code 'office work' - plenty of room for mis-categorisation here!
 recode occup (-9 -7=.) (1/9 = 1) (else=0), gen(office_worker)
@@ -98,20 +104,20 @@ if `do_agg' {
 		* average the work hours across all diary days
 		* probably should be over working days only?
 		* hold on to by vars we need later
-		collapse (mean) `workvars' , by(pid survey emp occup workhrs office_worker)
+		collapse (mean) `workvars' , by(pid ba_survey emp occup workhrs office_worker)
 
 		* how many 'workers' in each survey?
-		tab survey emp
+		tab ba_survey emp
 
 		* hours worked etc for those in/out of work
-		bysort emp: tabstat `workvars', by(survey)
+		bysort emp: tabstat `workvars', by(ba_survey)
 
 		* how may were there in each survey?
-		tab survey office_worker
+		tab ba_survey office_worker
 
 		* hours worked for those in work
 		* survey data
-		table survey office_worker if emp == 1, c(mean workhrs p50 workhrs iqr workhrs n workhrs)
+		table ba_survey office_worker if emp == 1, c(mean workhrs p50 workhrs iqr workhrs n workhrs)
 
 		* avg hours work
 		egen diary_avg_workmins_per_week = rowtotal(main5 main7 main8 main11 main12 main13)
@@ -119,24 +125,24 @@ if `do_agg' {
 		gen diary_avg_workhours_per_week = (diary_avg_workmins_per_week/60)*5
 
 		* diary (mean per day)
-		table survey office_worker if emp == 1, c(mean diary_avg_workhours_per_week p50 diary_avg_workhours_per_week iqr diary_avg_workhours_per_week n diary_avg_workhours_per_week)
+		table ba_survey office_worker if emp == 1, c(mean diary_avg_workhours_per_week p50 diary_avg_workhours_per_week iqr diary_avg_workhours_per_week n diary_avg_workhours_per_week)
 
 		* do the reverse - another huge assumption
 		gen workmins_per_day = (workhrs * 60)/5
 
 		* compare diary & survey response
-		li survey emp occup diary_avg_workhours_per_week workhrs ///
+		li ba_survey emp occup diary_avg_workhours_per_week workhrs ///
 			diary_avg_workmins_per_week workmins_per_day ///
 			in 1/10
 
 		tabstat diary_avg_workhours_per_week workhrs ///
 			diary_avg_workmins_per_week workmins_per_day if emp == 1, ///
-			by(survey) s(mean n min max)
+			by(ba_survey) s(mean n min max)
 
 		* they won't exactly match but they should be the same order of magnitude
 		* 1974 works well as it was a 7 day diary...
 
-		bysort survey: pwcorr diary_avg_workhours_per_week workhrs ///
+		bysort ba_survey: pwcorr diary_avg_workhours_per_week workhrs ///
 			diary_avg_workmins_per_week workmins_per_day if emp == 1
 
 	restore
@@ -145,10 +151,10 @@ if `do_agg' {
 * MTUS episode data to look at location etc
 * UK only
 
-keep pid diarypid workhrs emp office_worker propwt month
+keep pid diarypid workhrs emp office_worker propwt ba_survey
 
 if `do_episodes' {
-	preserve
+	*preserve
 		merge 1:m diarypid using "$droot/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf.dta"
 
 
@@ -187,7 +193,7 @@ if `do_episodes' {
 				local vlabel : label `labels' `l'
 				di "*-> Level: `l' (`vlabel')"
 				* if episode = work
-				qui: tabout `v' survey if work == 1 & office_worker == `l' ///
+				qui: tabout `v' ba_survey if work == 1 & office_worker == `l' ///
 					using "$logd/MTUS_`v'_work_by_year.txt", `filemethod' ///
 					h3("Worker: `vlabel'") ///
 					cells(col se) ///
@@ -199,7 +205,7 @@ if `do_episodes' {
 
 
 		* sample rows
-		li s_dow month year id s_starttime main sec eloc mtrav in 1/5
+		li s_dow mtus_month mtus_year id s_starttime main sec eloc mtrav in 1/5
 
 		* office work = at home or at work location (assume 'office')
 		lab li ELOC
@@ -211,19 +217,19 @@ if `do_episodes' {
 
 			di "***************************"
 			di "* simple table by time for episodes"
-		tabout s_halfhour survey  ///
+		tabout s_halfhour ba_survey  ///
 			using "$logd/MTUS_episodes_office_work_by_halfhour_per_year.txt", replace ///
 			cells(col se) ///
 			format(3) ///
 			svy
 
 		di "***************************"
-		di "** prevalence of reporting of secondary acts by year"
+		di "** prevalence of reporting of secondary acts by ba_survey"
 		local count = 0
 		local filemethod = "replace"
-		levelsof survey, local(levels)
+		levelsof ba_survey, local(levels)
 		*di "* levels: `levels'"
-		local labels: value label survey
+		local labels: value label ba_survey
 		*di "* labels: `labels'"
 		foreach l of local levels {
 			if `count' > 0 {
@@ -234,8 +240,8 @@ if `do_episodes' {
 			local vlabel : label `labels' `l'
 			di "*-> Level: `l' (`vlabel')"
 			* if episode = work
-			qui: tabout pact sact if survey == `l' ///
-				using "$logd/MTUS_office_work_sact_by_survey.txt", `filemethod' ///
+			qui: tabout main sec if ba_survey == `l' ///
+				using "$logd/MTUS_office_work_sact_by_ba_survey.txt", `filemethod' ///
 				h3("Year: `vlabel'") ///
 				cells(col) ///
 				format(3) ///
@@ -283,7 +289,7 @@ if `do_sampled' {
 
 	** simple tables by time for sampled data
 	* proportion of work that is office work
-	tabout s_halfhour survey ///
+	tabout s_halfhour ba_survey ///
 		using "$logd/MTUS_sampled_pc_office_work_by_halfhour_per_year.txt", replace ///
 		cells(mean office_work se) ///
 		format(3) ///
@@ -293,7 +299,7 @@ if `do_sampled' {
 	keep if office_work == 1
 
 	* col % of office work - when is it done?
-	tabout s_halfhour survey ///
+	tabout s_halfhour ba_survey ///
 		using "$logd/MTUS_sampled_distn_office_work_by_halfhour_per_year.txt", replace ///
 		cells(col se) ///
 		format(3) ///
@@ -316,14 +322,14 @@ if `do_sampled' {
 		local vlabel : label `labels' `l'
 		di "*-> Level: `l' (`vlabel')"
 		* if episode = work
-		qui: tabout s_halfhour survey if eloc == `l' ///
+		qui: tabout s_halfhour ba_survey if eloc == `l' ///
 			using "$logd/MTUS_sampled_office_work_by_halfhour_per_year_eloc_col_pct.txt", `filemethod' ///
 			h3("Location: `vlabel'") ///
 			cells(col se) ///
 			format(3) ///
 			svy
 
-		qui: tabout s_halfhour survey if eloc == `l' ///
+		qui: tabout s_halfhour ba_survey if eloc == `l' ///
 			using "$logd/MTUS_sampled_office_work_by_halfhour_per_year_eloc_freq.txt", `filemethod' ///
 			h3("Location: `vlabel'") ///
 			cells(freq) ///
@@ -348,14 +354,14 @@ if `do_sampled' {
 		local vlabel : label `labels' `l'
 		di "*-> Level: `l' (`vlabel')"
 		* if episode = work - at home
-		qui: tabout s_halfhour survey if s_dow == `l' & eloc == 1 ///
+		qui: tabout s_halfhour ba_survey if s_dow == `l' & eloc == 1 ///
 			using "$logd/MTUS_sampled_office_work_at_home_by_halfhour_per_year_day_col_pct.txt", `filemethod' ///
 			h3("Location: `vlabel'") ///
 			cells(col se) ///
 			format(3) ///
 			svy
 
-		qui: tabout s_halfhour survey if s_dow == `l' & eloc == 1 ///
+		qui: tabout s_halfhour ba_survey if s_dow == `l' & eloc == 1 ///
 			using "$logd/MTUS_sampled_office_work_at_home_by_halfhour_per_year_day_freq.txt", `filemethod' ///
 			h3("Location: `vlabel'") ///
 			cells(freq) ///
@@ -363,14 +369,14 @@ if `do_sampled' {
 			svy
 
 		* if episode = work - workplace
-		qui: tabout s_halfhour survey if s_dow == `l' & eloc == 3 ///
+		qui: tabout s_halfhour ba_survey if s_dow == `l' & eloc == 3 ///
 			using "$logd/MTUS_sampled_office_work_at_workplace_by_halfhour_per_year_day_col_pct.txt", `filemethod' ///
 			h3("Location: `vlabel'") ///
 			cells(col se) ///
 			format(3) ///
 			svy
 
-		qui: tabout s_halfhour survey if s_dow == `l' & eloc == 3 ///
+		qui: tabout s_halfhour ba_survey if s_dow == `l' & eloc == 3 ///
 			using "$logd/MTUS_sampled_office_work_at_workplace_by_halfhour_per_year_day_freq.txt", `filemethod' ///
 			h3("Location: `vlabel'") ///
 			cells(freq) ///
