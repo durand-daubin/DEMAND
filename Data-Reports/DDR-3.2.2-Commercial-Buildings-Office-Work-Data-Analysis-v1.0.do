@@ -45,9 +45,9 @@ capture log close
 log using "$logd/DDR-3.2.2-Data-Analysis-v`version'.smcl", replace
 
 * control flow
-local do_agg 1
+local do_agg 0
 local do_episodes 1
-local do_sampled 1
+local do_sampled 0
 
 set more off
 
@@ -216,6 +216,12 @@ if `do_episodes' {
 		* keep office work - not interested in any comparions with not ofice work for now
 		keep if office_work == 1
 
+		di "* test duration of episodes for each location of office work"
+		di "* at home"
+		svy: mean time if work_m == 1 & eloc == 1, over(ba_survey)
+		di "* at workplace"
+		svy: mean time if work_m == 1 & eloc == 3, over(ba_survey)
+		
 			di "***************************"
 			di "* simple table by time for episodes"
 		tabout s_halfhour ba_survey  ///
