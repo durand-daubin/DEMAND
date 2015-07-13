@@ -37,7 +37,7 @@ global proot "$where/Projects/RCUK-DEMAND/Data Reports/Project 3.2 Commercial Bu
 
 global logd = "$proot/results"
 
-local version "1.0" /// version control managed via github
+local version "1.0" // version control managed via github
 * version 1.0
 
 capture log close
@@ -145,7 +145,7 @@ if `do_agg' {
 * MTUS episode data to look at location etc
 * UK only
 
-keep pid diarypid workhrs emp office_worker propwt
+keep pid diarypid workhrs emp office_worker propwt month
 
 if `do_episodes' {
 	preserve
