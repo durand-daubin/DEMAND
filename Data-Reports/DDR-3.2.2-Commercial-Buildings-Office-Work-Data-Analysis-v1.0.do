@@ -154,9 +154,10 @@ if `do_agg' {
 keep pid diarypid workhrs emp office_worker propwt ba_survey
 
 if `do_episodes' {
-	*preserve
-		merge 1:m diarypid using "$droot/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf.dta"
+	* keep the aggregate variables for later
+	preserve
 
+		merge 1:m diarypid using "$droot/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf.dta"
 
 		recode main (7 8 9 11 12 13 = 1) (else = 0), gen(work_m)
 		recode sec (7 8 9 11 12 13 = 1) (else = 0), gen(work_s)
@@ -243,16 +244,15 @@ if `do_episodes' {
 			qui: tabout main sec if ba_survey == `l' ///
 				using "$logd/MTUS_office_work_sact_by_ba_survey.txt", `filemethod' ///
 				h3("Year: `vlabel'") ///
-				cells(col) ///
 				format(3) ///
 				svy
 			local count = `count' + 1
 		}
-
 	restore
 }
 
-* switch to 'sampled' data
+* switch to 'sampled' data but keeping the variaables from the aggregate file
+
 if `do_sampled' {
 	merge 1:m diarypid using "$droot/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta"
 	recode pact (7 8 9 11 12 13 = 1) (else = 0), gen(work_m)
