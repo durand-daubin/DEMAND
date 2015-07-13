@@ -127,11 +127,11 @@ if `do_aggregated' {
 	foreach act of local old_acts {
 		di "* Mean minutes per day - `main`act'l'"
 		tabout ba_survey ///
-		using "$rpath/MTUS_aggregate_uk_`main`act'l'_mean_mins_by_ba_survey_$version.txt", replace ///
-		h3("Survey: `vlabel'") ///
-		cells(mean main`act' se) /// can't do secondary act as not in this aggregate file
-		format(3) ///
-		sum svy
+			using "$rpath/MTUS_aggregate_uk_`main`act'l'_mean_mins_by_ba_survey_$version.txt", replace ///
+			h3("Survey: `vlabel'") ///
+			cells(mean main`act' se) /// can't do secondary act as not in this aggregate file
+			format(3) ///
+			sum svy
 	}
 }
 
@@ -300,7 +300,7 @@ drop sec_*
 if `do_timeofday' {
 	* keep just the variables we need to save memory
 	* others: month cday diary sex age year season eloc mtrav
-	keep s_halfhour survey all_* diarypid s_dow propwt ba_pact ba_survey ba_age_r income
+	keep s_halfhour ba_survey all_* diarypid s_dow propwt ba_pact ba_survey ba_age_r income
 
 	* loop over acts producing stats
 	* use tabout method for results by day/year
@@ -427,7 +427,7 @@ preserve
 				sum svy
 
 			local count = `count' + 1
-		}				
+		}
 	}
 restore
 
@@ -443,7 +443,7 @@ foreach v of varlist all_* {
 			sum svy
 	}
 }
-		
+
 di "*-->Done!"
 
 log close
