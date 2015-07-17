@@ -32,7 +32,7 @@ GNU General Public License for more details.
 clear all
 
 * change these to run this script on different PC
-local where "/Users/ben/Documents/Work"
+local where "~/Documents/Work"
 local projroot "`where'/Projects/RCUK-DEMAND"
 local rpath "`projroot'/Theme 1/results/ONS TU 2000"
 

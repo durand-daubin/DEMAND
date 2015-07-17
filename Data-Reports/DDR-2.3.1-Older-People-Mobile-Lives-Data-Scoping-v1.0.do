@@ -27,7 +27,8 @@ GNU General Public License for more details.
 
 */
 
-local where = "/Users/ben/Documents/Work"local droot = "`where'/Data/Social Science Datatsets/"
+local where = "~/Documents/Work"
+local droot = "`where'/Data/Social Science Datatsets/"
 
 local proot "`where'/Projects/RCUK-DEMAND/Data Reports/Project 2.3 older people mobile lives"
 

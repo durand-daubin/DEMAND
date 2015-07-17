@@ -28,7 +28,8 @@ GNU General Public License for more details.
 
 */
 
-local where = "/Users/ben/Documents/Work"local proot "`where'/Projects/RCUK-DEMAND/Data Reports/Project 3.1 Adapting Infrastructure"
+local where = "~/Documents/Work"
+local proot "`where'/Projects/RCUK-DEMAND/Data Reports/Project 3.1 Adapting Infrastructure"
 local gisroot "`where'/Data/GIS data/UK Census"
 local croot = "`where'/Data/Social Science Datatsets/UK Census"
 local imdroot "`where'/Data/Social Science Datatsets/Indices of Deprivation"

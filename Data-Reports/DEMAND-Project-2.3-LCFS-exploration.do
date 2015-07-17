@@ -28,7 +28,8 @@ GNU General Public License for more details.
 
 */
 
-local where = "/Users/ben/Documents/Work"local efsd = "`where'/Data/Social Science Datatsets/Expenditure and Food Survey"
+local where = "~/Documents/Work"
+local efsd = "`where'/Data/Social Science Datatsets/Expenditure and Food Survey"
 
 local proot "`where'/Projects/RCUK-DEMAND/Data Consultancy/Project 2.3 older people mobile lives"
 

@@ -40,9 +40,9 @@ lapply(packagel, require, character.only = T)
 # path to data & results
 
 # where's the data?
-dpath <- "/Users/ben/Documents/Work/Data/Social Science Datatsets/Time Use 2005/processed/"
+dpath <- "~/Documents/Work/Data/Social Science Datatsets/Time Use 2005/processed/"
 # where do you want the results to go?
-rpath <- "/Users/ben/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/ONS TU 2005"
+rpath <- "~/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/ONS TU 2005"
 
 # time axis defnition
 # can't get this to work!

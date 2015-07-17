@@ -34,7 +34,7 @@ library("lattice", "Hmisc")
 ifile_d <- c("~/Documents/Work/Data/Social Science Datatsets/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf.dta")
 ifile_s <- c("~/Documents/Work/Data/Social Science Datatsets/MTUS/World 6/processed/MTUS-adult-aggregate-UK-only-wf.dta")
   
-rpath <- c("/Users/ben/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/MTUS")
+rpath <- c("~/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/MTUS")
 # paste!
 
 # Loading the data

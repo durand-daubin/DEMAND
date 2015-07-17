@@ -37,7 +37,7 @@ GNU General Public License for more details.
 clear all
 
 * change these to run this script on different PC
-local where "/Users/ben/Documents/Work"
+local where "~/Documents/Work"
 local droot "`where'/Data/Social Science Datatsets/MTUS/World 6/"
 * location of time-use diary data
 local dpath "`droot'/processed"

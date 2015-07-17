@@ -26,7 +26,7 @@ GNU General Public License for more details.
 
 */
 
-local where "/Users/ben/Documents"
+local where "~/Documents"
 local droot "`where'/Work/Projects/RCUK-DEMAND/Theme 1/data/Time Use/Trajectory-Oxford"
 
 clear all

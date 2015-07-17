@@ -29,7 +29,7 @@ GNU General Public License for more details.
 clear all
 
 * change these to run this script on different PC
-local where "/Users/ben/Documents/Work"
+local where "~/Documents/Work"
 local proot "`where'/Projects/RCUK-DEMAND/Theme 1"
 local rpath "`proot'/results/ONS TU 2000"
 
@@ -164,7 +164,7 @@ gen any_laundryah = 0
 replace any_laundryah = 1 if (pact == 3310 | sact == 3310) & wher == 2
 local any_laundryahl "Laundry (incl as 2nd act) at home"
 lab var any_laundryah "`any_laundryahl'"
-* food prep & baking - (not eating) at home
+* food prep & baking - (not eating) at home
 gen any_fdprp = 0
 replace any_fdprp = 1 if (pact == 3110 | sact == 3110 | pact == 3120 | sact == 3120) & wher == 2
 local any_fdprpl "Food prep & baking (incl as 2nd act) at home"

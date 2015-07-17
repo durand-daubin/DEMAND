@@ -30,7 +30,8 @@ GNU General Public License for more details.
 
 ****************************************************************/
 
-global where = "/Users/ben/Documents/Work"global droot = "$where/Data/Social Science Datatsets/"
+global where = "~/Documents/Work"
+global droot = "$where/Data/Social Science Datatsets/"
 
 global proot "$where/Projects/RCUK-DEMAND/Data Reports/Project 2.3 older people mobile lives"
 
@@ -218,8 +219,14 @@ if `do_ips' {
 	* svyset [iw=fweight]
 	
 	/*
-	There are eight ‘flows’, as follows:	1. Overseas residents departing UK via air	2. UK residents departing UK via air	3. Overseas residents arriving in UK via air	4. UK residents arriving in UK via air	5. Overseas residents departing UK via sea or tunnel 
-	6. UK residents departing UK via sea or tunnel	7. Overseas residents arriving in UK via sea or tunnel 
+	There are eight ‘flows’, as follows:
+	1. Overseas residents departing UK via air
+	2. UK residents departing UK via air
+	3. Overseas residents arriving in UK via air
+	4. UK residents arriving in UK via air
+	5. Overseas residents departing UK via sea or tunnel 
+	6. UK residents departing UK via sea or tunnel
+	7. Overseas residents arriving in UK via sea or tunnel 
 	8. UK residents arriving in UK via sea or tunnel
 	The overseas travel and tourism estimates published by ONS use only flows 1,4,5,8, i.e. those on which the visit is being completed. 
 	These cases contain a range of detail about the visit

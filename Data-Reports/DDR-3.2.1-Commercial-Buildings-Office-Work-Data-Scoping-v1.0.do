@@ -27,7 +27,8 @@ GNU General Public License for more details.
 
 */
 
-global where = "/Users/ben/Documents/Work"global droot = "$where/Data/Social Science Datatsets/"
+global where = "~/Documents/Work"
+global droot = "$where/Data/Social Science Datatsets/"
 
 global proot "$where/Projects/RCUK-DEMAND/Data Reports/Project 3.2 Commercial Buildings"
 

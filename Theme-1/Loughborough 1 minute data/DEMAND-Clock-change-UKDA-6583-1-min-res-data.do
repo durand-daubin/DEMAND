@@ -25,7 +25,7 @@ GNU General Public License for more details.
 
 */
 
-local where "/Users/ben/Documents"
+local where "~/Documents"
 
 local projroot "`where'/Work/Projects/RCUK-DEMAND/Theme 1"
 local idpath "`where'/Work/Data/Social Science Datatsets/6583 - One-Minute Resolution Domestic Electricity Use Data 2008-2009/"
@@ -55,7 +55,11 @@ merge 1:m hh_id using "`idpath'/processed/meter_all_years_all_hhs_long_fillfull_
 
 /*
 NB: User Guide states
-DATETIME_GMT  - The time stamp of the meter reading as Greenwich Mean Time (GMT).DATETIME_LOCAL  - The time stamp of the reading taking British Summer Time (BST) into account.IMPORT_KW  The mean power demand during the one?minute period starting at the time stamp.The date time fields are formatted as <YEAR>/<MONTH>/<DAY> <HOUR>:<MINUTE>.Where data is not available for a given minute, no row exists in the file. 
+DATETIME_GMT  - The time stamp of the meter reading as Greenwich Mean Time (GMT).
+DATETIME_LOCAL  - The time stamp of the reading taking British Summer Time (BST) into account.
+IMPORT_KW  The mean power demand during the one?minute period starting at the time stamp.
+The date time fields are formatted as <YEAR>/<MONTH>/<DAY> <HOUR>:<MINUTE>.
+Where data is not available for a given minute, no row exists in the file. 
 Note that no data is available for two of the meters in 2009, and hence two of the files are empty.
 */
 

@@ -28,7 +28,8 @@ GNU General Public License for more details.
 */
 
 * these willbe true across all scripts so globals = OK
-global where = "/Users/ben/Documents/Work"global droot = "$where/Data/Social Science Datatsets"
+global where = "~/Documents/Work"
+global droot = "$where/Data/Social Science Datatsets"
 
 
 * these will be true only of this script so use locals
@@ -127,9 +128,14 @@ tabstat awsec*, s(N mean) c(s)
 use "$droot/eLiving/stata6/eliv-w2-converted-time-use-slots.dta", clear
 
 * why have the labels disappeared?
-label def country 1 "UK" 2 "Italy" 3 "Germany" 4 "Norway" 5 "Bulgaria" 6 "Israel"lab var bcountry "w2: country"lab val bcountry country
+label def country 1 "UK" 2 "Italy" 3 "Germany" 4 "Norway" 5 "Bulgaria" 6 "Israel"
 
-lab def age10lab 0 "0-15" 1 "16-24" 2 "25-34" 3 "35-44" 4 "45-54" 5 "55-64" 6 "65-74" 7 "75+"lab val brage10 age10lab
+lab var bcountry "w2: country"
+
+lab val bcountry country
+
+lab def age10lab 0 "0-15" 1 "16-24" 2 "25-34" 3 "35-44" 4 "45-54" 5 "55-64" 6 "65-74" 7 "75+"
+lab val brage10 age10lab
 
 tab brage10 bcountry
 
@@ -156,7 +162,7 @@ table pact, c(sum pact_count sum sact_count)
 ****************************
 * Trajectory 
 * See https://docs.google.com/document/d/1S7A1-SIf0Vvqbl04XLb1clm9_mO9VBjWG5xr9B3eBdU/edit
-use "/Users/ben/Documents/Work/Projects/RCUK-DEMAND/Theme 1/data/Time Use/Trajectory-Oxford/Trajectory data 650, Feb 2014-purchased-labelled-long.dta", clear
+use "~/Documents/Work/Projects/RCUK-DEMAND/Theme 1/data/Time Use/Trajectory-Oxford/Trajectory data 650, Feb 2014-purchased-labelled-long.dta", clear
 
 * Are there more episodes on one day than another?
 tab dtskwd

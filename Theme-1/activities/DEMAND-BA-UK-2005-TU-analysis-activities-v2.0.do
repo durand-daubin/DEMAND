@@ -29,7 +29,7 @@ GNU General Public License for more details.
 clear all
 
 * change these to run this script on different PC
-local where "/Users/ben/Documents/Work"
+local where "~/Documents/Work"
 local projroot "`where'/Projects/RCUK-DEMAND"
 local rpath "`projroot'/Theme 1/results/ONS TU 2005"
 
@@ -149,7 +149,7 @@ gen any_pcare = 0
 replace any_pcare = 1 if (pact == 4 | sact == 4) & lact != 2
 local any_pcarel "Personal care (wash/dress incl as 2nd act) not 'elsewhere'"
 lab var any_pcare "`any_pcarel'"
-* food prep - pact3
+* food prep - pact3
 gen any_fdprp = 0
 * not elsewhere
 replace any_fdprp = 1 if (pact == 3 | sact == 3) & lact != 2
@@ -191,7 +191,7 @@ gen any_travel = 0
 replace any_travel = 1 if pact == 16 | sact == 16
 local any_travell "Any travel"
 lab var any_travel "`any_travell'"
-* requirements for ‘heat’ in winter months (hours of active occupancy?)
+* requirements for ‘heat’ in winter months (hours of active occupancy?)
 gen at_home = 0
 replace at_home = 1 if lact == 1
 local at_homel "Reported as 'at home'"

@@ -31,7 +31,7 @@ GNU General Public License for more details.
 clear all
 
 * change these to run this script on different PC
-local where "/Users/ben/Documents/Work"
+local where "~/Documents/Work"
 local droot "`where'/Data/Social Science Datatsets/MTUS/World 6"
 * location of time-use diary data
 local dpath "`droot'"
@@ -160,7 +160,7 @@ tab after_laundry survey if badcase == 0, col nof
 
 * try using the sqset commands
 * use the half hour data
-use "/Users/ben/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/MTUS/MTUS-W6-Adult-UK-only-v1.0-laundryhalfhour.dta", clear
+use "~/Documents/Work/Projects/RCUK-DEMAND/Theme 1/results/MTUS/MTUS-W6-Adult-UK-only-v1.0-laundryhalfhour.dta", clear
 
 * turn it round
 reshape long anyhh_laundry, i(diarypid) j(hhslot)

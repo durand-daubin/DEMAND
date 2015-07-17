@@ -37,7 +37,7 @@ clear all
 * change these to run this script on different PC
 * use globals so can re-run parts of the script
 
-global where "/Users/ben/Documents/Work"
+global where "~/Documents/Work"
 global droot "$where/Data/Social Science Datatsets"
 
 * LCFS/EFS

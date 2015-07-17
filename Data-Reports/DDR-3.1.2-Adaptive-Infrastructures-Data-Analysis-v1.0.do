@@ -32,7 +32,8 @@ GNU General Public License for more details.
 
 clear all
 
-global where = "/Users/ben/Documents/Work"global proot "$where/Projects/RCUK-DEMAND/Data Reports/Project 3.1 Adapting Infrastructure"
+global where = "~/Documents/Work"
+global proot "$where/Projects/RCUK-DEMAND/Data Reports/Project 3.1 Adapting Infrastructure"
 global censusroot = "$where/Data/Social Science Datatsets/UK Census"
 global deccroot = "$where/Data/Social Science Datatsets/DECC/LSOA Energy Data"
 global fesroot = "$where/Data/Social Science Datatsets/Family Expenditure Survey"
