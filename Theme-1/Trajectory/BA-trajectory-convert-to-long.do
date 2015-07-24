@@ -61,23 +61,21 @@ foreach t of numlist 100/144 {
 }
 
 * convert to long format and set up stata time variable
-* create a uniq id (for matching)
-egen serial = concat(subsid responseid), punct("_")
-* for xt commands - can't be a string for some reason
-egen xtserial = concat(subsid responseid), punct("0")
-destring xtserial, force replace
+gen pid = subsid
+lab var pid "Unique person ID"
+egen diarypid = group(subsid dtskwd)
+lab var diarypid "Unique diary day ID"
 
 save "`droot'/Trajectory data 650, Feb 2014-purchased-labelled.dta", replace
 
 * keep the key variables only
-keep *serial pact* lat* lon* tp* dtskwd dscity C*
+keep *pid pact* lat* lon* tp* dtskwd dscity C*
 
-reshape long pact lat lon tp, i(serial)
+reshape long pact lat lon tp, i(diarypid)
 
 rename _j t_slot
 * t_slot now has values 1 -> 144 (10 minute slots)
 lab var t_slot "Time slot number (1-144)"
-lab var serial "Case ID"
 lab var pact "Primary act recorded"
 destring lat, replace force
 lab var lat "Latitude recorded"
