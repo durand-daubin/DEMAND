@@ -1,7 +1,8 @@
 **************************************************************
-* Data Exploration for DEMAND Theme 2.1 - Domestic ICT
+* Data Analysis for DEMAND Theme 2.1 - Domestic ICT
 * - http://www.demand.ac.uk/research-themes/theme-2-how-end-use-practices-change/2-1-domestic-it-use/
-* - focus on use of ICT in and around the home (& on the move?)
+* - focus on use of ICT in and around the home
+* - see https://docs.google.com/document/d/19yElRZp27oFhyT6vDT2vO4OJ2BwOKauk8vTstchceqc/edit
 
 * This work was funded by RCUK through the End User Energy Demand Centres Programme via the
 * "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, http://gtr.rcuk.ac.uk/project/0B657D54-247D-4AD6-9858-64E411D3D06C)
@@ -27,255 +28,405 @@ GNU General Public License for more details.
 
 */
 
-* these willbe true across all scripts so globals = OK
-global where = "~/Documents/Work"
-global droot = "$where/Data/Social Science Datatsets"
+clear all
+
+* these will be true across all scripts so globals = OK
+global where "~/Documents/Work"
+global droot "$where/Data/Social Science Datatsets"
 
 
 * these will be true only of this script so use locals
-local proot "$where/Projects/RCUK-DEMAND/Data Reports/Project 2.1 Domestic ICT"
-local logd = "$proot/results"
+global proot "$where/Projects/RCUK-DEMAND"
+global logd "$proot/Data Reports/Project 2.1 Domestic ICT/results"
 
 local version "1.0"
 * version 1.0
 
 capture log close
 
-log using "`logd'/DDR-2.3.1-Data-Scoping-v`version'.smcl", replace
+log using "$logd/DDR-2.3.1-Data-Analysis-v`version'.smcl", replace
+
+local do_lcfs 0 // ICT & media tech ownership in 2013
+local do_traj 0 // 2011 time use survey from Trajectory
+local do_mtus 0 // MTUS change over time analysis
+local do_hes 1 // HES electricity consumption analysis
+
+* set re-usable lablels
+lab def s_dow 0 "Sunday" 1 "Monday" 2 "Tuesdays" 3 "Wednesday" 4 "Thursday" 5 "Friday" 6 "Saturday"
 
 set more off
 
-****************************
-* MTUS data
-* www.timeuse.org/mtus
+if `do_lcfs' {
+	********************************************************
+	* ICT & Media ownership 2013 
+	* LCFS 2013
+	* https://www.esds.ac.uk/findingData/snDescription.asp?sn=7472
+	use "$droot/Expenditure and Food Survey/processed/EFS-2013-extract-BA.dta", clear
 
-use "$droot/MTUS/World 6/processed/MTUS-adult-aggregate-wf.dta", clear
+	* summarise ICT ownership
 
-* there will be multiple diary days in some surveys
-duplicates report pid
+	** all UK
+	tab region
+	/*
+	a101            byte   %8.0g       a101       telephone and\or mobile in household
+	a170            byte   %8.0g       a170       compact disc player in household
+	a171            byte   %8.0g       a171       tv set in household (not after 2009)
+	a172            byte   %8.0g       a172       internet connection in household
+	a190            byte   %8.0g       a190       internet access via home computer
+	a191            byte   %8.0g       a191       internet access via digital tv
+	a192            byte   %8.0g       a192       internet access via mobile phone
+	a193            byte   %8.0g       a193       internet access via games console
+	a194            byte   %8.0g       a194       internet access via other method
+	a195            byte   %8.0g       a195       www access via home computer (not after 2002-2003)
+	a1641           byte   %8.0g       a1641      satellite receiver in household
+	a1642           byte   %8.0g       a1642      cable receiver in household
+	a1643           byte   %8.0g       a1643      satellite receiver in household
+	a1644           byte   %10.0g                 TV connection by Broadband (from 2003-2004)
+	a1645           byte   %10.0g                 TV received by Aerial (from 2003-2004)
+	a1661           byte   %8.0g       a1661      home computer in household
+	a1701           byte   %8.0g       a1701      dvd player in household (from 2002-2003)
+	a1711           byte   %8.0g       LABA       Television in household (replaces a171)
+	*/
+	gen computer_sum = 0
+	gen access_sum = 0
+	forvalues n = 1/6 {
+		replace computer_sum = `n' if computer1 == `n' | computer2 == `n' | computer3 == `n' | computer4 == `n'
+		lab val computer_sum Computer1
+		replace access_sum = `n' if access1 == `n' | access2 == `n' | access3 == `n' | access4 == `n'
+		lab val access_sum Access1
+	}
 
-duplicates drop pid, force
+	local rawvars "telephon mobile computer1 computer2 computer3 computer4 computer_sum inter access1 access2 access3 access4 access_sum"
+	local dvvars "a1641 a1642 a1645 a1661"
 
-tab countrya
+	svyset [iw=weighta]
 
-tab survey countrya
+	di "******************************"
+	foreach r of local rawvars {
+		di "* Testing raw hh var: `r'"
+		svy: tab `r' , missing col se format(%8.0g)
+	}
 
-* UK = 37
-* how many 'older people' in each survey?
-* NB: this will be duplicated by
-tab survey ba_age_r if countrya == 37
+	foreach r of varlist computer_sum access_sum {
+		di "* Testing raw hh var: `r' by age & employment"
+		svy: tab `r' c_age, missing col se format(%8.0g)
+		svy: tab `r' c_empl, missing col se format(%8.0g)
+		svy: tab `r' c_nchild, missing col se format(%8.0g)
+	}
 
-* MTUS episode data to look at location etc
-* use original file
-use "$droot/MTUS/World 6/MTUS-adult-episode.dta", clear
+	di "******************************"
+	foreach v of local dvvars {
+		di "* Testing dvvar: `v'"
+		svy: tab `v' , missing col se format(%8.0g)
+		svy: tab `v' c_age, missing col se format(%8.0g)
+		svy: tab `v' c_empl, missing col se format(%8.0g)
+		svy: tab `v' c_nchild, missing col se format(%8.0g)
+	}
 
-* descriptives
-* change values < 1 (i.e. missing) to missing
-local tvars "alone eloc"
-mvdecode `tvars', mv(-9/-1)
+}
+********************************************************
+* ICT & Media ownership 1970 - 2010
+* see https://github.com/dataknut/DEMAND/blob/master/Data-Reports/DDR-3.1.2-Adaptive-Infrastructures-Data-Analysis-v1.0.do
 
-gen alone_count = 0 if alone == .
-replace alone_count = 1 if alone != .
-tab alone alone_count, mi
 
-gen eloc_count = 0 if eloc == .
-replace eloc_count = 1 if eloc != .
-tab eloc eloc_count, mi
+if `do_traj' {
+	********************************************************
+	* ICT & Media time use 2011
+	* uses the sample of the Trajectory dataset purchased by DEMAND
+	use "$proot/Theme 1/data/Time Use/Trajectory-Oxford/Trajectory data 650, Feb 2014-purchased-labelled-long.dta", clear
 
-* this is quite slow
-local tvars "alone_count eloc_count"
-foreach v of local tvars {
-	di "Testing if we know about `v'"
-	table survey country, c(mean `v')
+	preserve
+		duplicates drop diarypid, force
+		tab dtskwd // how many diary days are weeksdays?
+		
+		* drop to pid level
+		duplicates drop pid, force
+		tab dscity
+		tab C1 // social grade
+		tab C2 C4, col // gender by age band
+		tab C20 // employment
+		tab C17 // income
+
+	restore
+
+	*           27 Watching TV and videos/DVDs, listening to radio or music
+	*           37 Using a computer or accessing the internet:
+	local labt_27 "Watching TV and videos/DVDs, listening to radio or music"
+	local labt_37 "Using a computer or accessing the internet"
+
+
+	local acts "27 37"
+	foreach p of local acts {
+		gen pact_`p' = 0
+		replace pact_`p' = 1 if pact == `p'
+		tabstat pact_`p', by(dtskwd)
+		tabstat pact_`p', by(C4)
+		preserve
+			di "* collapsing for `labt_`p'' by(s_halfhour dtskwd C4)"
+			local coll "s_halfhour dtskwd C4"
+			collapse (mean) m_pact_`p' = pact_`p', by(`coll')
+				gen m_pact_`p'_pc = 100 * m_pact_`p'
+				lab var m_pact_`p'_pc "% of acts"
+				li in 1/5
+				* force contour to display legend
+				twoway contour m_pact_`p'_pc dtskwd s_halfhour , name(cont_`p'age) ///
+					by(C4, note("Trajectory 2011 data: reported `labt_`p''") scale(0.75) clegend(on)) ///
+					zlabel(#9, format(%9.0f)) ///
+					ylabel(1 2 3 4 5 6 7, valuelabel angle(horizontal))  
+				graph export "$logd/trajectory_cont_mean_`p'_by_age.png", replace
+				twoway contour m_pact_`p'_pc dtskwd s_halfhour if C4 > 1 & C4 < 6, name(cont_`p'ager) ///
+					by(C4, note("Trajectory 2011 data: reported `labt_`p''") scale(0.75) clegend(on)) ///
+					zlabel(#9, format(%9.0f)) ///
+					ylabel(1 2 3 4 5 6 7, valuelabel angle(horizontal))  
+				graph export "$logd/trajectory_cont_mean_`p'_by_age_reduced.png", replace
+		restore
+		preserve
+			di "* collapsing for `labt_`p''"
+			local coll "s_halfhour dtskwd"
+			collapse (mean) m_pact_`p' = pact_`p' (sem) sem_pact_`p' = pact_`p', by(`coll')
+				gen m_pact_`p'_pc = 100 * m_pact_`p'
+				* create upper 95% CI
+				gen m_pact_`p'_pc_u = m_pact_`p'_pc+(100*(1.96*sem_pact_`p'))
+				lab var m_pact_`p'_pc_u "95% CI (upper)"
+				* create lower 95% CI
+				gen m_pact_`p'_pc_l = m_pact_`p'_pc-(100*(1.96*sem_pact_`p'))
+				lab var m_pact_`p'_pc_l "95% CI (lower)"
+				lab var m_pact_`p'_pc "% of acts"
+				twoway rarea m_pact_`p'_pc_u m_pact_`p'_pc_l s_halfhour, by(dtskwd) color(gs14) || ///
+					line m_pact_`p'_pc s_halfhour, ///
+					by(dtskwd, note("Trajectory 2011 data: reported `labt_`p''")) name(line_`p') 
+				graph export "$logd/trajectory_rarea_mean_`p'.png", replace
+		restore
+	}
 }
 
-li day month year id start epnum main sec eloc alone in 1/5
+if `do_mtus' {
+	********************************************************
+	* ICT & Media time use 1974-2005
+	* uses the MTUS
 
-* get list of main acts
-lab li MAIN
-lab li SEC
+	use "$droot/MTUS/World 6/processed/MTUS-adult-aggregate-UK-only-wf.dta", clear
 
-tab main year if countrya == 37
+	tab mtus_year // n diary days per Survey
+	
+	* office work at home (presumes uses ICT)
+	* borrows from Project 3.2.2 definition
+	* code 'office work' - plenty of room for mis-categorisation here!
+	tab occup
+	recode occup (-9 -7=.) (1/9 = 1) (else=0), gen(office_worker)
 
-****************************
-* ONS TU 2000
-* https://www.esds.ac.uk/findingData/snDescription.asp?sn=4504
-use "$droot/UK Time Use 2000/processed/diary_data_8_long_v1.0.dta", clear
+	lab def office_worker 0 "Not an office worker" 1 "Office worker"
+	lab val office_worker office_worker
 
-* more detailed time use activities
-* trick to get tabstat to give us full results even if codes missing for secondary acts
-gen pact_count = 1 if pact !=.
-gen sact_count = 1 if sact !=.
+	keep diarypid office_worker propwt
 
-label li act1_144
+	merge 1:m diarypid using "$droot/MTUS/World 6/processed/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta"
+	
+	* pool surveys
+	recode survey (1974=1974 "1974") (1983/1987=1985 "1985") (1995 = 1995 "1995") ///
+		(2000=2000 "2000") (2005=2005 "2005"), gen(ba_survey)
+	
+	recode pact (7 8 9 11 12 13 = 1) (else = 0), gen(work_m)
+	recode sact (7 8 9 11 12 13 = 1) (else = 0), gen(work_s)
 
-table pact, c(sum pact_count sum sact_count)
+	egen work = rowtotal(work_*)
 
-****************************
-* Home OnLine 1999-2001
-* http://discover.ukdataservice.ac.uk/catalogue/?sn=4607
+	* this will have a value of 0 if no work, 1 if work as main or sec and 2 if work as main AND sec
+	* recode slightly
+	recode work (2=1)
 
-* not an episode file
-use "$droot/BT Digital Living/HoL Survey/Corrected diary files/afinal_slots_corr.dta", clear
-desc awpri*
-tabstat awpri*, s(N mean) c(s)
-desc awsec*
-tabstat awsec*, s(N mean) c(s)
+	gen ba_hourt = hh(s_starttime)
+	gen ba_minst = mm(s_starttime)
 
-****************************
-* e-Living 2002
-* http://discover.ukdataservice.ac.uk/catalogue/?sn=4728 
-use "$droot/eLiving/stata6/eliv-w2-converted-time-use-slots.dta", clear
+	gen ba_hh = 0 if ba_minst < 30
+	replace ba_hh = 30 if ba_minst > 29
+	gen ba_sec = 0
+	* sets date to 1969!
+	gen s_halfhour = hms(ba_hourt, ba_hh, ba_sec)
+	lab var s_halfhour "Episode starts during the half hour following"
+	format s_halfhour %tcHH:MM
 
-* why have the labels disappeared?
-label def country 1 "UK" 2 "Italy" 3 "Germany" 4 "Norway" 5 "Bulgaria" 6 "Israel"
+	drop ba_hourt ba_minst ba_hh ba_sec
+	gen work_pc = 100 * work
+	* all work at home
+	tabstat work_pc if eloc == 1, by(ba_survey) s(mean semean)
+	* office workers
+	tabstat work_pc if eloc == 1 & office_worker == 1, by(ba_survey) s(mean semean)
+	
+	preserve
+		collapse (mean) work_pc [iw=propwt] if eloc == 1 & office_worker == 1, by(s_halfhour s_dow ba_survey)
+		tabstat work_pc, by(ba_survey) s(mean semean)
+		lab var work_pc "% of acts"
+		* force contour to display legend
+		twoway contour work_pc s_dow s_halfhour , name(cont_work_pc) ///
+			by(ba_survey, note("MTUS 1974-2005: reported 'office work' at home") scale(0.75) clegend(on)) ///
+			zlabel(#9, format(%9.0f)) ///
+			ylabel(0 1 2 3 4 5 6, valuelabel angle(horizontal))  
+		graph export "$logd/MTUS_cont_mean_office_work_by_survey.png", replace
 
-lab var bcountry "w2: country"
+	restore
 
-lab val bcountry country
 
-lab def age10lab 0 "0-15" 1 "16-24" 2 "25-34" 3 "35-44" 4 "45-54" 5 "55-64" 6 "65-74" 7 "75+"
-lab val brage10 age10lab
+	local act_103l "TV, video, DVD, computer games at home"
+	local act_104l "Computer, Internet at home"
+	
+	* 103: TV/video/DVD/computer games at home
+	gen act_103 = 0
+	replace act_103 = 1 if (pact == 59 | pact == 60) & eloc == 1
+	replace act_103 = 1 if (sact == 59 | sact == 60) & eloc == 1
 
-tab brage10 bcountry
 
-desc bact*r
-tabstat bact*r, by(bcountry) c(s)
+	* 104: Computer/Internet at home
+	gen act_104 = 0
+	replace act_104 = 1 if (pact == 61 | pact == 61) & eloc == 1	
+	
 
-****************************
-* ONS TU 2005
-* https://www.esds.ac.uk/findingData/snDescription.asp?sn=5592
-use "$droot/UK Time Use 2005/processed/timeusefinal_for_archive_diary_long_v2.0.dta"
+	local acts "103 104"
+	foreach a of local acts {
+		di "Processing `a': `act_`a'l'"
+		tab ba_survey act_`a'
+		gen act_`a'_pc = 100 * act_`a'
+		preserve
+			collapse (mean) act_`a'_pc [iw=propwt], by(s_halfhour s_dow ba_survey)
+			tabstat act_`a'_pc, by(ba_survey) s(mean semean n)
+			lab var act_`a'_pc "% of acts"
+			* force contour to display legend
+			twoway contour act_`a'_pc s_dow s_halfhour , name(cont_act_`a'_pc) ///
+				by(ba_survey, note("MTUS 1974-2005: `act_`a'l'") scale(0.75) clegend(on)) ///
+				zlabel(#9, format(%9.1f)) ///
+				ylabel(0 1 2 3 4 5 6, valuelabel angle(horizontal))  
+			graph export "$logd/MTUS_cont_mean_act_`a'_pc_by_survey.png", replace
 
-* recode missing
-mvdecode *act, mv(-9/-1)
+		restore
+	}
+}
 
-gen pact_count = 1 if pact != .
-gen sact_count = 1 if sact != .
+if `do_hes' {
+	********************************************************
+	* Household electricity consumption using HES data 
+	* https://www.gov.uk/government/collections/household-electricity-survey
+	use "$droot/HES/data/processed/appliance_group_data-3.dta", clear
 
-* list the labels
-label li pact144
+	* attach appliance info
+	merge m:1 id appliance using "$droot/HES/data/processed/appliance_data_reduced.dta", ///
+		keepusing(room appliancetext category other_appliances)
 
-* how many of each kind of episode do we have?
-table pact, c(sum pact_count sum sact_count)
+	* want to keep TVs, Desktop PCs, 
+	* Fax/Printers, Hard drives, Laptops, Modems, Monitors, 
+	* Multifunction printers, Printers, Router and Scanners
+	keep if category == "ICT" | category == "Entertainment"
+	* set up half-hour variable
+	gen ba_hourt = hh(s_datetime)
+	gen ba_minst = mm(s_datetime)
 
-****************************
-* Trajectory 
-* See https://docs.google.com/document/d/1S7A1-SIf0Vvqbl04XLb1clm9_mO9VBjWG5xr9B3eBdU/edit
-use "~/Documents/Work/Projects/RCUK-DEMAND/Theme 1/data/Time Use/Trajectory-Oxford/Trajectory data 650, Feb 2014-purchased-labelled-long.dta", clear
+	gen ba_hh = 0 if ba_minst < 30
+	replace ba_hh = 30 if ba_minst > 29
+	gen ba_sec = 0
+	* sets date to 1969!
+	gen s_halfhour = hms(ba_hourt, ba_hh, ba_sec)
+	lab var s_halfhour "Half hour (start)"
+	format s_halfhour %tcHH:MM
 
-* Are there more episodes on one day than another?
-tab dtskwd
+	* dow
+	gen s_dow = dow(dofc(s_datetime))
+	lab val s_dow s_dow
 
-* what acts do we have?
-lab li TS144_MA
+	* weekend
+	gen weekend = 0
+	replace weekend = 1 if s_dow == 0 | s_dow == 6
+	lab var weekend "Weekend"
+	lab def weekend 0 "Weekday" 1 "Weekend"
+	lab val weekend weekend
 
-tab pact 
+	gen month = month(dofc(s_datetime))
+	* seasons
+	recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
+	* check
+	tab month season
+	tab appliancetext
+	/*
+		 ComputersDesktop |    596,283       12.22       13.30
+  ComputersHomeTheatreBox |          2        0.00       13.30
+          ComputersLaptop |    253,460        5.20       18.50
+         ComputersMonitor |    349,030        7.16       25.65
+        ComputersSpeakers |    148,512        3.04       28.70
+                Facsimile |          2        0.00       38.31
+             GamesConsole |    182,353        3.74       42.04
+        HomeTheatreSystem |     67,741        1.39       47.99
+                    Modem |         11        0.00       47.99
+            PrinterInkjet |    118,799        2.44       50.43
+             PrinterLaser |     52,509        1.08       51.51
+  PrinterScannerCopierMFD |     66,205        1.36       52.86
+                    Radio |      9,706        0.20       53.06
+                   Router |    310,059        6.36       59.42
+                SetTopBox |    550,321       11.28       70.70
+                SettopBox |     52,329        1.07       71.77
+                    TVCRT |    193,984        3.98       76.11
+                    TVLCD |    682,567       13.99       90.10
+                 TVPlasma |     98,300        2.02       92.12
+                   TV_DVD |     50,979        1.05       93.17
+               TV_Monitor |     51,604        1.06       94.22
+                   TV_VCR |    121,912        2.50       96.72
+               TV_VCR_DVD |        180        0.00       96.73
+                      VCR |     89,493        1.83       98.56
+                   router |         34        0.00       98.59
+             gamesconsole |          8        0.00       98.59
 
-****************************
-* EFS/LCFS
-* https://www.esds.ac.uk/findingData/snDescription.asp?sn=7472
-use "$droot/Expenditure and Food Survey/processed/EFS-2001-2010-extract-BA.dta", clear
+*/
+	gen ba_ict = "Desktop" if appliancetext == "ComputersDesktop"
+	replace ba_ict = "Laptop" if appliancetext == "ComputersLaptop"
+	replace ba_ict = "PC monitor" if appliancetext == "ComputersMonitor"
+	replace ba_ict = "Printers" if regexm(appliancetext, "Printer") 
+	replace ba_ict = "Router" if appliancetext == "Router" | appliancetext == "router"
+	replace ba_ict = "Modem" if appliancetext == "Modem"
+	replace ba_ict = "Set top box, VCR or DVD" if appliancetext == "SetTopBox" | ///
+		appliancetext == "SettopBox" | /// 
+		appliancetext == "VCR"
+	replace ba_ict = "TV etc" if regexm(appliancetext, "TV")
+	replace ba_ict = "Home Theatre System" if appliancetext == "HomeTheatreSystem"
+	replace ba_ict = "Games console" if regexm(appliancetext, "onsole")
 
-* summarise all spend
-desc *t
-preserve
-	collapse (mean) *t
-	outsheet using "`proot'/LCFS-all-COICOP-all-years.csv", comma replace
-restore
 
-* summarise all internet spend
-desc *w
-tab survey_year
-collapse (mean) *w, by(survey_year)
+	preserve
+		collapse (mean) watts, by(s_halfhour s_dow ba_ict category season)
+		
+		lab val s_dow s_dow // in case
+		* creates 2 charts
+		levelsof category, local(categories)
+		foreach c of local categories {
+			di "****************"
+			di "* Watts: `c' by time of day (half hours)"
+			su watts if category == "`c'"
+			* force contour to display legend
+			twoway contour watts s_dow s_halfhour if category == "`c'", name(`c') ///
+				by(season, note("Category = `c' (HES Data: Annual (10 minutes) dataset)") scale(0.75) clegend(on)) ///
+				zlabel(#9, format(%9.0f)) ///
+				ylabel(0 1 2 3 4 5 6, valuelabel angle(horizontal))  
+			graph export "$logd/HES_`c'_cont_mean_watts_by_season.png", replace
+		}
 
-* extract table easily
-xpose, clear
-outsheet using "`proot'/LCFS-internet-COICOP-all-years.csv", comma replace
+		* creates quite a few
+		levelsof ba_ict, local(apps)
+		foreach app of local apps {
+			di "****************"
+			di "* Watts: `app' by time of day (half hours)"
+			su watts if ba_ict == "`app'"
+			* force contour to display legend
+			* no name to preserve working memory
+			* use capture to avoid crash wehere no data
+			capture noisily {
+				twoway contour watts s_dow s_halfhour if ba_ict == "`app'", ///
+					by(season, note("Appliance = `app' (HES Data: Annual (10 minutes) dataset)") scale(0.75) clegend(on)) ///
+					zlabel(#9, format(%9.0f)) ///
+					ylabel(0 1 2 3 4 5 6, valuelabel angle(horizontal))  
+				graph export "$logd/HES_`app'_cont_mean_watts_by_season.png", replace
+			}
+		}
+		
 
-***************************
-* EFUS - DECC's follow-up to the English Housing Survey 2011
-* http://discover.ukdataservice.ac.uk/catalogue/?sn=7471
-* March 2014 version
-* really should just match all of them together - won;t make a very big file!
-use "$droot/EFUS-2011/November 2014/stata11/matching_file/matching_file.dta", clear
+	restore
+}
 
-* quite amazingly this data does not seem to have any of the EHS variables attached to it (in this version)
-* so we have virtually no data on the occupants at all
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/alternative_heating_derived.dta", nogen
-* merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/alternative_heating.dta", nogen // this has data for multiple rooms per house
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/conservatories.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/cooking_and_appliances.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/dwelling_improvements.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/hot_water.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/interview_weight.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/lighting.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/main_heating_derived.dta", nogen
-* merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/main_heating.dta", nogen // this has data for multiple rooms per house
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/monitoring.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/mop_and_tariffs.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/overheating_and_cooling.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/rooms.dta", nogen
-merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/supplementary_heating_derived.dta", nogen
-* merge 1:1 interview_id using "$droot/EFUS-2011/November 2014/stata11/interview/supplementary_heating.dta", nogen // this has data for multiple rooms per house
-merge m:1 meter_id using "$droot/EFUS-2011/November 2014/stata11/meter_reading/meter_read_weight.dta", nogen
-merge m:1 meter_id using "$droot/EFUS-2011/November 2014/stata11/meter_reading/metered_consumption.dta", nogen
-merge m:1 temperature_id using "$droot/EFUS-2011/November 2014/stata11/temperature/mean_room_temperatures.dta", nogen
-merge m:1 temperature_id using "$droot/EFUS-2011/November 2014/stata11/temperature/temperature_heating_patterns.dta", nogen
-merge m:1 temperature_id using "$droot/EFUS-2011/November 2014/stata11/temperature/temperature_meter_reading_weight.dta", nogen
-merge m:1 temperature_id using "$droot/EFUS-2011/November 2014/stata11/temperature/temperature_weight.dta", nogen
 
-save "$droot/EFUS-2011/processed/efus-2011-nov2014-merged.dta", replace
-
-gen monitor_sample = 0
-replace monitor_sample = 1 if emonitor_id != ""
-
-* TV
-tab q103 monitor_sample, col
-
-* tenure?
-tab q01 monitor_sample, col
-
-* landlord?
-tab q02 monitor_sample, col
-
-* still same hh as EHS?
-tab q03 monitor_sample, col
-
-***************************
-* CER data (Irish Smart Meter Trials)
-* http://www.ucd.ie/issda/data/commissionforenergyregulationcer/
-use "/$droot/CER Smart Metering Project/data/Smart meters Residential pre-trial survey data.dta", clear
-
-lookfor tv
-lookfor internet
-
-***************************
-* EDRP data
-* http://discover.ukdataservice.ac.uk/catalogue/?sn=7591
-import excel "/$droot/EDRP/UKDA-7591-CSV/csv/edrp_geography_data.xlsx", clear firstrow 
-
-save "/$droot/EDRP/UKDA-7591-CSV/csv/edrp_geography_data.dta", replace
-
-tab ACORN_Category
-
-***************************
-* UoS-E data
-* 
-* use original survey as we've left a lot of variables out
-use "/$droot/CBIES-Soton-Energy-Communities/surveys/energy 090713-original-safe.dta", clear
-
-lookfor tv
-lookfor computer
-lookfor laptop
-lookfor phone
-lookfor dvd
-
-use "/$droot/CBIES-Soton-Energy-Communities/surveys/network 090713-safe.dta", clear
-
-* check smart plug labels
-use "/$droot/CBIES-Soton-Energy-Communities/UoS-E October 2011 safe package/v2/power/UoS-E-October-2011-safe-package-SmartPlug-30sec-1-28-Oct-2011-v2.dta",clear
-
-tab devicename
-
+di "* Done!"
 log close
