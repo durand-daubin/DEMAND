@@ -169,12 +169,6 @@ gen s_halfhour = hms(ba_hourt, ba_hh, ba_sec)
 lab var s_halfhour "Episode starts during the half hour following"
 format s_halfhour %tcHH:MM
 
-* weekend
-gen weekend = 0
-replace weekend = 1 if s_dow == 1 | s_dow == 6
-gen weekday = 1 if weekend == 0
-lab var weekend "Weekend"
-
 * seasons
 recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
 * check
@@ -221,7 +215,7 @@ tab pact ba_pact, mi
 svyset [iw=propwt]
 
 if `do_day' {
-	* produce tables of merged primary acts, location & mode of travel per halfhour per survey by weekdays vs weekend as context
+	* produce tables of merged primary acts, location & mode of travel per halfhour per survey
 	local vars "ba_pact ba_sact eloc mtrav"
 
 	preserve
