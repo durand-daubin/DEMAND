@@ -305,12 +305,12 @@ if `do_hes' {
 	********************************************************
 	* Household electricity consumption using HES data 
 	* https://www.gov.uk/government/collections/household-electricity-survey
-	use "$droot/HES/data/processed/appliance_group_data-3.dta", clear
+	use "$droot/HES/data/processed/appliance_group_data-3_no_zeros.dta", clear
 
-	* attach appliance info
-	merge m:1 id appliance using "$droot/HES/data/processed/appliance_data_reduced.dta", ///
-		keepusing(room appliancetext category other_appliances)
-
+	* attach appliance info from wide file
+	merge m:1 id appliance using "$droot/HES/data/processed/appliance_data_wide.dta", ///
+		keepusing(is_uniq room1 appliancetext1 category1) gen(app_id_match)
+	
 	* want to keep TVs, Desktop PCs, 
 	* Fax/Printers, Hard drives, Laptops, Modems, Monitors, 
 	* Multifunction printers, Printers, Router and Scanners
@@ -344,6 +344,7 @@ if `do_hes' {
 	* check
 	tab month season
 	tab appliancetext
+
 	/*
 		 ComputersDesktop |    596,283       12.22       13.30
   ComputersHomeTheatreBox |          2        0.00       13.30
