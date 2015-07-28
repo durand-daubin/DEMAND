@@ -51,9 +51,6 @@ local do_traj 0 // 2011 time use survey from Trajectory
 local do_mtus 0 // MTUS change over time analysis
 local do_hes 1 // HES electricity consumption analysis
 
-* set re-usable lablels
-lab def s_dow 0 "Sunday" 1 "Monday" 2 "Tuesdays" 3 "Wednesday" 4 "Thursday" 5 "Friday" 6 "Saturday"
-
 set more off
 
 if `do_lcfs' {
@@ -305,16 +302,33 @@ if `do_hes' {
 	********************************************************
 	* Household electricity consumption using HES data 
 	* https://www.gov.uk/government/collections/household-electricity-survey
+
+	* this code expects  
+	* https://github.com/dataknut/HES/blob/master/HES-process-files.do
+	* to have been run first to create:
 	use "$droot/HES/data/processed/appliance_group_data-3_no_zeros.dta", clear
 
+	* and also to create:
 	* attach appliance info from wide file
 	merge m:1 id appliance using "$droot/HES/data/processed/appliance_data_wide.dta", ///
 		keepusing(is_uniq room1 appliancetext1 category1) gen(app_id_match)
 	
+	* mis-matches form master indicate unknown appliance records
+	tab app_id_match is_uniq, mi
+
+	* how many unique matches do we have?
+	tab appliancetext1 is_uniq, mi
+	tab appliancetext1 is_uniq , mi row nofreq
+
+	* keep uniq & matches only for now
+	keep if is_uniq == 1 & app_id_match == 3
+
+	keep if category == "Entertainment" | category == "ICT"
+
 	* want to keep TVs, Desktop PCs, 
 	* Fax/Printers, Hard drives, Laptops, Modems, Monitors, 
 	* Multifunction printers, Printers, Router and Scanners
-	keep if category == "ICT" | category == "Entertainment"
+	
 	* set up half-hour variable
 	gen ba_hourt = hh(s_datetime)
 	gen ba_minst = mm(s_datetime)
@@ -329,6 +343,9 @@ if `do_hes' {
 
 	* dow
 	gen s_dow = dow(dofc(s_datetime))
+	* set re-usable label
+	lab var s_dow "Day of week"
+	lab def s_dow 0 "Sunday" 1 "Monday" 2 "Tuesdays" 3 "Wednesday" 4 "Thursday" 5 "Friday" 6 "Saturday"
 	lab val s_dow s_dow
 
 	* weekend
@@ -343,7 +360,7 @@ if `do_hes' {
 	recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
 	* check
 	tab month season
-	tab appliancetext
+	tab appliancetext1
 
 	/*
 		 ComputersDesktop |    596,283       12.22       13.30
@@ -374,19 +391,27 @@ if `do_hes' {
              gamesconsole |          8        0.00       98.59
 
 */
-	gen ba_ict = "Desktop" if appliancetext == "ComputersDesktop"
-	replace ba_ict = "Laptop" if appliancetext == "ComputersLaptop"
-	replace ba_ict = "PC monitor" if appliancetext == "ComputersMonitor"
-	replace ba_ict = "Printers" if regexm(appliancetext, "Printer") 
-	replace ba_ict = "Router" if appliancetext == "Router" | appliancetext == "router"
-	replace ba_ict = "Modem" if appliancetext == "Modem"
-	replace ba_ict = "Set top box, VCR or DVD" if appliancetext == "SetTopBox" | ///
-		appliancetext == "SettopBox" | /// 
-		appliancetext == "VCR"
-	replace ba_ict = "TV etc" if regexm(appliancetext, "TV")
-	replace ba_ict = "Home Theatre System" if appliancetext == "HomeTheatreSystem"
-	replace ba_ict = "Games console" if regexm(appliancetext, "onsole")
+	gen ba_ict = "Desktop" if appliancetext1 == "ComputersDesktop"
+	replace ba_ict = "Laptop" if appliancetext1 == "ComputersLaptop"
+	replace ba_ict = "PC monitor" if appliancetext1 == "ComputersMonitor"
+	replace ba_ict = "Printers" if regexm(appliancetext1, "Printer") 
+	replace ba_ict = "Router" if appliancetext1 == "Router" | appliancetext1 == "router"
+	replace ba_ict = "Modem" if appliancetext1 == "Modem"
+	replace ba_ict = "Set top box, VCR or DVD" if appliancetext1 == "SetTopBox" | ///
+		appliancetext1 == "SettopBox" | /// 
+		appliancetext1 == "VCR"
+	replace ba_ict = "TV etc" if regexm(appliancetext1, "TV")
+	replace ba_ict = "Home Theatre System" if appliancetext1 == "HomeTheatreSystem"
+	replace ba_ict = "Games console" if regexm(appliancetext1, "onsole") // picks up lower case
 
+	tab ba_ict is_uniq
+
+	* check how many households responsible for each code
+	preserve
+		duplicates drop id ba_ict, force
+		tab id ba_ict, mi
+		tab ba_ict, mi
+	restore
 
 	preserve
 		collapse (mean) watts, by(s_halfhour s_dow ba_ict category season)
