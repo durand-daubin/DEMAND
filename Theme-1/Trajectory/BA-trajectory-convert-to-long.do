@@ -1,10 +1,10 @@
-* (c) b.anderson@soton.ac.uk
-* code to convert trajectory time use data to long form
-
+/*
+**************************************************************
+*
+* DEMAND: code to convert trajectory time use data to long form
+*
 * This work was funded by RCUK through the End User Energy Demand Centres Programme via the
 * "DEMAND: Dynamics of Energy, Mobility and Demand" Centre (www.demand.ac.uk, gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1)
-
-/*   
 
 Copyright (C) 2014  University of Southampton
 
