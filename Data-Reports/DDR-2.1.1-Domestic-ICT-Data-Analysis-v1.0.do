@@ -297,7 +297,7 @@ if `do_mtus' {
 		restore
 	}
 	* how many hhs are there in each season in each year?
-	gen month = month(dofc(s_datetime))
+	gen month = month(dofc(s_starttime))
 	recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
 	duplicates drop hldid season, force
 	collapse (count) n_hhs = hldid, by(season ba_survey)
