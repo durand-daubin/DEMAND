@@ -48,8 +48,8 @@ log using "$logd/DDR-2.3.1-Data-Analysis-v`version'.smcl", replace
 
 local do_lcfs 0 // ICT & media tech ownership in 2013
 local do_traj 0 // 2011 time use survey from Trajectory
-local do_mtus 0 // MTUS change over time analysis
-local do_hes 1 // HES electricity consumption analysis
+local do_mtus 1 // MTUS change over time analysis
+local do_hes 0 // HES electricity consumption analysis
 
 set more off
 
@@ -296,6 +296,12 @@ if `do_mtus' {
 
 		restore
 	}
+	* how many hhs are there in each season in each year?
+	gen month = month(dofc(s_datetime))
+	recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
+	duplicates drop hldid season, force
+	collapse (count) n_hhs = hldid, by(season ba_survey)
+
 }
 
 if `do_hes' {
@@ -340,6 +346,8 @@ if `do_hes' {
 	gen s_halfhour = hms(ba_hourt, ba_hh, ba_sec)
 	lab var s_halfhour "Half hour (start)"
 	format s_halfhour %tcHH:MM
+
+	drop ba_hourt ba_hh ba_minst ba_sec
 
 	* dow
 	gen s_dow = dow(dofc(s_datetime))
@@ -426,7 +434,7 @@ if `do_hes' {
 			* force contour to display legend
 			twoway contour watts s_dow s_halfhour if category == "`c'", name(`c') ///
 				by(season, note("Category = `c' (HES Data: Annual (10 minutes) dataset)") scale(0.75) clegend(on)) ///
-				zlabel(#9, format(%9.0f)) ///
+				zlabel(#9, format(%9.1f)) ///
 				ylabel(0 1 2 3 4 5 6, valuelabel angle(horizontal))  
 			graph export "$logd/HES_`c'_cont_mean_watts_by_season.png", replace
 		}
@@ -443,7 +451,7 @@ if `do_hes' {
 			capture noisily {
 				twoway contour watts s_dow s_halfhour if ba_ict == "`app'", ///
 					by(season, note("Appliance = `app' (HES Data: Annual (10 minutes) dataset)") scale(0.75) clegend(on)) ///
-					zlabel(#9, format(%9.0f)) ///
+					zlabel(#9, format(%9.1f)) ///
 					ylabel(0 1 2 3 4 5 6, valuelabel angle(horizontal))  
 				graph export "$logd/HES_`app'_cont_mean_watts_by_season.png", replace
 			}
