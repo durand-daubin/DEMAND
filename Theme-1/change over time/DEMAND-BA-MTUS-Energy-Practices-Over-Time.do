@@ -61,8 +61,8 @@ global mtusfilter "_all"
 
 * control what gets done
 local do_aggregated = 0 // table of minutes per main activity
-local do_day = 0 // big tables of all (merged) acts, eloc and mtrav by time of day
-local do_timeofday = 1 // tabout tables for each time use act/practice
+local do_day = 1 // big tables of all (merged) acts, eloc and mtrav by time of day
+local do_timeofday = 0 // tabout tables for each time use act/practice
 
 * original activities (from MTUS 69 codes)
 * 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
@@ -126,7 +126,7 @@ if `do_aggregated' {
 
 	foreach act of local old_acts {
 		di "* Mean minutes per day - `main`act'l'"
-		tabout ba_survey ///
+		qui: tabout ba_survey ///
 			using "$rpath/MTUS_aggregate_uk_`main`act'l'_mean_mins_by_ba_survey_$version.txt", replace ///
 			h3("Survey: `vlabel'") ///
 			cells(mean main`act' se) /// can't do secondary act as not in this aggregate file
@@ -148,7 +148,7 @@ use "$mtuspath/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", clear
 
 * merge in key variables from survey data
 * hhtype empstat emp unemp student retired propwt survey day month year hhldsize famstat ba_4hrspaidwork
-merge m:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(sex age year ba_hhsize ba_nchild ba_age_r ba_birth_cohort income propwt) ///
+merge m:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(sex age mtus_* ba_hhsize ba_nchild ba_age_r ba_birth_cohort income propwt) ///
 	gen(m_aggvars)
 
 * fix
@@ -170,9 +170,9 @@ lab var s_halfhour "Episode starts during the half hour following"
 format s_halfhour %tcHH:MM
 
 * seasons
-recode month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
+recode mtus_month (3 4 5 = 1 "Spring") (6 7 8 = 2 "Summer") (9 10 11 = 3 "Autumn") (12 1 2 = 4 "Winter"), gen(season)
 * check
-tab month season
+bysort mtus_year: tab mtus_month season
 
 * create a bespoke survey which merges 1983 & 1987
 * has the advantage of providing all seasons for '1985'
@@ -230,7 +230,7 @@ if `do_day' {
 			foreach v of local vars {
 				di "* -> Doing tables of `v' for `l'"
 				* using tab is a lot quicker than the survey option on tabout
-				tab s_halfhour `v' [iw=propwt] if ba_survey == `l', row nof
+				tab s_halfhour `v' [iw=propwt] if ba_survey == `l' & eloc == 1, row nof
 			}
 		}
 	restore
@@ -406,14 +406,14 @@ preserve
 			di "*-> Level: `l' of `main`p'l'"
 			* use mean as indicator of prevalence in each age/income cell for each year
 			* age
-			tabout ba_age_r income if ba_survey == `l' ///
+			qui: tabout ba_age_r income if ba_survey == `l' ///
 				using "$rpath/MTUS_`main`p'l'_by_age_year_income_$version.txt", `filemethod' ///
 				h3("Year: `vlabel'") ///
 				cells(mean all_`p'_sumc se) ///
 				format(3) ///
 				sum svy
 			* age cohorts
-			tabout ba_birth_cohort income if ba_survey == `l' ///
+			qui: tabout ba_birth_cohort income if ba_survey == `l' ///
 				using "$rpath/MTUS_`main`p'l'_by_birth_cohort_year_income_$version.txt", `filemethod' ///
 				h3("Year: `vlabel'") ///
 				cells(mean all_`p'_sumc se) ///
@@ -430,7 +430,7 @@ restore
 foreach v of varlist all_* {
 	levelsof ba_survey, local(levels)
 	foreach l of local levels {
-		tabout s_halfhour s_dow if ba_survey == `l' ///
+		qui: tabout s_halfhour s_dow if ba_survey == `l' ///
 			using "$rpath/MTUS_`v'_by_day_`l'_$version.txt", replace ///
 			cells(mean all_`p') ///
 			format(3) ///
