@@ -61,13 +61,14 @@ global mtusfilter "_all"
 
 * control what gets done
 local do_aggregated = 0 // table of minutes per main activity
-local do_day = 1 // big tables of all (merged) acts, eloc and mtrav by time of day
+local do_day = 0 // big tables of all (merged) acts, eloc and mtrav by time of day
 local do_timeofday = 0 // tabout tables for each time use act/practice
+local do_halfhour_all_acts = 0 // create tables for all years for all acts
 
 * original activities (from MTUS 69 codes)
 * 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
 * add any of them in to refresh the results
-local old_acts ""
+local old_acts "21"
 
 * these are the ones we will invent to catch particular acts/practices
 * 100 101 102 103 104 105 106
@@ -148,7 +149,7 @@ use "$mtuspath/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", clear
 
 * merge in key variables from survey data
 * hhtype empstat emp unemp student retired propwt survey day month year hhldsize famstat ba_4hrspaidwork
-merge m:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(sex age mtus_* ba_hhsize ba_nchild ba_age_r ba_birth_cohort income propwt) ///
+merge m:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(sex age mtus_* empstat ba_hhsize ba_nchild ba_age_r ba_birth_cohort income propwt) ///
 	gen(m_aggvars)
 
 * fix
@@ -230,13 +231,17 @@ if `do_day' {
 			foreach v of local vars {
 				di "* -> Doing tables of `v' for `l'"
 				* using tab is a lot quicker than the survey option on tabout
-				tab s_halfhour `v' [iw=propwt] if ba_survey == `l' & eloc == 1, row nof
+				* do not set to 'at home' only as we want a sense of what is changing overall
+				tab s_halfhour `v' [iw=propwt] if ba_survey == `l', row nof
 			}
 		}
 	restore
 }
 
-* now create new pact/sact codes which will be picked up later in the loops
+* do any tests on the raw pact/sact values here BEFORE we start messing around with them
+
+* OK, now:
+* create new pact/sact codes which will be picked up later in the loops
 * use fake numbers otherwise it fails
 
 * 100 eating at home
@@ -248,7 +253,7 @@ replace pact = 101 if mtrav == 1
 replace sact = 101 if mtrav == 1
 
 * 102: Car travel ending at home
-* needs ts to set
+* needs ts to be set so we can use lag
 tsset diarypid s_starttime, delta(10 mins)
 * now = at home, last was car travel
 replace pact = 102 if L.mtrav == 1 & eloc == 1
@@ -426,18 +431,23 @@ preserve
 restore
 
 * create half-hour by day tables for each year
-
-foreach v of varlist all_* {
-	levelsof ba_survey, local(levels)
-	foreach l of local levels {
-		qui: tabout s_halfhour s_dow if ba_survey == `l' ///
-			using "$rpath/MTUS_`v'_by_day_`l'_$version.txt", replace ///
-			cells(mean all_`p') ///
-			format(3) ///
-			sum svy
+if `do_halfhour_all_acts' {
+	foreach v of varlist all_* {
+		levelsof ba_survey, local(levels)
+		foreach l of local levels {
+			qui: tabout s_halfhour s_dow if ba_survey == `l' ///
+				using "$rpath/MTUS_`v'_by_day_`l'_$version.txt", replace ///
+				cells(mean all_`p') ///
+				format(3) ///
+				sum svy
+		}
 	}
 }
 
+* laundry checks for age & employment etc
+table ba_survey all_21 sex [iw=propwt]
+table s_halfhour s_dow all_21 if empstat == 1 & ba_survey == 2005 & sex == 2 [iw=propwt]
+ 
 di "*-->Done!"
 
 log close
