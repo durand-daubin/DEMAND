@@ -71,9 +71,9 @@ local do_halfhour_all_acts = 0 // create tables for all years for all acts
 local old_acts "21"
 
 * these are the ones we will invent to catch particular acts/practices
-* 100 101 102 103 104 105 106
+* 100 101 102 1021 103 104 105 106
 * add any of them in to refresh the results
-local new_acts "101 102 104" // see above
+local new_acts "101 102 1021" // see above
 
 local all_acts = "`old_acts' `new_acts'"
 
@@ -109,6 +109,7 @@ local main68l "68 Other travel"
 local main100l "100 Eating at home"
 local main101l "101 Car travel"
 local main102l "102 Car travel ending at home"
+local main1021l "1021 Car travel ending anywhere"
 local main103l "103 TV, video, DVD, computer games at home"
 local main104l "104 Computer,Internet at home"
 local main105l "105 Cooking late supper at home"
@@ -238,7 +239,14 @@ if `do_day' {
 	restore
 }
 
-* do any tests on the raw pact/sact values here BEFORE we start messing around with them
+* create old acts (simple)
+foreach a of local old_acts {
+	local temp "p s"
+	foreach t of local temp {
+		gen `t'act_`a' = 0
+		replace `t'act_`a' = 1 if `t'act == `a'
+	}
+}
 
 * OK, now:
 * create new pact/sact codes which will be picked up later in the loops
@@ -264,6 +272,14 @@ gen pact_102 = 0
 gen sact_102 = 0
 replace pact_102 = 1 if L.mtrav == 1 & eloc == 1
 replace sact_102 = 1 if L.mtrav == 1 & eloc == 1
+
+* 1021: Car travel ending anywhere
+* now = at home, last was car travel
+gen pact_1021 = 0
+gen sact_1021 = 0
+replace pact_1021 = 1 if L.mtrav == 1 & eloc != 8
+replace sact_1021 = 1 if L.mtrav == 1 & eloc != 8
+
 
 * 103: TV/video/DVD/computer games at home
 gen pact_103 = 0
@@ -298,11 +314,9 @@ foreach act of local all_acts {
 	tab all_`act' s_dow
 }
 
-stop
-* drop primary * secondary vars as we don't use them and they take up a lot of space
-drop pri_*
-drop sec_*
+* drop primary & secondary vars as take space & are unused
 
+drop pact_* sact_*
 
 if `do_timeofday' {
 	* keep just the variables we need to save memory
