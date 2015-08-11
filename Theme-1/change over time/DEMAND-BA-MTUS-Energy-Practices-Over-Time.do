@@ -73,7 +73,7 @@ local old_acts "21"
 * these are the ones we will invent to catch particular acts/practices
 * 100 101 102 103 104 105 106
 * add any of them in to refresh the results
-local new_acts "104" // see above
+local new_acts "101 102 104" // see above
 
 local all_acts = "`old_acts' `new_acts'"
 
@@ -245,56 +245,64 @@ if `do_day' {
 * use fake numbers otherwise it fails
 
 * 100 eating at home
-replace pact = 100 if (pact == 5 | pact == 6) & eloc == 1
-replace sact = 100 if (sact == 5 | sact == 6) & eloc == 1
+gen pact_100 = 0
+gen sact_100 = 0
+replace pact_100 = 1 if (pact == 5 | pact == 6) & eloc == 1
+replace sact_100 = 1 if (sact == 5 | sact == 6) & eloc == 1
 
 * 101: Car travel
-replace pact = 101 if mtrav == 1
-replace sact = 101 if mtrav == 1
+gen pact_101 = 0
+gen sact_101 = 0
+replace pact_101 = 1 if mtrav == 1
+replace sact_101 = 1 if mtrav == 1
 
 * 102: Car travel ending at home
 * needs ts to be set so we can use lag
 tsset diarypid s_starttime, delta(10 mins)
 * now = at home, last was car travel
-replace pact = 102 if L.mtrav == 1 & eloc == 1
-replace sact = 102 if L.mtrav == 1 & eloc == 1
+gen pact_102 = 0
+gen sact_102 = 0
+replace pact_102 = 1 if L.mtrav == 1 & eloc == 1
+replace sact_102 = 1 if L.mtrav == 1 & eloc == 1
 
 * 103: TV/video/DVD/computer games at home
-replace pact = 103 if (pact == 59 | pact == 60) & eloc == 1
-replace sact = 103 if (sact == 59 | sact == 60) & eloc == 1
+gen pact_103 = 0
+gen sact_103 = 0
+replace pact_103 = 1 if (pact == 59 | pact == 60) & eloc == 1
+replace sact_103 = 1 if (sact == 59 | sact == 60) & eloc == 1
 
 * 104: Computer/Internet at home
-replace pact = 104 if pact == 61 & eloc == 1
-replace pact = 104 if sact == 61 & eloc == 1
+gen pact_104 = 0
+gen sact_104 = 0
+replace pact_104 = 1 if pact == 61 & eloc == 1
+replace sact_104 = 1 if sact == 61 & eloc == 1
 
 * 105: Cooking late supper at home
-replace pact = 105 if pact == 18 & eloc == 1 & ba_hourt > 21 & ba_hourt <= 23
-replace sact = 105 if sact == 18 & eloc == 1 & ba_hourt > 21 & ba_hourt <= 23
+gen pact_105 = 0
+gen sact_105 = 0
+replace pact_105 = 1 if pact == 18 & eloc == 1 & ba_hourt > 21 & ba_hourt <= 23
+replace sact_105 = 1 if sact == 18 & eloc == 1 & ba_hourt > 21 & ba_hourt <= 23
 
 * 106: Cooking lunch at home
-replace pact = 106 if pact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14 & s_dow == 0
-replace sact = 106 if sact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14 & s_dow == 0
+gen pact_106 = 0
+gen sact_106 = 0
+replace pact_106 = 1 if pact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14 & s_dow == 0
+replace sact_106 = 1 if sact == 18 & eloc == 1 & ba_hourt > 11 & ba_hourt <= 14 & s_dow == 0
 
 * loop over the acts of interest to construct 'all'
 foreach act of local all_acts {
 	di "Processing: `act' = `main`act'l'"
-	gen pri_`act' = 0
-	lab var pri_`act' "Main act: `main`act'l'"
-	replace pri_`act' = 1 if pact == `act'
-
-	gen sec_`act' = 0
-	lab var sec_`act' "Secondary act: `main`act'l'"
-	replace sec_`act' = 1 if sact == `act'
-
 	gen all_`act' = 0
-	replace all_`act' = 1 if pri_`act' == 1 | sec_`act' == 1
+	replace all_`act' = 1 if pact_`act' == 1 | sact_`act' == 1
 	lab var all_`act' "All: `main`act'l'"
 	tab all_`act' s_dow
 }
 
+stop
 * drop primary * secondary vars as we don't use them and they take up a lot of space
 drop pri_*
 drop sec_*
+
 
 if `do_timeofday' {
 	* keep just the variables we need to save memory
