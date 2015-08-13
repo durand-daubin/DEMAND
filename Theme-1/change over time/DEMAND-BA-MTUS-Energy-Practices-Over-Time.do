@@ -47,23 +47,26 @@ global proot "$where/Projects/RCUK-DEMAND/Theme 1"
 global rpath "$proot/results/MTUS"
 
 * version
-global version = "v2.0"
+global version = "v3.0"
+* changes new act coding method to avoid messing up later codes
+
+*global version = "v2.0"
 
 * global version = "v1.0"
 * weights the final counts
 
-capture log close
+capture log close _all
 
-log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version.smcl", replace
+log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version.smcl", replace name(main)
 
 * which subgroup of mtus are we interested in?
 global mtusfilter "_all"
 
 * control what gets done
 local do_aggregated = 0 // table of minutes per main activity
-local do_day = 0 // big tables of all (merged) acts, eloc and mtrav by time of day
+local do_classes = 0 // big tables of all activity classes, eloc and mtrav by time of day
 local do_timeofday = 0 // tabout tables for each time use act/practice
-local do_halfhour_all_acts = 0 // create tables for all years for all acts
+local do_halfhour_all_acts = 1 // create tables for all years for all acts
 
 * original activities (from MTUS 69 codes)
 * 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
@@ -183,9 +186,8 @@ recode survey (1974=1974 "1974") (1983/1987=1985 "1985") (1995 = 1995 "1995") (2
 * this is the number of 10 minute samples by survey & day of the week
 tab ba_survey s_dow [iw=propwt]
 
-* simple categorisation for year on year comparison as MTUS has 69 or 41 codes which are hard to visualise
+* simple 'Activity Class' categorisation for year on year comparison as MTUS has 69 or 41 codes which are hard to visualise
 * this is a DEMAND (energy) oriented classification
-* do this BEFORE modifying any of the pact/sact codes!
 recode pact (2 3 55 = 1 "Sleep/rest") ///
 	(1 4 19 20 21 22 23 27 28 30 31 32 46 54 = 2 "Personal, child, adult or household care/chores") ///
 	(5 6 18 = 3 "Cooking or eating") ///
@@ -196,7 +198,7 @@ recode pact (2 3 55 = 1 "Sleep/rest") ///
 	(42 43 44 45 47 = 8 "Sport or exercise") ///
 	(56 57 58 59 60 61 = 9 "Media use incl. TV, radio, PC, internet") ///
 	(62 63 64 65 66 67 68 = 10 "Travel") ///
-	(69 = 11 "Not recorded") (nonmissing = 12 "Not coded"), gen(ba_pact)
+	(69 = 11 "Not recorded") (nonmissing = 12 "Not coded"), gen(ba_p_class)
 
 recode sact (2 3 55 = 1 "Sleep/rest") ///
 		(1 4 19 20 21 22 23 27 28 30 31 32 46 54 = 2 "Personal, child, adult or household care/chores") ///
@@ -208,17 +210,19 @@ recode sact (2 3 55 = 1 "Sleep/rest") ///
 		(42 43 44 45 47 = 8 "Sport or exercise") ///
 		(56 57 58 59 60 61 = 9 "Media use incl. TV, radio, PC, internet") ///
 		(62 63 64 65 66 67 68 = 10 "Travel") ///
-		(69 = 11 "Not recorded") (nonmissing = 12 "Not coded"), gen(ba_sact)
+		(69 = 11 "Not recorded") (nonmissing = 12 "Not coded"), gen(ba_s_class)
 
 *test
-tab pact ba_pact, mi
+tab pact ba_p_class, mi
 
 * set survey
 svyset [iw=propwt]
 
-if `do_day' {
+if `do_classes' {
+	log off main
+	log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version-activity-classes.smcl", replace  
 	* produce tables of merged primary acts, location & mode of travel per halfhour per survey
-	local vars "ba_pact ba_sact eloc mtrav"
+	local vars "ba_p_class ba_s_class eloc mtrav"
 
 	preserve
 		keep s_halfhour ba_survey `vars' propwt
@@ -237,6 +241,7 @@ if `do_day' {
 			}
 		}
 	restore
+	log on main
 }
 
 * create old acts (simple)
@@ -321,7 +326,7 @@ drop pact_* sact_*
 if `do_timeofday' {
 	* keep just the variables we need to save memory
 	* others: month cday diary sex age year season eloc mtrav
-	keep s_halfhour ba_survey all_* diarypid s_dow propwt ba_pact ba_survey ba_age_r income
+	keep s_halfhour ba_survey all_* diarypid s_dow propwt ba_p_class ba_survey ba_age_r income
 
 	* loop over acts producing stats
 	* use tabout method for results by day/year
@@ -411,7 +416,7 @@ preserve
 	foreach p of local new_acts {
 		di "* Act: `p' (`main`p'l')"
 		di "* Basic test"
-		tab all_`p'
+		tab all_`p'_sumc
 		di "* Distribution by ba_survey, age & income"
 
 		*bysort ba_survey: table all_`act' ba_age_r [iw=propwt], by(income)
@@ -459,7 +464,7 @@ if `do_halfhour_all_acts' {
 		foreach l of local levels {
 			qui: tabout s_halfhour s_dow if ba_survey == `l' ///
 				using "$rpath/MTUS_`v'_by_day_`l'_$version.txt", replace ///
-				cells(mean all_`p') ///
+				cells(mean `v') ///
 				format(3) ///
 				sum svy
 		}
@@ -472,4 +477,4 @@ table s_halfhour s_dow all_21 if empstat == 1 & ba_survey == 2005 & sex == 2 [iw
  
 di "*-->Done!"
 
-log close
+log close main
