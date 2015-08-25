@@ -28,13 +28,15 @@ GNU General Public License for more details.
 
 */
 
+* Requires: tabout
+
 clear all
 
 * change these to run this script on different PC
 * use globals so can re-run parts of the script
 
 global where "~/Documents/Work"
-global droot "$where/Data/Social Science Datatsets"
+global droot "$where/Data/Social Science Datasets"
 
 * MTUS
 global mtuspath "$droot/MTUS/World 6/processed"
@@ -43,8 +45,8 @@ global mtuspath "$droot/MTUS/World 6/processed"
 global sprgpath "$where/Projects/ESRC-SPRG/WP4-Micro_water/data/sprg_survey/data/safe/v6"
 
 * where to put results
-global proot "$where/Projects/RCUK-DEMAND/Theme 1"
-global rpath "$proot/results/MTUS"
+global proot "$where/Papers and Conferences/Energy Through Time"
+
 
 * version
 global version = "v3.0"
@@ -55,6 +57,8 @@ global version = "v3.0"
 * global version = "v1.0"
 * weights the final counts
 
+global rpath "$proot/results/$version"
+
 capture log close _all
 
 log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version.smcl", replace name(main)
@@ -64,19 +68,20 @@ global mtusfilter "_all"
 
 * control what gets done
 local do_aggregated = 0 // table of minutes per main activity
-local do_classes = 0 // big tables of all activity classes, eloc and mtrav by time of day
-local do_timeofday = 0 // tabout tables for each time use act/practice
-local do_halfhour_all_acts = 1 // create tables for all years for all acts
+local do_classes = 1 // big tables of all activity classes, eloc and mtrav by time of day
+local do_halfhours = 1 // tabout tables for each time use act/practice
+local do_demogs = 1 // tables of prevalence of acts by income and age etc
+local do_half_hour_by_day_year = 1 // create tables for all years for all acts
 
 * original activities (from MTUS 69 codes)
 * 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
 * add any of them in to refresh the results
-local old_acts "21"
+local old_acts "4 18 20 21"
 
 * these are the ones we will invent to catch particular acts/practices
 * 100 101 102 1021 103 104 105 106
 * add any of them in to refresh the results
-local new_acts "101 102 1021" // see above
+local new_acts "100 101 102 1021 103 104 105 106" // see above
 
 local all_acts = "`old_acts' `new_acts'"
 
@@ -120,7 +125,7 @@ local main106l "106 Cooking Sunday lunch at home"
 
 
 if `do_aggregated' {
-	* use the aggregated file to test the mins per day for these acts for each survey as context
+	di "* Use the aggregated file to test the mins per day for these acts for each survey as context"
 	use "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", clear
 
 	svyset [iw=propwt]
@@ -147,8 +152,7 @@ if `do_aggregated' {
 * https://github.com/dataknut/MTUS/blob/master/process-MTUS-W6-convert-to-X-min-samples-v1.0-adult.do
 * to have been run over the MTUS first with X set to 10
 
-* merge in the sampled data
-* do analysis by collapsing 10 minute sampled data to half hours
+* use the sampled data
 use "$mtuspath/MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta", clear
 
 * merge in key variables from survey data
@@ -188,6 +192,7 @@ tab ba_survey s_dow [iw=propwt]
 
 * simple 'Activity Class' categorisation for year on year comparison as MTUS has 69 or 41 codes which are hard to visualise
 * this is a DEMAND (energy) oriented classification
+* there are an infinite number of ways of doing this - labels give 'justification'
 recode pact (2 3 55 = 1 "Sleep/rest") ///
 	(1 4 19 20 21 22 23 27 28 30 31 32 46 54 = 2 "Personal, child, adult or household care/chores") ///
 	(5 6 18 = 3 "Cooking or eating") ///
@@ -201,41 +206,41 @@ recode pact (2 3 55 = 1 "Sleep/rest") ///
 	(69 = 11 "Not recorded") (nonmissing = 12 "Not coded"), gen(ba_p_class)
 
 recode sact (2 3 55 = 1 "Sleep/rest") ///
-		(1 4 19 20 21 22 23 27 28 30 31 32 46 54 = 2 "Personal, child, adult or household care/chores") ///
-		(5 6 18 = 3 "Cooking or eating") ///
-		(7 8 9 10 11 12 13 14 = 4 "Work or work related") ///
-		(15 16 17 29 = 5 "Education or related") ///
-		(24 25 26 = 6 "Shopping/service use") ///
-		(33 34 35 36 37 38 39 40 41 48 49 50 51 52 53 = 7 "Voluntary, civic, watching sport, leisure or social activities") ///
-		(42 43 44 45 47 = 8 "Sport or exercise") ///
-		(56 57 58 59 60 61 = 9 "Media use incl. TV, radio, PC, internet") ///
-		(62 63 64 65 66 67 68 = 10 "Travel") ///
-		(69 = 11 "Not recorded") (nonmissing = 12 "Not coded"), gen(ba_s_class)
+	(1 4 19 20 21 22 23 27 28 30 31 32 46 54 = 2 "Personal, child, adult or household care/chores") ///
+	(5 6 18 = 3 "Cooking or eating") ///
+	(7 8 9 10 11 12 13 14 = 4 "Work or work related") ///
+	(15 16 17 29 = 5 "Education or related") ///
+	(24 25 26 = 6 "Shopping/service use") ///
+	(33 34 35 36 37 38 39 40 41 48 49 50 51 52 53 = 7 "Voluntary, civic, watching sport, leisure or social activities") ///
+	(42 43 44 45 47 = 8 "Sport or exercise") ///
+	(56 57 58 59 60 61 = 9 "Media use incl. TV, radio, PC, internet") ///
+	(62 63 64 65 66 67 68 = 10 "Travel") ///
+	(69 = 11 "Not recorded") (nonmissing = 12 "Not coded"), gen(ba_s_class)
 
 *test
 tab pact ba_p_class, mi
+tab sact ba_s_class, mi
 
 * set survey
 svyset [iw=propwt]
 
 if `do_classes' {
+	* push into own log file to make tables easier to find
 	log off main
 	log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version-activity-classes.smcl", replace  
-	* produce tables of merged primary acts, location & mode of travel per halfhour per survey
+	di "* Produce tables of primary activity classes, secondary activity classes, location & mode of travel per halfhour per survey"
 	local vars "ba_p_class ba_s_class eloc mtrav"
 
 	preserve
 		keep s_halfhour ba_survey `vars' propwt
-		* use looped tabout method but alter to just use levels (= years) not label values as well
 
-		* do not use full pact or sact as takes a LONG time and is impossible to visualise
 		levelsof ba_survey, local(levels)
 		foreach l of local levels {
 			di "********************"
 			di "* Doing tables for `l'"
 			foreach v of local vars {
 				di "* -> Doing tables of `v' for `l'"
-				* using tab is a lot quicker than the survey option on tabout
+				* using tab is a lot quicker than the survey option on tabout but have to manually copy :-(
 				* do not set to 'at home' only as we want a sense of what is changing overall
 				tab s_halfhour `v' [iw=propwt] if ba_survey == `l', row nof
 			}
@@ -253,8 +258,7 @@ foreach a of local old_acts {
 	}
 }
 
-* OK, now:
-* create new pact/sact codes which will be picked up later in the loops
+* Now create new pact/sact codes which will be picked up later in the loops
 * use fake numbers otherwise it fails
 
 * 100 eating at home
@@ -323,7 +327,7 @@ foreach act of local all_acts {
 
 drop pact_* sact_*
 
-if `do_timeofday' {
+if `do_halfhours' {
 	* keep just the variables we need to save memory
 	* others: month cday diary sex age year season eloc mtrav
 	keep s_halfhour ba_survey all_* diarypid s_dow propwt ba_p_class ba_survey ba_age_r income
@@ -382,83 +386,86 @@ if `do_timeofday' {
 	}
 }
 
-* do age/income analysis of defined acts
-* this needs to be a count of people reporting acts (not counts of acts)
-preserve
-	* prep for collapse
-	foreach v of varlist all_* {
-		gen `v'_sum = `v'
-		gen `v'_count = `v'
-	}
-	* collapse to halfhours and count the number of 10 minute smaple points at which the act is recorded
-	* NB - we should expect 1974 to record a lower incidence of everything as it was a 1/2 hour diary
-	* the others are 10 or 15 minutes
-	collapse (sum) all_*_sum (count) all_*_count, by(diarypid ba_survey s_halfhour)
-	* the max value will be 3 (3 * 10 minute smaple points in each half hour)
-
-	* to nullify the 1974 1/2 hour effect (and the 1987 15 minute effect) we will add up the number of half-hours in which the act was recorded
-
-	* was it recorded?
-	foreach v of varlist all_*_sum {
-		gen `v'c = 0
-		replace `v'c = 1 if `v' > 0
-	}
-
-	* now add them up by collapsing again to person level leaving in ba_survey as a check
-	* this should have a max of 48 (act was observed in every 1/2 hour)
-	collapse (sum) all_*_sumc , by(diarypid ba_survey)
-
-  * put some of the survey variables back in
-	merge 1:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(ba_age_r income propwt ba_birth_cohort)
-	* relabel
-	lab val ba_age_r ba_age_r
-
-	foreach p of local new_acts {
-		di "* Act: `p' (`main`p'l')"
-		di "* Basic test"
-		tab all_`p'_sumc
-		di "* Distribution by ba_survey, age & income"
-
-		*bysort ba_survey: table all_`act' ba_age_r [iw=propwt], by(income)
-		local count = 0
-		* by day of week
-		local filemethod = "replace"
-		levelsof ba_survey, local(levels)
-		*di "* levels: `levels'"
-		local labels: value label ba_survey
-		*di "* labels: `labels'"
-		local heading "h1(`main`p'l')"
-		foreach l of local levels {
-			if `count' > 0 {
-				* we already made one pass so now append
-				local filemethod = "append"
-				*ocal heading = "h1(nil) h2(nil)"
-			}
-			local vlabel : label `labels' `l'
-			di "*-> Level: `l' of `main`p'l'"
-			* use mean as indicator of prevalence in each age/income cell for each year
-			* age
-			qui: tabout ba_age_r income if ba_survey == `l' ///
-				using "$rpath/MTUS_`main`p'l'_by_age_year_income_$version.txt", `filemethod' ///
-				h3("Year: `vlabel'") ///
-				cells(mean all_`p'_sumc se) ///
-				format(3) ///
-				sum svy
-			* age cohorts
-			qui: tabout ba_birth_cohort income if ba_survey == `l' ///
-				using "$rpath/MTUS_`main`p'l'_by_birth_cohort_year_income_$version.txt", `filemethod' ///
-				h3("Year: `vlabel'") ///
-				cells(mean all_`p'_sumc se) ///
-				format(3) ///
-				sum svy
-
-			local count = `count' + 1
+if `do_demogs' {
+	di "* do age/income analysis of defined acts"
+	di "* this needs to be a count of people reporting acts (not counts of acts)"
+	preserve
+		* prep for collapse
+		foreach v of varlist all_* {
+			gen `v'_sum = `v'
+			gen `v'_count = `v'
 		}
-	}
-restore
+		* collapse to halfhours and count the number of 10 minute smaple points at which the act is recorded
+		* NB - we should expect 1974 to record a lower incidence of everything as it was a 1/2 hour diary
+		* the others are 10 or 15 minutes
+		collapse (sum) all_*_sum (count) all_*_count, by(diarypid ba_survey s_halfhour)
+		* the max value will be 3 (3 * 10 minute smaple points in each half hour)
 
-* create half-hour by day tables for each year
-if `do_halfhour_all_acts' {
+		* to nullify the 1974 1/2 hour effect (and the 1987 15 minute effect) we will add up the number of half-hours in which the act was recorded
+
+		* was it recorded?
+		foreach v of varlist all_*_sum {
+			gen `v'c = 0
+			replace `v'c = 1 if `v' > 0
+		}
+
+		* now add them up by collapsing again to person level leaving in ba_survey as a check
+		* this should have a max of 48 (act was observed in every 1/2 hour)
+		collapse (sum) all_*_sumc , by(diarypid ba_survey)
+
+	  	* put some of the survey variables back in
+		merge 1:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(ba_age_r income propwt ba_birth_cohort)
+		* relabel
+		lab val ba_age_r ba_age_r
+
+		foreach p of local new_acts {
+			di "* Act: `p' (`main`p'l')"
+			di "* Basic test"
+			tab all_`p'_sumc
+			di "* Distribution by ba_survey, age & income"
+
+			*bysort ba_survey: table all_`act' ba_age_r [iw=propwt], by(income)
+			local count = 0
+			* by day of week
+			local filemethod = "replace"
+			levelsof ba_survey, local(levels)
+			*di "* levels: `levels'"
+			local labels: value label ba_survey
+			*di "* labels: `labels'"
+			local heading "h1(`main`p'l')"
+			foreach l of local levels {
+				if `count' > 0 {
+					* we already made one pass so now append
+					local filemethod = "append"
+					*ocal heading = "h1(nil) h2(nil)"
+				}
+				local vlabel : label `labels' `l'
+				di "*-> Level: `l' of `main`p'l'"
+				* use mean as indicator of prevalence in each age/income cell for each year
+				* age
+				qui: tabout ba_age_r income if ba_survey == `l' ///
+					using "$rpath/MTUS_`main`p'l'_by_age_year_income_$version.txt", `filemethod' ///
+					h3("Year: `vlabel'") ///
+					cells(mean all_`p'_sumc se) ///
+					format(3) ///
+					sum svy
+				* age cohorts
+				qui: tabout ba_birth_cohort income if ba_survey == `l' ///
+					using "$rpath/MTUS_`main`p'l'_by_birth_cohort_year_income_$version.txt", `filemethod' ///
+					h3("Year: `vlabel'") ///
+					cells(mean all_`p'_sumc se) ///
+					format(3) ///
+					sum svy
+
+				local count = `count' + 1
+			}
+		}
+	restore
+}
+
+
+if `do_half_hour_by_day_year' {
+	di "* create half-hour by day tables for each year"
 	foreach v of varlist all_* {
 		levelsof ba_survey, local(levels)
 		foreach l of local levels {
