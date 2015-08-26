@@ -67,6 +67,7 @@ log using "$rpath/DEMAND-BA-MTUS-Energy-Practices-Over-Time-$version.smcl", repl
 global mtusfilter "_all"
 
 * control what gets done
+* if you run all of these the script will take some time to run
 local do_aggregated = 0 // table of minutes per main activity
 local do_classes = 1 // big tables of all activity classes, eloc and mtrav by time of day
 local do_halfhours = 1 // tabout tables for each time use act/practice
