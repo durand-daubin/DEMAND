@@ -241,6 +241,7 @@ if `do_classes' {
 			foreach v of local vars {
 				di "* -> Doing tables of `v' for `l'"
 				* using tab is a lot quicker than the survey option on tabout but have to manually copy :-(
+				* could just as easily use bysort for this
 				* do not set to 'at home' only as we want a sense of what is changing overall
 				tab s_halfhour `v' [iw=propwt] if ba_survey == `l', row nof
 			}
