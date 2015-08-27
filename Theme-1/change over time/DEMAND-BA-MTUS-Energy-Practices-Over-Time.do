@@ -69,8 +69,8 @@ global mtusfilter "_all"
 * control what gets done
 * if you run all of these the script will take some time to run
 local do_aggregated = 1 // table of minutes per main activity
-local do_classes = 0 // big tables of all activity classes, eloc and mtrav by time of day
-local do_halfhours = 0 // tabout tables for each time use act/practice
+local do_classes = 1 // big tables of all activity classes, eloc and mtrav by time of day
+local do_halfhours = 1 // tabout tables for each time use act/practice - takes a long time
 local do_demogs = 0 // tables of prevalence of acts by income and age etc
 local do_half_hour_by_day_year = 0 // create tables for all years for all acts
 
@@ -227,10 +227,10 @@ svyset [iw=propwt]
 
 if `do_classes' {
 	* push into own log file to make tables easier to find
-	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_$version_activity_classes.smcl"
+	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_activity_classes_$version.smcl"
 	di "* running do_halfhours to `nlog'"
 	log off main
-	log using "`nlog'", replace  
+	log using "`nlog'", replace  name(do_classes)
 
 	di "* Produce tables of primary activity classes, secondary activity classes, location & mode of travel per halfhour per survey"
 	local vars "ba_p_class ba_s_class eloc mtrav"
@@ -251,6 +251,7 @@ if `do_classes' {
 			}
 		}
 	restore
+	log off do_classes
 	log on main
 }
 
@@ -334,10 +335,10 @@ drop pact_* sact_*
 
 if `do_halfhours' {
 	* push into own log file
-	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_$version_acts_half_hours.smcl"
+	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_acts_halfhours_$version.smcl"
 	di "* running do_halfhours to `nlog'"
 	log off main
-	log using "`nlog'", replace  
+	log using "`nlog'", replace  name(do_halfhours)
 
 	* keep just the variables we need to save memory
 	* others: month cday diary sex age year season eloc mtrav
@@ -395,14 +396,15 @@ if `do_halfhours' {
 			}
 		restore
 	}
+	log off do_halfhours
 	log on main
 }
 
 if `do_demogs' {
-	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_$version_demogs.smcl"
+	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_demogs_$version.smcl"
 	di "* running do_demogs to `nlog'"
 	log off main
-	log using "`nlog'", replace  
+	log using "`nlog'", replace  name(do_demogs)
 	di "* do age/income analysis of defined acts"
 	di "* this needs to be a count of people reporting acts (not counts of acts)"
 	preserve
@@ -477,15 +479,16 @@ if `do_demogs' {
 			}
 		}
 	restore
+	log off do_demogs
 	log on main
 }
 
 
 if `do_half_hour_by_day_year' {
-	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_$version_half_hour_by_day_year.smcl"
+	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_half_hour_by_day_year_$version.smcl"
 	di "* running do_half_hour_by_day_year to `nlog'"
 	log off main
-	log using "`nlog'", replace  
+	log using "`nlog'", replace  name(do_half_hour_by_day_year)
 
 	di "* create half_hour by day tables for each year"
 	foreach v of varlist all_* {
@@ -498,6 +501,7 @@ if `do_half_hour_by_day_year' {
 				sum svy
 		}
 	}
+	log off do_half_hour_by_day_year
 	log on main
 }
 
