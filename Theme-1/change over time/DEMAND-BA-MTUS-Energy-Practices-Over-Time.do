@@ -68,11 +68,11 @@ global mtusfilter "_all"
 
 * control what gets done
 * if you run all of these the script will take some time to run
-local do_aggregated = 1 // table of minutes per main activity
-local do_classes = 1 // big tables of all activity classes, eloc and mtrav by time of day
-local do_halfhours = 1 // tabout tables for each time use act/practice - takes a long time
-local do_demogs = 0 // tables of prevalence of acts by income and age etc
-local do_half_hour_by_day_year = 0 // create tables for all years for all acts
+local do_aggregated = 0 // table of minutes per main activity
+local do_classes = 0 // big tables of all activity classes, eloc and mtrav by time of day
+local do_halfhours = 0 // tabout tables for each time use act/practice - takes a long time
+local do_demogs = 1 // tables of prevalence of acts by income and age etc
+local do_half_hour_by_day_year = 1 // create tables for all years for all acts
 
 * original activities (from MTUS 69 codes)
 * 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
@@ -342,6 +342,7 @@ if `do_halfhours' {
 
 	* keep just the variables we need to save memory
 	* others: month cday diary sex age year season eloc mtrav
+	
 	keep s_halfhour ba_survey all_* diarypid s_dow propwt ba_p_class ba_survey ba_age_r income
 
 	* loop over acts producing stats
@@ -432,7 +433,9 @@ if `do_demogs' {
 		collapse (sum) all_*_sumc , by(diarypid ba_survey)
 
 	  	* put some of the survey variables back in
-		merge 1:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(ba_age_r income propwt ba_birth_cohort)
+		merge 1:1 diarypid using "$mtuspath/MTUS-adult-aggregate-UK-only-wf.dta", keepusing(ba_age_r income propwt ba_birth_cohort sex)
+
+		
 		* relabel
 		lab val ba_age_r ba_age_r
 
@@ -505,9 +508,6 @@ if `do_half_hour_by_day_year' {
 	log on main
 }
 
-* laundry checks for age & employment etc
-table ba_survey all_21 sex [iw=propwt]
-table s_halfhour s_dow all_21 if empstat == 1 & ba_survey == 2005 & sex == 2 [iw=propwt]
  
 di "* --> Done!"
 
