@@ -72,7 +72,8 @@ local do_aggregated = 0 // table of minutes per main activity
 local do_classes = 0 // big tables of all activity classes, eloc and mtrav by time of day
 local do_halfhours = 0 // tabout tables for each time use act/practice - takes a long time
 local do_demogs = 1 // tables of prevalence of acts by income and age etc
-local do_half_hour_by_day_year = 1 // create tables for all years for all acts
+
+*local do_half_hour_by_day_year = 0 // create tables for all years for all acts - takes a very long time & breaks memory!
 
 * original activities (from MTUS 69 codes)
 * 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
