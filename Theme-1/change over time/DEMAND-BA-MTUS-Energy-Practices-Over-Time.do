@@ -49,8 +49,12 @@ global proot "$where/Papers and Conferences/Energy Through Time"
 
 
 * version
-global version = "v3.0"
+
+global version = "v3" // must match to a folder name in $proot/results
 * changes new act coding method to avoid messing up later codes
+
+local subv ".0" // use to set subversion if you wish
+local logv "$version`subv'" // gets appended to all results
 
 *global version = "v2.0"
 
@@ -61,7 +65,7 @@ global rpath "$proot/results/$version"
 
 capture log close _all
 
-log using "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_$version.smcl", replace name(main)
+log using "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_`logv'.smcl", replace name(main)
 
 * which subgroup of mtus are we interested in?
 global mtusfilter "_all"
@@ -69,21 +73,19 @@ global mtusfilter "_all"
 * control what gets done
 * if you run all of these the script will take some time to run
 local do_aggregated = 0 // table of minutes per main activity
-local do_classes = 0 // big tables of all activity classes, eloc and mtrav by time of day
-local do_halfhours = 0 // tabout tables for each time use act/practice - takes a long time
-local do_demogs = 1 // tables of prevalence of acts by income and age etc
-
-*local do_half_hour_by_day_year = 0 // create tables for all years for all acts - takes a very long time & breaks memory!
+local do_activity_classes = 1 // big tables of all activity classes, eloc and mtrav by time of day
+local do_halfhours = 0 // tabout tables for each time use act/practice specified in old/new acts - takes a long time
+local do_demogs = 0 // tables of prevalence of acts by income and age etc
 
 * original activities (from MTUS 69 codes)
 * 4 18 20 21 57 58 59 60 61 62 63 64 65 66 67 68
 * add any of them in to refresh the results
-local old_acts "4 18 20 21"
+local old_acts ""
 
 * these are the ones we will invent to catch particular acts/practices
 * 100 101 102 1021 103 104 105 106
 * add any of them in to refresh the results
-local new_acts "100 101 102 1021 103 104 105 106" // see above
+local new_acts "103" // see above
 
 local all_acts = "`old_acts' `new_acts'"
 
@@ -139,7 +141,7 @@ if `do_aggregated' {
 	foreach act of local old_acts {
 		di "* Mean minutes per day - `main`act'l'"
 		qui: tabout ba_survey ///
-			using "$rpath/MTUS_aggregate_uk_`main`act'l'_mean_mins_by_ba_survey_$version.txt", replace ///
+			using "$rpath/MTUS_aggregate_uk_`main`act'l'_mean_mins_by_ba_survey_`logv'.txt", replace ///
 			h3("Survey: `vlabel'") ///
 			cells(mean main`act' se) /// can't do secondary act as not in this aggregate file
 			format(3) ///
@@ -223,18 +225,23 @@ recode sact (2 3 55 = 1 "Sleep/rest") ///
 tab pact ba_p_class, mi
 tab sact ba_s_class, mi
 
+levelsof(ba_p_class), local(activity_classes)
+foreach a of local activity_classes {
+	gen class_`a' = 0
+	replace class_`a' = 1 if ba_p_class == `a' | ba_s_class == `a' // create an overall activity class variable
+}
 * set survey
 svyset [iw=propwt]
 
-if `do_classes' {
+if `do_activity_classes' {
 	* push into own log file to make tables easier to find
-	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_activity_classes_$version.smcl"
+	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_do_activity_classes_`logv'.smcl"
 	di "* running do_halfhours to `nlog'"
 	log off main
-	log using "`nlog'", replace  name(do_classes)
+	log using "`nlog'", replace  name(do_activity_classes)
 
-	di "* Produce tables of primary activity classes, secondary activity classes, location & mode of travel per halfhour per survey"
-	local vars "ba_p_class ba_s_class eloc mtrav"
+	di "* Produce tables of mean (%) activity classes, location & mode of travel per halfhour per survey"
+	local vars "ba_p_class ba_s_class class_* eloc mtrav"
 
 	preserve
 		keep s_halfhour ba_survey `vars' propwt
@@ -243,16 +250,33 @@ if `do_classes' {
 		foreach l of local levels {
 			di "********************"
 			di "* Doing tables for `l'"
-			foreach v of local vars {
+			foreach v of varlist ba_p_class ba_s_class class_* eloc mtrav {
 				di "* -> Doing tables of `v' for `l'"
-				* using tab is a lot quicker than the survey option on tabout but have to manually copy :-(
-				* could just as easily use bysort for this
+				* use [iw=propwt] as the results are the same as using the svy option
+				* also the same if you calculate the mean using tabout or from the freq (as a %)
+				* and it is MUCH quicker (why?)
 				* do not set to 'at home' only as we want a sense of what is changing overall
-				tab s_halfhour `v' [iw=propwt] if ba_survey == `l', row nof
+				qui: tabout s_halfhour `v' if ba_survey == `l' ///
+					using "$rpath/MTUS_freq_`v'_`l'_`logv'.txt" [iw=propwt], replace ///
+					format(3)
+			}
+		}
+		foreach l of local levels {
+			di "********************"
+			di "* Doing tables for `l' at home"
+			foreach v of varlist ba_p_class ba_s_class class_* {
+				di "* -> Doing tables of `v' for `l'"
+				* use [iw=propwt] as the results are the same as using the svy option
+				* also the same if you calculate the mean using tabout or from the freq (as a %)
+				* and it is MUCH quicker (why?)
+				* do not set to 'at home' only as we want a sense of what is changing overall
+				qui: tabout s_halfhour `v' if ba_survey == `l' & eloc == 1 ///
+					using "$rpath/MTUS_freq_`v'_`l'_`logv'_at_home.txt" [iw=propwt], replace ///
+					format(3)
 			}
 		}
 	restore
-	log off do_classes
+	log off do_activity_classes
 	log on main
 }
 
@@ -336,7 +360,7 @@ drop pact_* sact_*
 
 if `do_halfhours' {
 	* push into own log file
-	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_acts_halfhours_$version.smcl"
+	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_acts_halfhours_`logv'.smcl"
 	di "* running do_halfhours to `nlog'"
 	log off main
 	log using "`nlog'", replace  name(do_halfhours)
@@ -355,7 +379,7 @@ if `do_halfhours' {
 
 		di "* proportion (uses mean of 1/0) of acts that are `act' (`main`act'l')"
 		qui: tabout s_halfhour ba_survey ///
-			using "$rpath/MTUS_sampled_`main`act'l'_by_halfhour_per_year_mean_$version.txt", replace ///
+			using "$rpath/MTUS_sampled_`main`act'l'_by_halfhour_per_year_mean_`logv'.txt", replace ///
 			cells(mean all_`act' se) ///
 			format(3) ///
 			svy sum
@@ -365,7 +389,7 @@ if `do_halfhours' {
 			keep if all_`act' == 1
 			di "* col % of `act' (`main`act'l') _ when is it done?"
 			qui: tabout s_halfhour ba_survey  ///
-				using "$rpath/MTUS_sampled_`main`act'l'_by_halfhour_per_year_col_pc_$version.txt", replace ///
+				using "$rpath/MTUS_sampled_`main`act'l'_by_halfhour_per_year_col_pc_`logv'.txt", replace ///
 				cells(col se) ///
 				format(3) ///
 				svy
@@ -389,7 +413,7 @@ if `do_halfhours' {
 				di "* -> Level: `l' (`vlabel') of `main`act'l'"
 				* use freq as can then summarise across all days
 				qui: tabout s_halfhour ba_survey if s_dow == `l' ///
-					using "$rpath/MTUS_sampled_`main`act'l'_by_halfhour_per_year_day_col_freq_$version.txt", `filemethod' ///
+					using "$rpath/MTUS_sampled_`main`act'l'_by_halfhour_per_year_day_col_freq_`logv'.txt", `filemethod' ///
 					h3("Day: `vlabel'") ///
 					cells(freq) ///
 					format(3) ///
@@ -403,7 +427,7 @@ if `do_halfhours' {
 }
 
 if `do_demogs' {
-	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_demogs_$version.smcl"
+	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_demogs_`logv'.smcl"
 	di "* running do_demogs to `nlog'"
 	log off main
 	log using "`nlog'", replace  name(do_demogs)
@@ -466,14 +490,14 @@ if `do_demogs' {
 				* use mean as indicator of prevalence in each age/income cell for each year
 				* age
 				qui: tabout ba_age_r income if ba_survey == `l' ///
-					using "$rpath/MTUS_`main`p'l'_by_age_year_income_$version.txt", `filemethod' ///
+					using "$rpath/MTUS_`main`p'l'_by_age_year_income_`logv'.txt", `filemethod' ///
 					h3("Year: `vlabel'") ///
 					cells(mean all_`p'_sumc se) ///
 					format(3) ///
 					sum svy
 				* age cohorts
 				qui: tabout ba_birth_cohort income if ba_survey == `l' ///
-					using "$rpath/MTUS_`main`p'l'_by_birth_cohort_year_income_$version.txt", `filemethod' ///
+					using "$rpath/MTUS_`main`p'l'_by_birth_cohort_year_income_`logv'.txt", `filemethod' ///
 					h3("Year: `vlabel'") ///
 					cells(mean all_`p'_sumc se) ///
 					format(3) ///
@@ -486,29 +510,6 @@ if `do_demogs' {
 	log off do_demogs
 	log on main
 }
-
-
-if `do_half_hour_by_day_year' {
-	local nlog "$rpath/DEMAND_BA_MTUS_Energy_Practices_Over_Time_half_hour_by_day_year_$version.smcl"
-	di "* running do_half_hour_by_day_year to `nlog'"
-	log off main
-	log using "`nlog'", replace  name(do_half_hour_by_day_year)
-
-	di "* create half_hour by day tables for each year"
-	foreach v of varlist all_* {
-		levelsof ba_survey, local(levels)
-		foreach l of local levels {
-			qui: tabout s_halfhour s_dow if ba_survey == `l' ///
-				using "$rpath/MTUS_`v'_by_day_`l'_$version.txt", replace ///
-				cells(mean `v') ///
-				format(3) ///
-				sum svy
-		}
-	}
-	log off do_half_hour_by_day_year
-	log on main
-}
-
  
 di "* --> Done!"
 
