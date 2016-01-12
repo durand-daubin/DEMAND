@@ -244,8 +244,14 @@ if `do_activity_classes' {
 	local vars "ba_p_class ba_s_class class_* eloc mtrav"
 
 	preserve
-		keep s_halfhour ba_survey `vars' propwt
-
+		* reduce filesize
+		keep s_halfhour ba_survey s_dow `vars' propwt
+		
+		* create tables by day for comparison across time for:
+		* class 10 = travel
+		table s_halfhour s_dow class_10 if ba_survey == 1974 [pw= propwt]
+		table s_halfhour s_dow class_10 if ba_survey == 2005 [pw= propwt]
+		
 		levelsof ba_survey, local(levels)
 		foreach l of local levels {
 			di "********************"

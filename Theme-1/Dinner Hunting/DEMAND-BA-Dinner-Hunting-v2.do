@@ -168,8 +168,6 @@ sort survey persid id epnum
 keep survey persid id epnum s_* ba_* badcase main sec eloc eat* cook* 
 * don't do dinner skip here as this is setting any kind of eat to 'dinner_skip'
 
-stop
-
 ************************************************
 * Define dinner - varies by survey?
 * define dinner as starting to eat 17:00 - 22:00
