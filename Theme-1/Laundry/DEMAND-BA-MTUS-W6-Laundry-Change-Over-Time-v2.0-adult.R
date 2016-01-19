@@ -381,8 +381,8 @@ eps_2005DT <- MTUSW6UKdiaryEps_DT[MTUSW6UKdiaryEps_DT$ba_survey == 2005]
 
 laundryeps_byhh1985 <- eps_1985DT[main == laundry, 
                                        .(
-                                         N_episodes1985 = length(st_halfhour), # number of clamp records per day
-                                         Pr_episodes1985 = length(st_halfhour)/eps1985 # number of clamp records per day
+                                         N_episodes1985 = length(st_halfhour), #n episodes starting in a given half hour
+                                         Pr_episodes1985 = length(st_halfhour)/eps1985 # proportion of all episodes in that year starting...
                                        ), 
                                        by = .(
                                          Start = st_halfhour
@@ -393,8 +393,8 @@ plot(laundryeps_byhh1985$Pr_episodes)
 
 laundryeps_byhh2005 <- eps_2005DT[main == laundry, 
                                   .(
-                                    N_episodes2005 = length(st_halfhour), # number of clamp records per day
-                                    Pr_episodes2005 = length(st_halfhour)/eps2005 # number of clamp records per day
+                                    N_episodes2005 = length(st_halfhour), #n episodes starting in a given half hour
+                                    Pr_episodes2005 = length(st_halfhour)/eps2005 # proportion of all episodes in that year starting...
                                   ), 
                                   by = .(
                                     Start = st_halfhour
@@ -689,5 +689,43 @@ with(MTUSW6UKjoinedSampled_DT,
 )
 # looks like we only had the good cases in the sampled file anyway
 
-# Check count of laundry within half hours
+# set laundry vars
+# set a laundry code
+MTUSW6UKjoinedSampled_DT$laundry_p <- ifelse(MTUSW6UKjoinedSampled_DT$pact == laundry,
+                                        1, # laundry as main act
+                                        0)
+MTUSW6UKjoinedSampled_DT$laundry_s <- ifelse(MTUSW6UKjoinedSampled_DT$sact == laundry,
+                                        1, # laundry as sec act
+                                        0)
+MTUSW6UKjoinedSampled_DT$laundry_all <- ifelse(MTUSW6UKjoinedSampled_DT$pact == laundry | MTUSW6UKjoinedSampled_DT$sact == laundry,
+                                          1, # laundry as either act
+                                          0)
+# totals
+with(MTUSW6UKjoinedSampled_DT,
+     table(laundry_p, ba_survey))
+with(MTUSW6UKjoinedSampled_DT,
+     table(laundry_s, ba_survey))
+with(MTUSW6UKjoinedSampled_DT,
+     table(laundry_all, ba_survey))
 
+# Check count of half hours
+hh_counts <- MTUSW6UKjoinedSampled_DT[, 
+                                       .(
+                                         N_half_hours = length(st_halfhour)/3 # raw data is in 10 minute slots so 3 per half hour
+                                       ), 
+                                       by = .(
+                                         Half_hour = st_halfhour,
+                                         Survey = ba_survey
+                                       )
+                                       ]
+
+# Check count of laundry within half hours
+MTUSW6UKjoinedSampled_DT <- eps_2005DT[main == laundry, 
+                                  .(
+                                    N_episodes2005 = length(st_halfhour), # number of clamp records per day
+                                    Pr_episodes2005 = length(st_halfhour)/eps2005 # number of clamp records per day
+                                  ), 
+                                  by = .(
+                                    Start = st_halfhour
+                                  )
+                                  ]
