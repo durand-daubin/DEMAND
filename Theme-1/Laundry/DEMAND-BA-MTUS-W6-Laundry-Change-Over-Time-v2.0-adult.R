@@ -379,6 +379,20 @@ print(paste0("% episodes that are laundry_all in 2005 = ", (epslaundry2005/eps20
 eps_1985DT <- MTUSW6UKdiaryEps_DT[MTUSW6UKdiaryEps_DT$ba_survey == 1985]
 eps_2005DT <- MTUSW6UKdiaryEps_DT[MTUSW6UKdiaryEps_DT$ba_survey == 2005]
 
+# when do most episodes start in 1985?
+alleps_byhh1985 <- eps_1985DT[main == laundry, 
+                                  .(
+                                    N_episodes1985 = length(st_halfhour), #n episodes starting in a given half hour
+                                    Pr_episodes1985 = length(st_halfhour)/eps1985 # proportion of all episodes in that year starting...
+                                  ), 
+                                  by = .(
+                                    Start = st_halfhour
+                                  )
+                                  ]
+setkey(alleps_byhh1985,Start)
+plot(alleps_byhh1985$Pr_episodes)
+
+# and laundry episodes?
 laundryeps_byhh1985 <- eps_1985DT[main == laundry, 
                                        .(
                                          N_episodes1985 = length(st_halfhour), #n episodes starting in a given half hour
@@ -391,6 +405,20 @@ laundryeps_byhh1985 <- eps_1985DT[main == laundry,
 setkey(laundryeps_byhh1985,Start)
 plot(laundryeps_byhh1985$Pr_episodes)
 
+# when do most episodes start in 2005?
+alleps_byhh2005 <- eps_2005DT[, 
+                              .(
+                                N_episodes2005 = length(st_halfhour), #n episodes starting in a given half hour
+                                Pr_episodes2005 = length(st_halfhour)/eps2005 # proportion of all episodes in that year starting...
+                              ), 
+                              by = .(
+                                Start = st_halfhour
+                              )
+                              ]
+setkey(alleps_byhh2005,Start)
+plot(alleps_byhh2005$Pr_episodes)
+
+# and laundry episodes?
 laundryeps_byhh2005 <- eps_2005DT[main == laundry, 
                                   .(
                                     N_episodes2005 = length(st_halfhour), #n episodes starting in a given half hour
