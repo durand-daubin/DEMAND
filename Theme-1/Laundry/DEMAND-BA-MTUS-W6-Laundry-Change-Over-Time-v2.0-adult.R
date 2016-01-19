@@ -31,7 +31,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-# Codes of interest:
+# MTUS codes of interest:
 # 1983/4/7: Main/Sec21 Laundry, ironing, clothing repair
 # <- 0701 Wash clothes, hang out / bring in washing
 # 	0702 Iron clothes
@@ -51,18 +51,49 @@ library(data.table)
 
 # set up some useful data paths
 tudpath <- "~/Documents/Work/Data/MTUS/World 6/processed/"
-efspath <- "~/Documents/Work/Data/Expenditure and Food Survey/processed"
+efs1985path <- "~/Documents/Work/Data/Family Expenditure Survey/1985/stata8"
 sprgpath <- "~/Documents/Work/Projects/ESRC-SPRG/WP4-Micro_water/data/sprg_survey/data/safe/v6"
 
 rpath <- "~/Documents/Work/Papers and Conferences/The Time and Timing of Demand - Laundry/results"
 
+# Functions ----
+
+# _Feedback function ----
+# Cos I can't be bothered to keep writing it out
+feedBack <- function(string) {
+  print(paste0("Feedback: ", string))
+}
+
+# Load FES data ----
+# Needed for estimates of washing machine adoption in 1985
+# Load as STATA file
+efs1985file <- paste0(efs1985path, "/hchars.dta")
+feedBack(paste0("Loading ", efs1985file))
+efs1985_DT <- as.data.table(read.dta(efs1985file))
+
+# a108            byte   %8.0g                  no of washing machines in h/h
+wmachines <- table(efs1985_DT$a108)
+prop.table(wmachines)
 
 # Load TU data ----
-# load as stata file
+
+# _Survey data ----
+sfile <- paste0(tudpath, "MTUS-adult-aggregate-UK-only-wf.dta")
+feedBack(paste0("Loading: ", sfile))
+MTUSW6UKsurvey_DT <- as.data.table(read.dta(sfile))
+setkey(MTUSW6UKsurvey_DT, diarypid)
+
+# create a reduced survey frame with the few variables we need so the join
+# does not break memory
+MTUSW6UKsurveyCore_DT <- MTUSW6UKsurvey_DT[, .(diarypid, pid, empstat, urban, 
+                                               badcase, nchild, sex, age)
+                                           ]
 
 # _Diary as episodes ----
-dfile <- paste0(tudpath, "MTUS-adult-episode-UK-only-wf.dta")
-MTUSW6UKdiaryEps_DT <- as.data.table(read.dta(dfile))
+# Load as STATA file
+mtusfile <- paste0(tudpath, "MTUS-adult-episode-UK-only-wf.dta")
+feedBack(paste0("Loading: ", mtusfile))
+MTUSW6UKdiaryEps_DT <- as.data.table(read.dta(mtusfile))
 setkey(MTUSW6UKdiaryEps_DT, diarypid)
 
 # __Episodes_Fix_Dates ----
@@ -247,7 +278,7 @@ table("Hour" = as.POSIXlt(MTUSW6UKdiaryEps_DT$r_epstart)$hour,
 # 74 + 75 = drop 
 # 83 + 84 + 85 = 1985
 # 95 = drop
-# 100 + 101 = 2001
+# 100 + 101 = 2001 = drop
 # 105 = 2005
 
 MTUSW6UKdiaryEps_DT$ba_survey <- ifelse(
@@ -258,18 +289,12 @@ MTUSW6UKdiaryEps_DT$ba_survey <- ifelse(
 )
 
 MTUSW6UKdiaryEps_DT$ba_survey <- ifelse(
-  MTUSW6UKdiaryEps_DT$survey == 2000 , 
-  2000, # if true
-  MTUSW6UKdiaryEps_DT$ba_survey # if not
-)
-
-MTUSW6UKdiaryEps_DT$ba_survey <- ifelse(
   MTUSW6UKdiaryEps_DT$survey == 2005 , 
   2005, # if true
   MTUSW6UKdiaryEps_DT$ba_survey # if not
 )
 
-# check
+# check data for analysis in this paper (1985 -> 2005)
 table(MTUSW6UKdiaryEps_DT$ba_survey, 
       MTUSW6UKdiaryEps_DT$survey, 
       useNA = "ifany"
@@ -307,6 +332,7 @@ with(MTUSW6UKdiaryEps_DT,
      )
 
 # __Episodes_Analysis ----
+
 # Laundry = code 21
 laundry <- "laundry, ironing, clothing repair"
 # n episodes in total per year
@@ -331,12 +357,13 @@ with(MTUSW6UKdiaryEps_DT,
 with(MTUSW6UKdiaryEps_DT,
      table(laundry_all, ba_survey))
 
-# not what we want: calculates proportion from overall sum
+# n episodes by duration (to show how recording period varies things)
 with(MTUSW6UKdiaryEps_DT,
-     prop.table(
-       table(laundry_all, ba_survey)
-       )
-)
+     xtabs(~ time + ba_survey))
+
+# n episodes of laundry as a primary act by duration (to show how recording period varies things)
+with(MTUSW6UKdiaryEps_DT,
+     xtabs(laundry_p ~ time + ba_survey))
 
 eps1985 <- length(MTUSW6UKdiaryEps_DT$diarypid[MTUSW6UKdiaryEps_DT$ba_survey == 1985])
 epslaundry1985 <- length(MTUSW6UKdiaryEps_DT$diarypid[MTUSW6UKdiaryEps_DT$ba_survey == 1985 & MTUSW6UKdiaryEps_DT$laundry_all == 1])
@@ -393,8 +420,10 @@ write.csv(laundryeps_byhh,
 )
 
 # _Diary as sampled file ----
-dfile <- paste0(tudpath, "MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta")
-MTUSW6UKdiarySampled_DT <- as.data.table(read.dta(dfile))
+# This was created in STATA - will port to R at some point
+sampledmtus <- paste0(tudpath, "MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta")
+feedBack(paste0("Loading: ", sampledmtus))
+MTUSW6UKdiarySampled_DT <- as.data.table(read.dta(sampledmtus))
 setkey(MTUSW6UKdiarySampled_DT, diarypid)
 
 # __Sampled_Fix_Dates ----
@@ -599,7 +628,7 @@ MTUSW6UKdiarySampled_DT <- MTUSW6UKdiarySampled_DT[, .(hldid, diarypid, pid,
 # 74 + 75 = drop 
 # 83 + 84 + 85 = 1985
 # 95 = drop
-# 100 + 101 = 2001
+# 100 + 101 = 2001 = drop
 # 105 = 2005
 
 MTUSW6UKdiarySampled_DT$ba_survey <- ifelse(
@@ -610,38 +639,55 @@ MTUSW6UKdiarySampled_DT$ba_survey <- ifelse(
 )
 
 MTUSW6UKdiarySampled_DT$ba_survey <- ifelse(
-  MTUSW6UKdiarySampled_DT$survey == 2000 , 
-  2000, # if true
-  MTUSW6UKdiarySampled_DT$ba_survey # if not
-)
-
-MTUSW6UKdiarySampled_DT$ba_survey <- ifelse(
   MTUSW6UKdiarySampled_DT$survey == 2005 , 
   2005, # if true
   MTUSW6UKdiarySampled_DT$ba_survey # if not
 )
 
-# check
+# check data for this paper (1985 -> 2005)
 table(MTUSW6UKdiarySampled_DT$ba_survey, 
       MTUSW6UKdiarySampled_DT$survey, 
       useNA = "ifany"
 )
 
-# _Survey data ----
-sfile <- paste0(tudpath, "MTUS-adult-aggregate-UK-only-wf.dta")
-MTUSW6UKsurvey_DT <- as.data.table(read.dta(sfile))
-setkey(MTUSW6UKsurvey_DT, diarypid)
+# add hour & half hour to each sampled record
 
-# create a reduced survey frame with the few variables we need so the join
-# does not break memory
-MTUSW6UKsurveyCore_DT <- MTUSW6UKsurvey_DT[, .(diarypid, pid, empstat, urban, 
-                                               badcase, nchild, sex, age)
-                                           ]
+MTUSW6UKdiarySampled_DT$st_hour <- as.POSIXlt(MTUSW6UKdiarySampled_DT$s_starttime)$hour
+MTUSW6UKdiarySampled_DT$st_hour <- ifelse(MTUSW6UKdiarySampled_DT$st_hour < 10 , 
+                                      paste0("0",MTUSW6UKdiarySampled_DT$st_hour), # if true - add leading 0
+                                      MTUSW6UKdiarySampled_DT$st_hour # if not
+)
+MTUSW6UKdiarySampled_DT$st_mins <- as.POSIXlt(MTUSW6UKdiarySampled_DT$s_starttime)$min
+MTUSW6UKdiarySampled_DT$st_hh <- ifelse(MTUSW6UKdiarySampled_DT$st_mins < 30 , 
+                                    "00", # if true
+                                    "30" # if not
+)
+MTUSW6UKdiarySampled_DT$st_halfhour <- paste0(MTUSW6UKdiarySampled_DT$st_hour, 
+                                          ":",
+                                          MTUSW6UKdiarySampled_DT$st_hh)
+# check
+with(MTUSW6UKdiarySampled_DT,
+     table(st_halfhour)
+)
 
-# join survey to episodes
-MTUSW6UKjoinedEps_DT <- MTUSW6UKdiaryEps_DT[MTUSW6UKsurveyCore_DT]
+# __Sampled_Analysis ----
 
 # join survey to samples
 MTUSW6UKjoinedSampled_DT <- MTUSW6UKdiarySampled_DT[MTUSW6UKsurveyCore_DT]
 
+with(MTUSW6UKjoinedSampled_DT[], 
+     table(badcase,ba_survey)
+)
+
+# Keep only good cases for 1985 & 2005
+MTUSW6UKjoinedSampled_DT <- MTUSW6UKjoinedSampled_DT[badcase == "good case"]
+MTUSW6UKjoinedSampled_DT <- MTUSW6UKjoinedSampled_DT[ba_survey %in% c("1985","2005")]
+
+# check
+with(MTUSW6UKjoinedSampled_DT, 
+     table(badcase,ba_survey)
+)
+# looks like we only had the good cases in the sampled file anyway
+
+# Check count of laundry within half hours
 
