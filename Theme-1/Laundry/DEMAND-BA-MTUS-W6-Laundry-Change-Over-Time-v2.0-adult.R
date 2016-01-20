@@ -914,6 +914,8 @@ analyseMtusSampled <- function() {
   feedBack("Done analysing sampled file")
 }
 
+# Run to here in all cases to set functions
+
 # Controller ----
 loadMtusSurvey()
 
