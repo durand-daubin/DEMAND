@@ -1,5 +1,6 @@
 ############################################
-# Data analysis for 'Laundry' paper  
+# Data analysis for 'Laundry' paper:
+
 # Use MTUS World 6 time-use data (UK subset) to examine:
 # - distributions of laundry in 1985 & 2005
 # - changing laundry practice
@@ -48,6 +49,8 @@ rm(list = ls())
 library(foreign) # as loading stata files
 library(lattice)
 library(data.table)
+library(survey) # weighted survey analysis
+library(gmodels) # nice crosstabs
 
 # set up some useful data paths
 tudpath <- "~/Documents/Work/Data/MTUS/World 6/processed/"
@@ -56,7 +59,7 @@ sprgpath <- "~/Documents/Work/Projects/ESRC-SPRG/WP4-Micro_water/data/sprg_surve
 
 rpath <- "~/Documents/Work/Papers and Conferences/The Time and Timing of Demand - Laundry/results"
 
-# Functions ----
+# Generic functions ----
 
 # _Feedback function ----
 # Cos I can't be bothered to keep writing it out
@@ -77,7 +80,7 @@ prop.table(wmachines)
 
 # Load TU data ----
 
-# _Survey data ----
+# _TU_Survey_data ----
 sfile <- paste0(tudpath, "MTUS-adult-aggregate-UK-only-wf.dta")
 feedBack(paste0("Loading: ", sfile))
 MTUSW6UKsurvey_DT <- as.data.table(read.dta(sfile))
@@ -88,8 +91,10 @@ setkey(MTUSW6UKsurvey_DT, diarypid)
 MTUSW6UKsurveyCore_DT <- MTUSW6UKsurvey_DT[, .(diarypid, pid, empstat, urban, 
                                                badcase, nchild, sex, age)
                                            ]
+# wrap episodes analysis inside a function - takes a while to process the data
+analyseEpisodes <- function() {
 
-# _Diary as episodes ----
+# _TU_Diary as episodes ----
 # Load as STATA file
 mtusfile <- paste0(tudpath, "MTUS-adult-episode-UK-only-wf.dta")
 feedBack(paste0("Loading: ", mtusfile))
@@ -447,7 +452,13 @@ write.csv(laundryeps_byhh,
           na = ""
 )
 
-# _Diary as sampled file ----
+  feedback("Done analysing episode file")
+}
+
+# wrap sampled analysis inside a function - takes a while to process the data
+analyseSampled <- function() {
+  
+# _TU_Diary as sampled file ----
 # This was created in STATA - will port to R at some point
 sampledmtus <- paste0(tudpath, "MTUS-adult-episode-UK-only-wf-10min-samples-long-v1.0.dta")
 feedBack(paste0("Loading: ", sampledmtus))
@@ -737,23 +748,135 @@ with(MTUSW6UKjoinedSampled_DT,
      table(laundry_all, ba_survey))
 
 # Check count of half hours
-hh_counts <- MTUSW6UKjoinedSampled_DT[, 
+hh_counts1985 <- MTUSW6UKjoinedSampled_DT[ba_survey == 1985, 
                                        .(
-                                         N_half_hours = length(st_halfhour)/3 # raw data is in 10 minute slots so 3 per half hour
+                                         N_half_hours1985 = length(st_halfhour)/3 # raw data is in 10 minute slots so 3 per half hour
                                        ), 
                                        by = .(
-                                         Half_hour = st_halfhour,
-                                         Survey = ba_survey
+                                         Half_hour = st_halfhour
                                        )
                                        ]
+hh_counts2005 <- MTUSW6UKjoinedSampled_DT[ba_survey == 2005, 
+                                          .(
+                                            N_half_hours2005 = length(st_halfhour)/3 # raw data is in 10 minute slots so 3 per half hour
+                                          ), 
+                                          by = .(
+                                            Half_hour = st_halfhour
+                                          )
+                                          ]
 
-# Check count of laundry within half hours
-MTUSW6UKjoinedSampled_DT <- eps_2005DT[main == laundry, 
+setkey(hh_counts1985, Half_hour)
+setkey(hh_counts2005, Half_hour)
+hh_counts1985[hh_counts2005]
+
+# Check count of laundry (as main act) within half hours
+hh_laundrycounts1985 <- MTUSW6UKjoinedSampled_DT[ba_survey == 1985 & pact == laundry, 
                                   .(
-                                    N_episodes2005 = length(st_halfhour), # number of clamp records per day
-                                    Pr_episodes2005 = length(st_halfhour)/eps2005 # number of clamp records per day
+                                    N_laundry1985 = length(st_halfhour) # number of 10 min samples with laundry recorded in half hour
                                   ), 
                                   by = .(
-                                    Start = st_halfhour
+                                    Half_hour = st_halfhour
                                   )
                                   ]
+setkey(hh_laundrycounts1985, Half_hour) # side effect = sorts rows as specified
+
+hh_laundrycounts2005 <- MTUSW6UKjoinedSampled_DT[ba_survey == 2005 & pact == laundry, 
+                                                 .(
+                                                   N_laundry2005 = length(st_halfhour) # number of 10 min samples with laundry recorded in half hour
+                                                 ), 
+                                                 by = .(
+                                                   Half_hour = st_halfhour
+                                                 )
+                                                 ]
+setkey(hh_laundrycounts2005, Half_hour) # side effect = sorts rows as specified
+hh_laundrycounts1985[hh_laundrycounts2005]
+
+# derived data table to count obs within half hours
+MTUSW6UK_halfhours_DT <- MTUSW6UKjoinedSampled_DT[, 
+  .(
+    N_obs = length(pact) # number of 10 min samples with laundry recorded in half hour
+  ), 
+  by = .(
+    st_halfhour,
+    diarypid,
+    ba_survey,
+    s_dow
+  )
+  ]
+
+head(MTUSW6UK_halfhours_DT) # check
+table(MTUSW6UK_halfhours_DT$ba_survey) # number of half hours
+summary(MTUSW6UK_halfhours_DT)
+setkey(MTUSW6UK_halfhours_DT, ba_survey, diarypid, s_dow, st_halfhour)
+
+# derived data table to count obs of laundry as primary act within half hours
+MTUSW6UK_halfhours_laundryp_DT <- MTUSW6UKjoinedSampled_DT[pact == laundry, 
+                                                  .(
+                                                    N_obs_pact = length(pact) # number of 10 min samples with laundry recorded in half hour
+                                                  ), 
+                                                  by = .(
+                                                    st_halfhour,
+                                                    diarypid,
+                                                    ba_survey,
+                                                    s_dow
+                                                  )
+                                                  ]
+head(MTUSW6UK_halfhours_laundryp_DT) # check
+table(MTUSW6UK_halfhours_laundryp_DT$ba_survey) # number of half hours
+setkey(MTUSW6UK_halfhours_laundryp_DT, ba_survey, diarypid, s_dow, st_halfhour)
+table(MTUSW6UK_halfhours_laundryp_DT$ba_survey, MTUSW6UK_halfhours_laundryp_DT$N_obs_sact)
+
+# derived data table to count obs of laundry as secondary act within half hours
+MTUSW6UK_halfhours_laundrys_DT <- MTUSW6UKjoinedSampled_DT[sact == laundry, 
+                                                           .(
+                                                             N_obs_sact = length(sact) # number of 10 min samples with laundry recorded in half hour
+                                                           ), 
+                                                           by = .(
+                                                             st_halfhour,
+                                                             diarypid,
+                                                             ba_survey,
+                                                             s_dow
+                                                           )
+                                                           ]
+head(MTUSW6UK_halfhours_laundrys_DT) # check
+table(MTUSW6UK_halfhours_laundrys_DT$ba_survey) # number of half hours
+setkey(MTUSW6UK_halfhours_laundrys_DT, ba_survey, diarypid, s_dow, st_halfhour)
+table(MTUSW6UK_halfhours_laundrys_DT$ba_survey, MTUSW6UK_halfhours_laundrys_DT$N_obs_sact)
+
+# join them using merge so we can keep all
+MTUSW6UK_halfhours_laundry_DT <- merge(MTUSW6UK_halfhours_laundryp_DT, MTUSW6UK_halfhours_laundrys_DT, all = TRUE)
+setkey(MTUSW6UK_halfhours_laundry_DT,ba_survey, diarypid, s_dow, st_halfhour )
+head(MTUSW6UK_halfhours_laundry_DT)
+summary(MTUSW6UK_halfhours_laundry_DT)
+table(MTUSW6UK_halfhours_laundry_DT$ba_survey, MTUSW6UK_halfhours_laundry_DT$N_obs_pact)
+
+# join to the complete half-hour data using merge so we can keep all
+MTUSW6UK_halfhours_DT <- merge(MTUSW6UK_halfhours_DT, MTUSW6UK_halfhours_laundry_DT, all = TRUE)
+
+# set an indicator if any laundry was recorded
+MTUSW6UK_halfhours_DT$laundryp <- ifelse(
+  MTUSW6UK_halfhours_DT$N_obs_pact > 0, 1, "NA"
+  )
+
+MTUSW6UK_halfhours_DT$laundrys <- ifelse(
+  MTUSW6UK_halfhours_DT$N_obs_sact > 0, 1, "NA"
+)
+
+MTUSW6UK_halfhours_DT$laundryany <- ifelse(
+  MTUSW6UK_halfhours_DT$laundryp == 1 |  MTUSW6UK_halfhours_DT$laundrys == 1, 1, "NA"
+)
+head(MTUSW6UK_halfhours_DT)
+summary(MTUSW6UK_halfhours_DT)
+
+# how many half hours have several obs of laundry as primary act?
+table(MTUSW6UK_halfhours_DT$ba_survey, MTUSW6UK_halfhours_DT$N_obs_pact)
+
+# how many half hours have any obs of laundry as primary act?
+table(MTUSW6UK_halfhours_DT$ba_survey, MTUSW6UK_halfhours_DT$laundryp)
+  
+feedback("Done analysing sampled file")
+}
+
+# Controller ----
+analyseEpisodes()
+analyseSampled()
