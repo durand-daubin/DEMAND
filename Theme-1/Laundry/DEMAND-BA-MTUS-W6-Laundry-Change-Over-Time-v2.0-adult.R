@@ -952,7 +952,7 @@ analyseMtusSampledSvy <- function() {
   
   # how many half hours do we have?
   all_hhs <- svytable(~ba_survey, # the row * columns we want (produces long form)
-        svygMTUSW6UK_halfhours, # the data
+        svygMTUSW6UK_halfhours, # the data in survey form
         )
   print(
     all_hhs # table
