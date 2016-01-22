@@ -47,10 +47,13 @@ rm(list = ls())
 
 # add libraries
 library(foreign) # as loading stata files
-library(lattice)
-library(data.table)
+library(lattice) # fancy graphs
+library(ggplot) # fancy graphs II
+library(data.table) # why use anything else?
 library(survey) # weighted survey analysis
 library(gmodels) # nice crosstabs
+library(fasttime) # VERY fast time string conversion to POSIXct 
+                  # but only IF the input string is in a fixed format - see http://rforge.net/doc/packages/fasttime/fastPOSIXct.html
 
 # set up some useful data paths
 tudpath <- "~/Documents/Work/Data/MTUS/World 6/processed/"
@@ -58,6 +61,9 @@ efs1985path <- "~/Documents/Work/Data/Family Expenditure Survey/1985/stata8"
 sprgpath <- "~/Documents/Work/Projects/ESRC-SPRG/WP4-Micro_water/data/sprg_survey/data/safe/v6"
 
 rpath <- "~/Documents/Work/Papers and Conferences/The Time and Timing of Demand - Laundry/results"
+
+# define laundry for time use data
+laundry <- "laundry, ironing, clothing repair"
 
 # Generic functions ----
 
@@ -88,15 +94,15 @@ loadMtusSurvey <- function() {
   # create a reduced survey frame with the few variables we need so the join
   # does not break memory
   # use global assignment so we can see the DT for later use
-  MTUSW6UKsurveyCore_DT <<- MTUSW6UKsurvey_DT[, .(diarypid, pid, empstat, urban, 
-                                                 badcase, nchild, sex, age)
+  gMTUSW6UKsurveyCore_DT <<- MTUSW6UKsurvey_DT[, .(survey, countrya, swave, diarypid, pid, empstat, urban, 
+                                                 badcase, nchild, sex, age, hhtype, hhldsize, income, propwt)
                                              ]
-  feedBack("Summary of MTUSW6UKsurveyCore_DT")
-  print(summary(MTUSW6UKsurveyCore_DT)) # force print from within function
+  feedBack("Summary of gMTUSW6UKsurveyCore_DT")
+  print(summary(gMTUSW6UKsurveyCore_DT)) # force print from within function
 #   # save out the table for later use if needed
-#   outf <- paste0(tudpath,"/MTUSW6UKsurveyCore_DT.csv")
+#   outf <- paste0(tudpath,"/gMTUSW6UKsurveyCore_DT.csv")
 #   feedBack(paste0("Saving processed MTUS survey data into: ", outf))
-#   write.csv(MTUSW6UKsurveyCore_DT, 
+#   write.csv(gMTUSW6UKsurveyCore_DT, 
 #             file = outf,
 #             na = ""
 #   )
@@ -235,10 +241,10 @@ loadMtusEpisodes <- function() {
     & mtusEpsDT$s_dow == "Saturday", "12/11/2005", mtusEpsDT$date_2005
   )
   
-  # 2005 dates as POSIX
+  # 2005 dates as POSIX - can't use fasttime
   mtusEpsDT$r_date_2005 <- as.POSIXct(mtusEpsDT$date_2005, tz = "",
-                                                "%d/%m/%Y"
-  )
+                                        "%d/%m/%Y"
+    )
   # check
   table(as.POSIXlt(mtusEpsDT$r_date_2005)$wday, mtusEpsDT$s_dow)
   
@@ -350,9 +356,9 @@ loadMtusEpisodes <- function() {
     )
   )
   # only keep the vars we need - saves memory etc and use global assignment for re-use elsewhere
-  MTUSW6UKdiaryEps_DT <<- mtusEpsDT[, .(ba_survey, diarypid, main, sec, time, st_halfhour)]
-  feedBack("Summary of MTUSW6UKdiaryEps_DT:")
-  print(summary(MTUSW6UKdiaryEps_DT))
+  gMTUSW6UKdiaryEps_DT <<- mtusEpsDT[, .(ba_survey, diarypid, main, sec, time, st_halfhour)]
+  feedBack("Summary of gMTUSW6UKdiaryEps_DT:")
+  print(summary(gMTUSW6UKdiaryEps_DT))
   feedBack("Finished loading & fixing episodes data")
 } # works
 
@@ -360,51 +366,51 @@ analyseMtusEpisodes <- function() {
   # Laundry = code 21
   laundry <- "laundry, ironing, clothing repair"
   # n episodes in total per year
-  with(MTUSW6UKdiaryEps_DT, 
+  with(gMTUSW6UKdiaryEps_DT, 
        table(ba_survey)
   )
   # set a laundry code
-  MTUSW6UKdiaryEps_DT$laundry_p <- ifelse(MTUSW6UKdiaryEps_DT$main == laundry,
+  gMTUSW6UKdiaryEps_DT$laundry_p <- ifelse(gMTUSW6UKdiaryEps_DT$main == laundry,
                                           1, # laundry as main act
                                           0)
-  MTUSW6UKdiaryEps_DT$laundry_s <- ifelse(MTUSW6UKdiaryEps_DT$sec == laundry,
+  gMTUSW6UKdiaryEps_DT$laundry_s <- ifelse(gMTUSW6UKdiaryEps_DT$sec == laundry,
                                           1, # laundry as main act
                                           0)
-  MTUSW6UKdiaryEps_DT$laundry_all <- ifelse(MTUSW6UKdiaryEps_DT$main == laundry | MTUSW6UKdiaryEps_DT$sec == laundry,
+  gMTUSW6UKdiaryEps_DT$laundry_all <- ifelse(gMTUSW6UKdiaryEps_DT$main == laundry | gMTUSW6UKdiaryEps_DT$sec == laundry,
                                             1, # laundry as either act
                                             0)
   # totals
-  with(MTUSW6UKdiaryEps_DT,
+  with(gMTUSW6UKdiaryEps_DT,
        table(laundry_p, ba_survey))
-  with(MTUSW6UKdiaryEps_DT,
+  with(gMTUSW6UKdiaryEps_DT,
        table(laundry_s, ba_survey))
-  with(MTUSW6UKdiaryEps_DT,
+  with(gMTUSW6UKdiaryEps_DT,
        table(laundry_all, ba_survey))
   
   feedBack("# n episodes by duration - to show how recording period varies things")
   print(
-    with(MTUSW6UKdiaryEps_DT,
+    with(gMTUSW6UKdiaryEps_DT,
        xtabs(~ time + ba_survey))
   )
   feedBack("# n episodes of laundry as a primary act by duration (to show how recording period varies things)")
   print(
-    with(MTUSW6UKdiaryEps_DT,
+    with(gMTUSW6UKdiaryEps_DT,
        xtabs(laundry_p ~ time + ba_survey))
   )
   
-  eps1985 <- length(MTUSW6UKdiaryEps_DT$diarypid[MTUSW6UKdiaryEps_DT$ba_survey == 1985]) # n episodes in 1985
-  epslaundry1985 <- length(MTUSW6UKdiaryEps_DT$diarypid[MTUSW6UKdiaryEps_DT$ba_survey == 1985 & MTUSW6UKdiaryEps_DT$laundry_all == 1])
+  eps1985 <- length(gMTUSW6UKdiaryEps_DT$diarypid[gMTUSW6UKdiaryEps_DT$ba_survey == 1985]) # n episodes in 1985
+  epslaundry1985 <- length(gMTUSW6UKdiaryEps_DT$diarypid[gMTUSW6UKdiaryEps_DT$ba_survey == 1985 & gMTUSW6UKdiaryEps_DT$laundry_all == 1])
   
   print(paste0("% episodes that are laundry_all in 1985 = ", (epslaundry1985/eps1985)*100))
   
-  eps2005 <- length(MTUSW6UKdiaryEps_DT$diarypid[MTUSW6UKdiaryEps_DT$ba_survey == 2005]) # n episodes in 2005
-  epslaundry2005 <- length(MTUSW6UKdiaryEps_DT$diarypid[MTUSW6UKdiaryEps_DT$ba_survey == 2005 & MTUSW6UKdiaryEps_DT$laundry_all == 1])
+  eps2005 <- length(gMTUSW6UKdiaryEps_DT$diarypid[gMTUSW6UKdiaryEps_DT$ba_survey == 2005]) # n episodes in 2005
+  epslaundry2005 <- length(gMTUSW6UKdiaryEps_DT$diarypid[gMTUSW6UKdiaryEps_DT$ba_survey == 2005 & gMTUSW6UKdiaryEps_DT$laundry_all == 1])
   
   print(paste0("% episodes that are laundry_all in 2005 = ", (epslaundry2005/eps2005)*100))
   
   # work with split files - easier?
-  eps_1985DT <- MTUSW6UKdiaryEps_DT[MTUSW6UKdiaryEps_DT$ba_survey == 1985]
-  eps_2005DT <- MTUSW6UKdiaryEps_DT[MTUSW6UKdiaryEps_DT$ba_survey == 2005]
+  eps_1985DT <- gMTUSW6UKdiaryEps_DT[gMTUSW6UKdiaryEps_DT$ba_survey == 1985]
+  eps_2005DT <- gMTUSW6UKdiaryEps_DT[gMTUSW6UKdiaryEps_DT$ba_survey == 2005]
   
   # when do most episodes start in 1985?
   alleps_byhh1985 <- eps_1985DT[main == laundry, 
@@ -490,6 +496,7 @@ loadMtusSampled <- function() {
   
   feedBack("Fixing sampled dates")
   # re-run date & time re-formatting as before
+  feedBack("Fixing sampled dates: March")
   mtusSampDT$date_2005 <- ifelse(
     mtusSampDT$survey == 2005 & mtusSampDT$mtus_month == "March"
     & mtusSampDT$s_dow == "Sunday", "2005-March-06", "na"
@@ -518,7 +525,7 @@ loadMtusSampled <- function() {
     mtusSampDT$survey == 2005 & mtusSampDT$mtus_month == "March"
     & mtusSampDT$s_dow == "Saturday", "2005-March-12", mtusSampDT$date_2005
   )
-  
+  feedBack("Fixing sampled dates: June")
   # June: 5th -> 11th
   mtusSampDT$date_2005 <- ifelse(
     mtusSampDT$survey == 2005 & mtusSampDT$mtus_month == "June"
@@ -548,7 +555,7 @@ loadMtusSampled <- function() {
     mtusSampDT$survey == 2005 & mtusSampDT$mtus_month == "June"
     & mtusSampDT$s_dow == "Saturday", "2005-June-11", mtusSampDT$date_2005
   )
-  
+  feedBack("Fixing sampled dates: September")
   # September: 4th -> 10th
   mtusSampDT$date_2005 <- ifelse(
     mtusSampDT$survey == 2005 & mtusSampDT$mtus_month == "September"
@@ -578,7 +585,7 @@ loadMtusSampled <- function() {
     mtusSampDT$survey == 2005 & mtusSampDT$mtus_month == "September"
     & mtusSampDT$s_dow == "Saturday", "2005-September-10", mtusSampDT$date_2005
   )
-  
+  feedBack("Fixing sampled dates: November")
   # November: 6th - 12th
   mtusSampDT$date_2005 <- ifelse(
     mtusSampDT$survey == 2005 & mtusSampDT$mtus_month == "November"
@@ -609,7 +616,7 @@ loadMtusSampled <- function() {
     & mtusSampDT$s_dow == "Saturday", "2005-November-12", mtusSampDT$date_2005
   )
   
-  # set up character hours/mins/secs so POSIXct recognises them.
+  feedBack("Set up character hours/mins/secs so POSIXct recognises them")
   mtusSampDT$start_hour <- as.POSIXlt(mtusSampDT$s_starttime)$hour
   mtusSampDT$start_hour <- ifelse(mtusSampDT$start_hour < 10,
                                                paste0("0",mtusSampDT$start_hour), # < 10
@@ -623,6 +630,7 @@ loadMtusSampled <- function() {
   table(mtusSampDT$start_hour,mtusSampDT$start_min)
   mtusSampDT$start_sec <- "00"
   
+  feedBack("Construct start times")
   # if 2005 -> use 2005 dates & character times
   mtusSampDT$start_2005 <- ifelse(mtusSampDT$survey == 2005,
                                                paste0(mtusSampDT$date_2005," ",
@@ -659,7 +667,7 @@ loadMtusSampled <- function() {
   head(mtusSampDT$r_start_temp)
   tail(mtusSampDT$r_start_temp)
   
-  # convert to POSIX
+  feedBack("Convert start time to POSIXct")
   # mtus_month is full name and we set the 2005 date to the same form
   mtusSampDT$r_start <- as.POSIXct(mtusSampDT$r_start_temp, tz = "",
                                                 "%Y-%B-%d %H:%M:%S"
@@ -736,20 +744,20 @@ loadMtusSampled <- function() {
        table(st_halfhour)
   )
   feedBack("Make global table keeping the variables we need")
-  MTUSW6UKdiarySampled_DT <<- mtusSampDT[, .(hldid, diarypid, pid, 
+  gMTUSW6UKdiarySampled_DT <<- mtusSampDT[, .(hldid, diarypid, pid, 
                                diary, ba_survey,
                                r_start, r_month, r_dow, st_halfhour, 
                                pact, sact, eloc, mtrav)
                            ]
-  feedBack("Summary of MTUSW6UKdiarySampled_DT:")
+  feedBack("Summary of gMTUSW6UKdiarySampled_DT:")
   print(
-    summary(MTUSW6UKdiarySampled_DT)
+    summary(gMTUSW6UKdiarySampled_DT)
   )
 } # works
 
 analyseMtusSampled <- function() {
-  # join survey to samples
-  MTUSW6UKjoinedSampled_DT <- MTUSW6UKdiarySampled_DT[MTUSW6UKsurveyCore_DT]
+  feedBack("Join survey to sampled data")
+  MTUSW6UKjoinedSampled_DT <- gMTUSW6UKdiarySampled_DT[gMTUSW6UKsurveyCore_DT]
   
   with(MTUSW6UKjoinedSampled_DT[], 
        table(badcase,ba_survey)
@@ -766,155 +774,228 @@ analyseMtusSampled <- function() {
   # looks like we only had the good cases in the sampled file anyway
   
   # set laundry vars
-  # set a laundry code
+  feedBack("Set a laundry flag")
   MTUSW6UKjoinedSampled_DT$laundry_p <- ifelse(MTUSW6UKjoinedSampled_DT$pact == laundry,
                                                1, # laundry as main act
                                                0)
   MTUSW6UKjoinedSampled_DT$laundry_s <- ifelse(MTUSW6UKjoinedSampled_DT$sact == laundry,
                                                1, # laundry as sec act
                                                0)
-  MTUSW6UKjoinedSampled_DT$laundry_all <- ifelse(MTUSW6UKjoinedSampled_DT$pact == laundry | MTUSW6UKjoinedSampled_DT$sact == laundry,
+  MTUSW6UKjoinedSampled_DT$laundry_any <- ifelse(MTUSW6UKjoinedSampled_DT$pact == laundry | MTUSW6UKjoinedSampled_DT$sact == laundry,
                                                  1, # laundry as either act
                                                  0)
   # totals
-  with(MTUSW6UKjoinedSampled_DT,
+  feedBack("Number of 10 min obs of laundry as primary act")
+  print(
+    with(MTUSW6UKjoinedSampled_DT,
        table(laundry_p, ba_survey))
-  with(MTUSW6UKjoinedSampled_DT,
+  )
+  feedBack("Number of 10 min obs of laundry as secondary act")
+  print(
+    with(MTUSW6UKjoinedSampled_DT,
        table(laundry_s, ba_survey))
-  with(MTUSW6UKjoinedSampled_DT,
-       table(laundry_all, ba_survey))
-  
-  # Check count of half hours
-  hh_counts1985 <- MTUSW6UKjoinedSampled_DT[ba_survey == 1985, 
-                                            .(
-                                              N_half_hours1985 = length(st_halfhour)/3 # raw data is in 10 minute slots so 3 per half hour
-                                            ), 
-                                            by = .(
-                                              Half_hour = st_halfhour
-                                            )
-                                            ]
-  hh_counts2005 <- MTUSW6UKjoinedSampled_DT[ba_survey == 2005, 
-                                            .(
-                                              N_half_hours2005 = length(st_halfhour)/3 # raw data is in 10 minute slots so 3 per half hour
-                                            ), 
-                                            by = .(
-                                              Half_hour = st_halfhour
-                                            )
-                                            ]
-  
-  setkey(hh_counts1985, Half_hour)
-  setkey(hh_counts2005, Half_hour)
-  hh_counts1985[hh_counts2005]
-  
-  # Check count of laundry (as main act) within half hours
-  hh_laundrycounts1985 <- MTUSW6UKjoinedSampled_DT[ba_survey == 1985 & pact == laundry, 
-                                                   .(
-                                                     N_laundry1985 = length(st_halfhour) # number of 10 min samples with laundry recorded in half hour
-                                                   ), 
-                                                   by = .(
-                                                     Half_hour = st_halfhour
-                                                   )
-                                                   ]
-  setkey(hh_laundrycounts1985, Half_hour) # side effect = sorts rows as specified
-  
-  hh_laundrycounts2005 <- MTUSW6UKjoinedSampled_DT[ba_survey == 2005 & pact == laundry, 
-                                                   .(
-                                                     N_laundry2005 = length(st_halfhour) # number of 10 min samples with laundry recorded in half hour
-                                                   ), 
-                                                   by = .(
-                                                     Half_hour = st_halfhour
-                                                   )
-                                                   ]
-  setkey(hh_laundrycounts2005, Half_hour) # side effect = sorts rows as specified
-  hh_laundrycounts1985[hh_laundrycounts2005]
-  
-  # derived data table to count obs within half hours
+  )
+  feedBack("Number of 10 min obs of laundry as any act")
+  print(
+    with(MTUSW6UKjoinedSampled_DT,
+       table(laundry_any, ba_survey))
+  )
+
+  feedBack("Creating a derived data table to enable us to count laundry obs within half hours (as above)")
+  feedBack("AND set an indicator for at least 1 laundry obs")
+  # First count the number of obs for all half hours - should be 3!
+  bylist <- quote(list(st_halfhour, diarypid, ba_survey, r_month, r_dow))
   MTUSW6UK_halfhours_DT <- MTUSW6UKjoinedSampled_DT[, 
                                                     .(
-                                                      N_obs = length(pact) # number of 10 min samples with laundry recorded in half hour
+                                                      N_obs = length(pact) # number of 10 min samples (should be 3!)
                                                     ), 
-                                                    by = .(
-                                                      st_halfhour,
-                                                      diarypid,
-                                                      ba_survey,
-                                                      s_dow
-                                                    )
+                                                    by = eval(bylist)
                                                     ]
   
   head(MTUSW6UK_halfhours_DT) # check
-  table(MTUSW6UK_halfhours_DT$ba_survey) # number of half hours
-  summary(MTUSW6UK_halfhours_DT)
-  setkey(MTUSW6UK_halfhours_DT, ba_survey, diarypid, s_dow, st_halfhour)
+  tail(MTUSW6UK_halfhours_DT) # check
+  xtabs(~ MTUSW6UK_halfhours_DT$ba_survey + MTUSW6UK_halfhours_DT$N_obs) # number of half hours by number of obs in the half hour
+  #summary(MTUSW6UK_halfhours_DT)
+  keyCols <- c("ba_survey", "diarypid", "r_month", "r_dow", "st_halfhour") # -> easy to repeat
+  setkeyv(MTUSW6UK_halfhours_DT, keyCols)
   
   # derived data table to count obs of laundry as primary act within half hours
-  MTUSW6UK_halfhours_laundryp_DT <- MTUSW6UKjoinedSampled_DT[pact == laundry, 
+  MTUSW6UK_halfhours_laundryp_DT <- MTUSW6UKjoinedSampled_DT[laundry_p == 1, 
                                                              .(
-                                                               N_obs_pact = length(pact) # number of 10 min samples with laundry recorded in half hour
+                                                               N_obs_laundry_p = length(laundry_p) # number of 10 min samples with laundry recorded in half hour
                                                              ), 
-                                                             by = .(
-                                                               st_halfhour,
-                                                               diarypid,
-                                                               ba_survey,
-                                                               s_dow
-                                                             )
+                                                             by = eval(bylist)
                                                              ]
   head(MTUSW6UK_halfhours_laundryp_DT) # check
-  table(MTUSW6UK_halfhours_laundryp_DT$ba_survey) # number of half hours
-  setkey(MTUSW6UK_halfhours_laundryp_DT, ba_survey, diarypid, s_dow, st_halfhour)
-  table(MTUSW6UK_halfhours_laundryp_DT$ba_survey, MTUSW6UK_halfhours_laundryp_DT$N_obs_sact)
+  xtabs(~ MTUSW6UK_halfhours_laundryp_DT$ba_survey + MTUSW6UK_halfhours_laundryp_DT$N_obs_laundry_p) # number of half hours
+  setkeyv(MTUSW6UK_halfhours_laundryp_DT, keyCols)
+  
   
   # derived data table to count obs of laundry as secondary act within half hours
-  MTUSW6UK_halfhours_laundrys_DT <- MTUSW6UKjoinedSampled_DT[sact == laundry, 
+  MTUSW6UK_halfhours_laundrys_DT <- MTUSW6UKjoinedSampled_DT[laundry_s == 1, 
                                                              .(
-                                                               N_obs_sact = length(sact) # number of 10 min samples with laundry recorded in half hour
+                                                               N_obs_laundry_s = length(laundry_s) # number of 10 min samples with laundry recorded in half hour
                                                              ), 
-                                                             by = .(
-                                                               st_halfhour,
-                                                               diarypid,
-                                                               ba_survey,
-                                                               s_dow
-                                                             )
+                                                             by = eval(bylist)
                                                              ]
   head(MTUSW6UK_halfhours_laundrys_DT) # check
-  table(MTUSW6UK_halfhours_laundrys_DT$ba_survey) # number of half hours
-  setkey(MTUSW6UK_halfhours_laundrys_DT, ba_survey, diarypid, s_dow, st_halfhour)
-  table(MTUSW6UK_halfhours_laundrys_DT$ba_survey, MTUSW6UK_halfhours_laundrys_DT$N_obs_sact)
+  xtabs(~ MTUSW6UK_halfhours_laundrys_DT$ba_survey + MTUSW6UK_halfhours_laundrys_DT$N_obs_laundry_s) # number of half hours
+  setkeyv(MTUSW6UK_halfhours_laundrys_DT, keyCols)
+  
+  # derived data table to count obs of laundry as secondary act within half hours
+  MTUSW6UK_halfhours_laundryany_DT <- MTUSW6UKjoinedSampled_DT[laundry_any == 1, 
+                                                             .(
+                                                               N_obs_laundry_any = length(laundry_any) # number of 10 min samples with laundry recorded in half hour
+                                                             ), 
+                                                             by = eval(bylist)
+                                                             ]
+  head(MTUSW6UK_halfhours_laundryany_DT) # check
+  xtabs(~ MTUSW6UK_halfhours_laundryany_DT$ba_survey + MTUSW6UK_halfhours_laundryany_DT$N_obs_laundry_any) # number of half hours
+  setkeyv(MTUSW6UK_halfhours_laundryany_DT, keyCols)
   
   # join them using merge so we can keep all
   MTUSW6UK_halfhours_laundry_DT <- merge(MTUSW6UK_halfhours_laundryp_DT, MTUSW6UK_halfhours_laundrys_DT, all = TRUE)
-  setkey(MTUSW6UK_halfhours_laundry_DT,ba_survey, diarypid, s_dow, st_halfhour )
+  MTUSW6UK_halfhours_laundry_DT <- merge(MTUSW6UK_halfhours_laundry_DT, MTUSW6UK_halfhours_laundryany_DT, all = TRUE)
+  
   head(MTUSW6UK_halfhours_laundry_DT)
   summary(MTUSW6UK_halfhours_laundry_DT)
-  table(MTUSW6UK_halfhours_laundry_DT$ba_survey, MTUSW6UK_halfhours_laundry_DT$N_obs_pact)
+  feedBack("Number of observations of laundry per year")
+  table(MTUSW6UK_halfhours_laundry_DT$ba_survey, MTUSW6UK_halfhours_laundry_DT$N_obs_laundry_p)
   
   # join to the complete half-hour data using merge so we can keep all
   MTUSW6UK_halfhours_DT <- merge(MTUSW6UK_halfhours_DT, MTUSW6UK_halfhours_laundry_DT, all = TRUE)
   
-  # set an indicator if any laundry was recorded
-  MTUSW6UK_halfhours_DT$laundryp <- ifelse(
-    MTUSW6UK_halfhours_DT$N_obs_pact > 0, 1, "NA"
-  )
-  
-  MTUSW6UK_halfhours_DT$laundrys <- ifelse(
-    MTUSW6UK_halfhours_DT$N_obs_sact > 0, 1, "NA"
-  )
-  
-  MTUSW6UK_halfhours_DT$laundryany <- ifelse(
-    MTUSW6UK_halfhours_DT$laundryp == 1 |  MTUSW6UK_halfhours_DT$laundrys == 1, 1, "NA"
-  )
   head(MTUSW6UK_halfhours_DT)
+  head(MTUSW6UK_halfhours_DT[MTUSW6UK_halfhours_DT$N_obs_laundry_any == 1]) # check
+  
+  # set an indicator if any laundry was recorded
+  MTUSW6UK_halfhours_DT$anylaundry_p <- ifelse(
+    MTUSW6UK_halfhours_DT$N_obs_laundry_p > 0, 1, "NA"
+  )
+  
+  MTUSW6UK_halfhours_DT$anylaundry_s <- ifelse(
+    MTUSW6UK_halfhours_DT$N_obs_laundry_s > 0, 1, "NA"
+  )
+  
+  MTUSW6UK_halfhours_DT$anylaundry_any <- ifelse(
+    MTUSW6UK_halfhours_DT$N_obs_laundry_p == 1 |  MTUSW6UK_halfhours_DT$N_obs_laundry_s == 1, 1, "NA"
+  )
+  head(MTUSW6UK_halfhours_DT[MTUSW6UK_halfhours_DT$anylaundry_any == 1]) # check
   summary(MTUSW6UK_halfhours_DT)
   
-  # how many half hours have several obs of laundry as primary act?
-  table(MTUSW6UK_halfhours_DT$ba_survey, MTUSW6UK_halfhours_DT$N_obs_pact)
+  feedBack("How many half hours have several obs of laundry as primary act?")
+  print(
+    xtabs( ~ MTUSW6UK_halfhours_DT$ba_survey + MTUSW6UK_halfhours_DT$N_obs_laundry_p)
+  )  
+  feedBack("How many half hours have any obs of laundry as primary act?")
+  print(
+    xtabs( ~ MTUSW6UK_halfhours_DT$ba_survey + MTUSW6UK_halfhours_DT$anylaundry_p)
+  )
   
-  # how many half hours have any obs of laundry as primary act?
-  table(MTUSW6UK_halfhours_DT$ba_survey, MTUSW6UK_halfhours_DT$laundryp)
+  # now do that comparison by half hour to see if it changes the shape much
+  feedBack("Distribution of halfhours with given number (1-3) obs of laundry as primary act?")
+  
+  print(
+    ftable(MTUSW6UK_halfhours_DT$st_halfhour, MTUSW6UK_halfhours_DT$ba_survey, MTUSW6UK_halfhours_DT$N_obs_laundry_p, 
+           col.vars= c(2, 3), # arrange with half hours as rows and frequencies per survey year as cols
+           exclude = NULL # keep NAs so we can calculate as % of all half hours
+           )
+  ) 
+
+  # this is a long form table of the same data, would need re-casting 
+  MtusHalfhourSummaryLaundryp <- MTUSW6UK_halfhours_DT[, .(N_hh_lp = length(N_obs_laundry_p)), by = .(Half_hour = st_halfhour, Freq = N_obs_laundry_p, Year = ba_survey)]
+  
+  print(
+    ftable(MTUSW6UK_halfhours_DT$st_halfhour, MTUSW6UK_halfhours_DT$ba_survey, MTUSW6UK_halfhours_DT$anylaundry_p, 
+           col.vars= c(2, 3), # arrange with half hours as rows and frequencies per survey year as cols
+           exclude = NULL # keep NAs so we can calculate as % of all half hours
+    )
+  ) 
+  # this is a long form table of the same data, would need re-casting 
+  MtusHalfhourSummaryLaundryanyp <- MTUSW6UK_halfhours_DT[, .(N_hh_lp = length(anylaundry_p)), by = .(Half_hour = st_halfhour, Freq = N_obs_laundry_p, Year = ba_survey)]
+  
+  # the above analysis confirms that the 'any laundry' indicator masks the difference between short duration laundry acts and longer ones
+  # Longer duration acts are more common and seem to have a different distribution - perhaps this is different components of the practice?
+  # But NB - 1985 = 2 * 15  min slots per half hour, 2005 = 3 * 10 minutes (as per sampling method)
+  
+  # So from here on we use anylaundry_p as we are not sure about reporting of secondary acts and we only care about the timing of laundry
+  # not the duration of acts at particular times (although it might be interesting for a methodological study)
+  
+  # switch to survey analysis from now on
+  # add weights etc from survey data
+  setkey(MTUSW6UK_halfhours_DT, diarypid)
+  # merge half hour level data with core survey vars
+  gMTUSW6UKhalfhours_DT <<- MTUSW6UK_halfhours_DT[gMTUSW6UKsurveyCore_DT]
+  feedBack("Check what merged")
+  print(
+    table(gMTUSW6UKhalfhours_DT$ba_survey, gMTUSW6UKhalfhours_DT$survey, exclude = NULL)
+  )
+  feedBack("The NAs are either no diary/survey data in the years of interest or are not in the years of interest so drop the lot")
+  gMTUSW6UKhalfhours_DT <- na.omit(gMTUSW6UKhalfhours_DT, cols="ba_survey")
+  feedBack("Check again")
+  print(
+    table(gMTUSW6UKhalfhours_DT$ba_survey, gMTUSW6UKhalfhours_DT$survey, exclude = NULL)
+  )
   
   feedBack("Done analysing sampled file")
+} # works
+
+analyseMtusSampledSvy <- function() {
+  # set survey data
+  # tell survey that the diarypids are the ids (they repeat)
+  svygMTUSW6UK_halfhours <<- svydesign(ids = ~diarypid, weight = ~propwt, data = gMTUSW6UKhalfhours_DT) # does not produce a data table
+  
+  # fix the indicator to be 1 or 0
+  svygMTUSW6UK_halfhours$variables$anylaundry_p <- ifelse(
+    is.na(svygMTUSW6UK_halfhours$variables$anylaundry_p), 0, # set to 0 if missing
+    svygMTUSW6UK_halfhours$variables$anylaundry_p)
+  
+  # how many half hours do we have?
+  all_hhs <- svytable(~ba_survey, # the row * columns we want (produces long form)
+        svygMTUSW6UK_halfhours, # the data
+        )
+  print(
+    all_hhs # table
+  )
+  # get the mean % of half hours with any laundry as a primary act (and SE)
+  pcAnylp <- svyby(~anylaundry_p, # the variable to do the stats on
+                    ~ba_survey, # the row * columns we want (produces long form)
+                    svygMTUSW6UK_halfhours, # the data
+                    svymean, # the stats function(s)
+                    #na.rm = TRUE,
+                    keep.var = TRUE)
+  print(
+    pcAnylp # table
+    )
+  print(
+    confint(pcAnylp) # with confidence intervals
+    )
+  # get the mean % of half hours with any laundry as a secondary act (and SE)
+  pcAnyls <- svyby(~anylaundry_s, # the variable to do the stats on
+                   ~ba_survey, # the row * columns we want (produces long form)
+                   svygMTUSW6UK_halfhours, # the data
+                   svymean, # the stats function(s)
+                   keep.var = TRUE)
+  print(
+    pcAnyls # table
+  )
+  print(
+    confint(pcAnyls) # with confidence intervals
+  )
+  
+  # get the mean % of half hours with any laundry as a primary act (and SE) over 24 hours
+  pcAnyl_hh <- svyby(~anylaundry_p, # the variable to do the stats on
+                 ~st_halfhour + ba_survey, # the row * columns we want (produces long form)
+                 svygMTUSW6UK_halfhours, # the data
+                 svymean, # the stats function(s)
+                 keep.var = TRUE)
+  #ftable(pcAnyl_hh) # flat table fails
+  
+  feedBack("Done analysing sampled file using survey methods")
 }
 
-# Run to here in all cases to set functions
+
+# Run to here to reload functions
 
 # Controller ----
 loadMtusSurvey()
@@ -924,3 +1005,5 @@ analyseMtusEpisodes()
 
 loadMtusSampled()
 analyseMtusSampled()
+
+analyseMtusSampledSvy()
