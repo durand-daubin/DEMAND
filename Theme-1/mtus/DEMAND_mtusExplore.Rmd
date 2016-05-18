@@ -1,0 +1,107 @@
+---
+title: "RMarkdown Template"
+author: "Ben Anderson"
+date: "(b.anderson@soton.ac.uk, @dataknut)"
+output:
+  html_document:
+    fig_caption: yes
+    number_sections: yes
+    theme: journal
+    toc: yes
+    toc_depth: 2
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+---
+
+```{r setup, include=FALSE}
+# set default echo to FALSE (code not in output)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig_caption = TRUE)
+knitr::opts_chunk$set(tidy = TRUE)
+```
+
+# About this document
+
+Document last refreshed: `r Sys.time()`
+
+This document was created using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com). Knitr supports the embedding of R statistical analysis code within markdown text documents allowing them to be updated and re-run. Things to note:
+
+* Knitr will display warnings (but not errors) from R. The warnings may or may not be important to the interpretation of the results;
+* Knitr is very clever but it does not always support pretty tables.
+
+This work was funded by XXXX.
+
+    License:
+    The R code embedded in this document is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License (http://choosealicense.com/licenses/gpl-2.0/), or (at your option) any later version.
+    
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+    
+    YMMV - http://en.wiktionary.org/wiki/YMMV
+
+-----
+
+````{r houseKeeping}
+# Clear out all old objects etc ----
+# to avoid confusion
+rm(list = ls()) 
+
+# Set time ----
+starttime <- Sys.time()
+
+# Load required packages ----
+packs <- c("ggplot2", # slick & easy graphs
+       "foreign", # loading SPSS/STATA
+       "data.table", # fast data manipulation
+       "gmodels", # for table proportions
+       "knitr", # for kable
+       "dplyr" # data transformation
+       )
+
+# do this to install them if needed
+# install.packages(x)
+print("Loading required packages:")
+print(packs)
+
+lapply(packs, require, character.only = T)
+
+# Set paths ----
+mtuspath <- "~/Users/ben/Documents/Work/Data/MTUS/World_6/processed/"
+
+# Set file names ----
+mtusfile <- ""
+
+````
+
+# Introduction
+Purpose:
+
+* p1
+* p2
+
+Data:
+
+1. 
+2. 
+3. 
+
+
+Code^[This is a footnote]:
+
+* 
+* 
+
+
+```{r loadAndProcessData}
+# code here
+```
+
+
+***
+__Meta:__
+Analysis completed in: `r Sys.time() - starttime` seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+
+***
+__Footnotes:__
