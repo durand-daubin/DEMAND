@@ -2,3 +2,7 @@
 .RData
 *.Rproj*
 *.html
+*.csv
+*.xls
+*.dta
+*.png
