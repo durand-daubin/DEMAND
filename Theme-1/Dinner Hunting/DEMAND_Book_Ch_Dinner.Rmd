@@ -1,0 +1,156 @@
+---
+title: "The Changing Timing of Cooking in the United Kingdom and France: Implications for Energy Demand"
+author: "Mathieu Durand-Daubin, Ben Anderson"
+date: "(mathieu.durand-daubin@edf.fr; b.anderson@soton.ac.uk, @dataknut)"
+output:
+  word_document:
+    toc: yes
+    toc_depth: '3'
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    fig_caption: yes
+    number_sections: yes
+    theme: journal
+    toc: yes
+    toc_depth: 3
+---
+
+```{r setupKnitr, include=FALSE}
+# set default echo to FALSE (code not in output)
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig_caption = TRUE)
+knitr::opts_chunk$set(tidy = TRUE)
+```
+
+Abstract (original)
+
+Aggregate energy demand follows strong repetitive patterns on multiple scales (day, week, seasons), due to social rhythms coordinating the synchronicity of consuming practices. These patterns are not only related to natural cycles that remain unchanged, but also to social structures and technology, that change over the years and across different geographical areas.
+How do these changes and regional differences affect energy demand rhythms? Answering this question, would improve our understanding of demand flexibility and possible future evolutions.
+
+In this research we study the energy footprint of practices which are widely shared, highly regular, and key markers of the social organisation: eating practices. Different types of meals and food preparation are described based on the quantitative data collected by the means of Time Use Surveys in France and in the United Kingdom. These practices are defined in terms of time, durations, primary, secondary and surrounding activities, participants, and places. The distribution of these practices are studied across several time scales (week days, seasons, and decades from 1974 to 2010) and areas (UK, France and French regions). The temporal and spatial variations of eating practices can then be compared with the energy demand measured by the power grids or in specific campaigns, and varying along the same axes. This comparison reveals how parts of the energy demand dynamic are related to specific practices and their synchronisation. Finally, the mechanism of this coevolution can be partly interpreted in the light of wider social and technical changes depicted in socio-economic and demographic series (employment structure, food consumption, home equipment).
+
+
+````{r houseKeeping}
+# Clear out all old objects etc ----
+# to avoid confusion
+rm(list = ls()) 
+
+# Set time ----
+starttime <- Sys.time()
+
+# Load required packages ----
+packs <- c("ggplot2", # slick & easy graphs
+       "foreign", # loading SPSS/STATA
+       "data.table", # fast data manipulation
+       "gmodels", # for table proportions
+       "knitr", # for kable
+       "dplyr" # data transformation
+       )
+
+# do this to install them if needed
+# install.packages(x)
+print("Loading required packages:")
+print(packs)
+
+lapply(packs, require, character.only = T)
+
+# Set paths ----
+mtusPath <- "~/Data/MTUS/World_6/processed/"
+
+# Set file names ----
+surveyFile <- "gMTUSW6UKsurveyCore_DT.csv.gz"
+episodesFile <- "gMTUSW6UKdiaryEps_DT.csv.gz"
+
+sfile <- paste0(mtusPath, surveyFile)
+efile <- paste0(mtusPath, episodesFile)
+````
+
+# Introduction
+Discussion of temporal nature of electricity demand, interest in peaks (reasons for this) and the ability to shift in general.
+
+Recent work (DECC HES?) has highlighted the role of cooking (and subequently eating) in generating demand for electricity during the evening peak period (give times).
+
+At the same time recent work (Southerton et al) has shown how the habits and practices of eating have changed over time in the UK anbd Spain. Although this work only provides an analysis of the duration of acts (episodes) it provides evidence of the ongoing evolution of eating habits which may have implications for cooking and thus for electricity/energy demand.
+
+It is possible that 're-arranging' cooking habits may be one way to reduce the problematic evening peak electricity demand. However without a more detailed analysis of what kinds of eating (and especially cooking) are already changing and of the variation in cooking practices across the population, we have little idea where to start.
+
+Digression on time use as a footprint/proxy for practices?
+
+This paper uses natioanlly representative time use diary data form the United Kingdom and France to compare and contrast the changing timing of cooking and eating in each country over the last 30 years. It then uses the most recent data to analyse and comapre the social and spatial variation in current eating practices in each country. Finally the paper provides preliminary analysis of French regional residential electricity consumption data which highlights the role of regional variation in cooking practices. The paper concludes with a discussion of the implications of the results for electricity demand in the UK and France and outlines directions for future research
+
+# Cooking, Eating and Energy
+Here we need to talk about the changing nature of cooking & eating form the literature (if tehre is any) - quant (e.g. Southerton) & qual (e.g. Warde).
+
+Need then to link it to energy consumption - in UK gas & electricity used for cooking, in France = electricity (mostly, but LPG?).
+
+More detailed discussion of the problem of peak demand? - expensive/dirty generation?
+
+# Data
+A relatively brief introduction to the time use diary data for each country:
+
+ * years & sources
+ * key collection/diary features
+ * categories of activities & any coding issues/missing attributes
+
+# The changing temporality of cooking in the UK and France
+
+Here we use the MTUS (UK) and French data to look at change in cooking (& eating?) over the last 30 years in terms of:
+
+ * timing
+ * location
+ 
+This gives rise to the interest in types of (performances?) of cooking:
+
+ * weekday lunch - justify inclusion as 'solar' powered?
+ * weekday dinner
+ * sunday lunch
+ 
+ Brief discussion of how we code these in the data analysis.
+ 
+# Contemporary cooking practices in the UK and France
+## Weekday lunch
+Section on this using most recent data - to include:
+
+ * who cooks & who does not (eats cold, eats out?)
+ * seasonal & regional variation in cook/no cook?
+
+## Weekday dinner
+Section on this using most recent data - to include:
+
+ * who cooks & who does not (eats cold, eats out?)
+ * seasonal & regional variation in cook/no cook?
+ * include regional EDF network demand data? 
+
+## Sunday lunch
+Section on this using most recent data - to include:
+
+ * who cooks & who does not (eats cold, eats out?)
+ * seasonal & regional variation in cook/no cook?
+ * include regional EDF network demand data? 
+ 
+# Discussion
+Draw together the threads of the results to discuss:
+
+ * implications of evolving patterns in each country - how do they differ, what does this imply?
+ * implications of current cooking patterns
+ * future research directions
+ 
+# Acknowledgements
+This work was funded by RCUK through the End User Energy Demand Centres Programme via the "DEMAND: Dynamics of Energy, Mobility and Demand" Centre:
+
+ * http://www.demand.ac.uk 
+ * http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1
+ 
+# References
+ Go here
+ 
+***
+__Meta:__
+Analysis completed in: `r Sys.time() - starttime` seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+
+***
+__Footnotes:__
