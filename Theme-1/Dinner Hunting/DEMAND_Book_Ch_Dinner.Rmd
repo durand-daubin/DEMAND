@@ -268,6 +268,44 @@ mtusUKEpisodes_DT[, is_eating_all:= ifelse(is_eating_m == 1 | is_eating_s == 1,
 
 ```
 
+
+
+## Unweighted eating and cooking episodes
+Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the percentage of episodes reported as cooking has stayed roughly constant at around 9% between 1974 and 2005. As we can also see the reporting of cooking as a secondary act was low in most surveys. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the paper we focus only on cooking as a main activity.
+
+```{r cookingEpisodes}
+kable(caption = "Distribution of food preparation/cooking episodes by survey year (unweighted)",
+  mtusUKEpisodes_DT[,
+                    .(
+                      "N episodes" = sum(is_cooking_m),
+                      "Main (% of episodes)" = round(mean(is_cooking_m)*100, 2),
+                      "Secondary (% of episodes)" = round(mean(is_cooking_s)*100, 2),
+                      "Either (% of episodes)" = round(mean(is_cooking_all)*100, 2)
+                    ),
+                    by = .(ba_survey,sex) # ba_survey pools 1983/4 and 1987
+                    ]
+  )
+```
+
+As the following table shows, eating is reported in around 12% of main activity episodes and between 1% and 4% of secondary activity episodes and the rate has stayed roughly constant for main activities over time. As above due to uncertainties over the intepretation of secondary activities, in the remainder of the paper we will focus only on eating as a main activity.
+
+```{r eatingEpisodes}
+kable(caption = "Distribution of meals/snack episodes by survey year (unweighted)",
+  mtusUKEpisodes_DT[,
+                    .(
+                      "N episodes" = sum(is_eating_m),
+                      "Main (% of episodes)" = round(mean(is_eating_m)*100, 2),
+                      "Secondary (% of episodes)" = round(mean(is_eating_s)*100, 2),
+                      "Either (% of episodes)" = round(mean(is_eating_all)*100, 2)
+                    ),
+                    by = .(ba_survey, sex) # ba_survey pools 1983/4 and 1987
+                    ]
+  )
+```
+
+
+## Weighted cooking and eating as main activities
+
 ```{r setUpSurvey}
 
 # survey
@@ -290,7 +328,7 @@ svymtusUKEpisodes_DTj <- svydesign(ids = ~ba_diarypid,
 
 ```
 
-Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the percentage of episodes reported as cooking has stayed roughly constant at around 9% between 1974 and 2005. As we can also see the reporting of cooking as a secondary act was low in most surveys. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the paper we focus only on cooking as a main activity.
+The following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey.
 
 ```{r weightedCooking}
 # how many weighted cooking episodes do we have?
@@ -305,35 +343,25 @@ cookEpsWm <- svyby(~is_cooking_m, # the variable to calculate the stat for
                    )
 ```
 
-The following table and chart show the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey.
-
 `r ftable(cookEpsWm)`
 
-`r plot(cookEpsWm)`
+The following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen,  in contrast to the unweighted proportions
 
 ```{r weightedEating}
 # how many weighted eating episodes do we have?
-eatEpsW <- svytable(~ba_survey.x + sex + is_eating_m, # the row * columns we want
+eatEpsWt <- svytable(~ba_survey.x + sex + is_eating_m, # the row * columns we want
                     svymtusUKEpisodes_DTj # the data in survey form
 )
-ftable(eatEpsW)
+eatEpsWm <- svyby(~is_eating_m, # the variable to calculate the stat for
+                   ~ba_survey.x + sex, # the factors
+                   svymtusUKEpisodes_DTj, # the data in survey form
+                   svymean # the stat function
+                   )
 ```
 
-```{r cookingEpisodes}
-kable(caption = "Distribution of food preparation/cooking episodes by survey year (unweighted)",
-  mtusUKEpisodes_DT[,
-                    .(
-                      "N episodes" = sum(is_cooking_m),
-                      "Main (% of episodes)" = round(mean(is_cooking_m)*100, 2),
-                      "Secondary (% of episodes)" = round(mean(is_cooking_s)*100, 2),
-                      "Either (% of episodes)" = round(mean(is_cooking_all)*100, 2)
-                    ),
-                    by = ba_survey # ba_survey pools 1983/4 and 1987
-                    ]
-  )
-```
+`r ftable(eatEpsWm)`
 
-The following chart shows the distribution of cooking across time of day for the different surveys.
+The following chart shows the unweighted distribution of cooking as a  main activity across time of day for the different surveys.
 
 ```{r cookingByHalfhour}
 cookeps_1974 <- mtusUKEpisodes_DT[ba_survey == 1974,
@@ -391,22 +419,6 @@ ggplot(cookeps_cols) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
   theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
-```
-
-As the following table shows, eating is reported in around 12% of main activity episodes and between 1% and 4% of secondary activity episodes and the rate has stayed roughly constant for main activities over time. As above due to uncertainties over the intepretation of secondary activities, in the remainder of the paper we will focus only on eating as a main activity.
-
-```{r eatingEpisodes}
-kable(caption = "Distribution of meals/snack episodes by survey year (unweighted)",
-  mtusUKEpisodes_DT[,
-                    .(
-                      "N episodes" = sum(is_eating_m),
-                      "Main (% of episodes)" = round(mean(is_eating_m)*100, 2),
-                      "Secondary (% of episodes)" = round(mean(is_eating_s)*100, 2),
-                      "Either (% of episodes)" = round(mean(is_eating_all)*100, 2)
-                    ),
-                    by = ba_survey # ba_survey pools 1983/4 and 1987
-                    ]
-  )
 ```
 
 The following chart shows the distribution of eating across time of day for the different surveys.
