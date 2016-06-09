@@ -85,7 +85,7 @@ Digression on time use as a footprint/proxy for practices?
 This paper uses natioanlly representative time use diary data form the United Kingdom and France to compare and contrast the changing timing of cooking and eating in each country over the last 30 years. It then uses the most recent data to analyse and comapre the social and spatial variation in current eating practices in each country. Finally the paper provides preliminary analysis of French regional residential electricity consumption data which highlights the role of regional variation in cooking practices. The paper concludes with a discussion of the implications of the results for electricity demand in the UK and France and outlines directions for future research
 
 # Cooking, Eating and Energy
-Here we need to talk about the changing nature of cooking & eating form the literature (if tehre is any) - quant (e.g. Southerton) & qual (e.g. Warde).
+Here we need to talk about the changing nature of cooking & eating from the literature (if there is any) - quant (e.g. Southerton) & qual (e.g. Warde).
 
 Need then to link it to energy consumption - in UK gas & electricity used for cooking, in France = electricity (mostly, but LPG?).
 
@@ -100,6 +100,7 @@ More detailed discussion of the problem of peak demand? - expensive/dirty genera
  * weekday dinner
  * sunday lunch
  
+Should this come after a general exploration of the data? So that we can look at the timings and then explain why we concentrate on these 'practices'?
 
 # Data
 A relatively brief introduction to the time use diary data for each country:
@@ -222,8 +223,6 @@ kable(caption="MTUS survey repondents by sex and survey (unweighted)",
 # xtabs(id ~  ba_age_r + sex + ba_survey  , data = mtusUKSurveyUniq_DT)
 ```
 
-Now we report the results of coding 'food preparation,cooking' (cooking) and 'meals/snacks' (eating) for the UK.
-
 ```{r ukCookingEatingDataPrep}
 # Cooking/food prep = 18 but imported here as text ----
 cook <- "food preparation, cooking"
@@ -269,8 +268,6 @@ mtusUKEpisodes_DT[, is_eating_all:= ifelse(is_eating_m == 1 | is_eating_s == 1,
 
 ```
 
-Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the percentage of episodes reported as cooking has stayed roughly constant at around 9% between 1974 and 2005. As we can also see the reporting of cooking as a secondary act was low in most surveys. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the paper we focus only on cooking as a main activity.
-
 ```{r setUpSurvey}
 
 # survey
@@ -291,13 +288,30 @@ svymtusUKEpisodes_DTj <- svydesign(ids = ~ba_diarypid,
                                   data = mtusUKEpisodes_DTj
 ) # the data table is now part of the survey object
 
+```
 
+Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the percentage of episodes reported as cooking has stayed roughly constant at around 9% between 1974 and 2005. As we can also see the reporting of cooking as a secondary act was low in most surveys. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the paper we focus only on cooking as a main activity.
+
+```{r weightedCooking}
 # how many weighted cooking episodes do we have?
-cookEpsW <- svytable(~ba_survey.x + sex + is_cooking_m, # the row * columns we want
+cookEpsWt <- svytable(~ba_survey.x + sex + is_cooking_m, # the row * columns we want
                     svymtusUKEpisodes_DTj # the data in survey form
-)
-ftable(cookEpsW)
+                    )
 
+cookEpsWm <- svyby(~is_cooking_m, # the variable to calculate the stat for
+                   ~ba_survey.x + sex, # the factors
+                   svymtusUKEpisodes_DTj, # the data in survey form
+                   svymean # the stat function
+                   )
+```
+
+The following table and chart show the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey.
+
+`r ftable(cookEpsWm)`
+
+`r plot(cookEpsWm)`
+
+```{r weightedEating}
 # how many weighted eating episodes do we have?
 eatEpsW <- svytable(~ba_survey.x + sex + is_eating_m, # the row * columns we want
                     svymtusUKEpisodes_DTj # the data in survey form
