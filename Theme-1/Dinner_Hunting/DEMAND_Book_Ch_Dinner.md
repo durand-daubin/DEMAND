@@ -102,7 +102,7 @@ A relatively brief introduction to the time use diary data for each country:
 ```
 
 ```
-## Read 60.1% of 1364047 rowsRead 96.8% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
+## Read 61.6% of 1364047 rowsRead 99.0% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
 ```
 
 ```
@@ -157,6 +157,75 @@ Report some basic (unweighted) descriptive statsitics of the sample we will use.
 |NA    |    0|    0|    0|    0|    0|  0|
 
 
+```
+##       
+##        Monday Tuesday Wednesday Thursday Friday Saturday Sunday   <NA>
+##   0    175672  178979    169003   173819 171045   237527 233208      0
+##   1      5355    5198      4805     4719   4717        0      0      0
+##   <NA>      0       0         0        0      0        0      0      0
+```
+
+```
+##       
+##            0     1  <NA>
+##   0    29169     0     0
+##   1     9848     0     0
+##   2     3570     0     0
+##   3     2644     0     0
+##   4    59002     0     0
+##   5     8483     0     0
+##   6    29871     0     0
+##   7    74780     0     0
+##   8    90107     0     0
+##   9    78334     0     0
+##   10   69065     0     0
+##   11   57956     0     0
+##   12   78537     0     0
+##   13   80433     0     0
+##   14   59944     0     0
+##   15   57473     0     0
+##   16   68879     0     0
+##   17   69248 18271     0
+##   18   72923 14743     0
+##   19   67653  7625     0
+##   20   59511  5358     0
+##   21   52996  5310     0
+##   22   71000     0     0
+##   23   61314     0     0
+##   <NA>     0     0     0
+```
+
+
+
+```r
+# flag sunday lunch
+mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 15 &
+                                            r_dow == "Sunday",
+                                          1, # is sunday lunch
+                                          0 # is not
+                                          )
+                             ]
+# check (should only be on Sunday)
+table(mtusUKEpisodes_DT$sundayLunch,
+      mtusUKEpisodes_DT$r_dow,
+      useNA = "always"
+      )
+```
+
+```
+##       
+##        Monday Tuesday Wednesday Thursday Friday Saturday Sunday   <NA>
+##   0    181027  184177    173808   178538 175762   237527 224682      0
+##   1         0       0         0        0      0        0   8526      0
+##   <NA>      0       0         0        0      0        0      0      0
+```
+
+```r
+# join the survey to the episodes
+setkey(mtusUKEpisodes_DT, ba_diarypid)
+setkey(mtusUKSurvey_DT, ba_diarypid)
+mtusUKEpisodes_DTj <- merge(mtusUKEpisodes_DT, mtusUKSurvey_DT)
+```
 
 ## Cooking and eating episodes
 Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the reporting of cooking as a secondary act was low in most surveys irrespective of gender. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the chapter we will focus on cooking as a main activity only.
@@ -244,115 +313,109 @@ Brief discussion of our consequential interest in patterns of weekday lunch, wee
  * Dinner is coded as any eating 17:00 - 22:00
  * Sunday lunch is coded as any eating between 12:00 and 15:00 on Sundays
 
-In the following we show the code used to identify these 'practices'. 
 
+The following table summrises the prevalence of these 'eating practices' in the different surveys by their location.
 
-```r
-# Need to create an hour variable from r_epStartTime to avoid losing all those  not set in r_epStartDateTime
-mtusUKEpisodes_DT[, hour := as.POSIXlt(r_epStartTime)$hour]
-mtusUKEpisodes_DT[, mins := as.POSIXlt(r_epStartTime)$min]
-
-# flag weekday lunch
-mtusUKEpisodes_DT[, weekdayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 14 & 
-                                             r_dow != "Saturday" & r_dow != "Sunday",
-                                                      1, # is weekday lunch
-                                                      0 # is not
-                                                      )
-                             ]
-# check - should be weekdays only
-table(mtusUKEpisodes_DT$weekdayLunch,
-      mtusUKEpisodes_DT$r_dow,
-      useNA = "always"
-      )
-```
 
 ```
-##       
-##        Monday Tuesday Wednesday Thursday Friday Saturday Sunday   <NA>
-##   0    175672  178979    169003   173819 171045   237527 233208      0
-##   1      5355    5198      4805     4719   4717        0      0      0
-##   <NA>      0       0         0        0      0        0      0      0
-```
-
-
-```r
-# flag dinner
-mtusUKEpisodes_DT[, dinner := ifelse(is_eating_m == 1 & hour >= 17 & hour < 22,
-                                                      1, # is dinner
-                                                      0 # is not
-                                                      )
-                             ]
-# check - should only be in the evening
-table(mtusUKEpisodes_DT$hour,
-      mtusUKEpisodes_DT$dinner,
-      useNA = "always")
-```
-
-```
-##       
-##            0     1  <NA>
-##   0    29169     0     0
-##   1     9848     0     0
-##   2     3570     0     0
-##   3     2644     0     0
-##   4    59002     0     0
-##   5     8483     0     0
-##   6    29871     0     0
-##   7    74780     0     0
-##   8    90107     0     0
-##   9    78334     0     0
-##   10   69065     0     0
-##   11   57956     0     0
-##   12   78537     0     0
-##   13   80433     0     0
-##   14   59944     0     0
-##   15   57473     0     0
-##   16   68879     0     0
-##   17   69248 18271     0
-##   18   72923 14743     0
-##   19   67653  7625     0
-##   20   59511  5358     0
-##   21   52996  5310     0
-##   22   71000     0     0
-##   23   61314     0     0
-##   <NA>     0     0     0
+## Error in eval(expr, envir, enclos): object 'is_cooking_m' not found
 ```
 
 
 
-```r
-# flag sunday lunch
-mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 15 &
-                                            r_dow == "Sunday",
-                                          1, # is sunday lunch
-                                          0 # is not
-                                          )
-                             ]
-# check (should only be on Sunday)
-table(mtusUKEpisodes_DT$sundayLunch,
-      mtusUKEpisodes_DT$r_dow,
-      useNA = "always"
-      )
-```
+|Location               | Survey| % episodes|  2.5%| 97.5%|
+|:----------------------|------:|----------:|-----:|-----:|
+|at own home            |   1974|  0.0218408|  2.13|  2.24|
+|at place of worship    |   1974|  0.0000000|  0.00|  0.00|
+|at restaurant, bar etc |   1974|  0.0000000|  0.00|  0.00|
+|at school              |   1974|  0.0000000|  0.00|  0.00|
+|at services or shops   |   1974|  0.0000000|  0.00|  0.00|
+|at workplace           |   1974|  0.1369192| 13.28| 14.10|
+|location unknown       |   1974|  0.0076804| -0.52|  2.05|
+|other locations        |   1974|  0.0729200|  6.89|  7.69|
+|travelling             |   1974|  0.0000000|  0.00|  0.00|
+|at another’s home    |   1985|  0.0097460|  0.82|  1.13|
+|at own home            |   1985|  0.0166258|  1.62|  1.70|
+|at place of worship    |   1985|  0.0011368| -0.11|  0.34|
+|at restaurant, bar etc |   1985|  0.0137473|  1.05|  1.69|
+|at school              |   1985|  0.1019707|  8.41| 11.98|
+|at services or shops   |   1985|  0.0039516|  0.28|  0.51|
+|at workplace           |   1985|  0.0521769|  4.96|  5.48|
+|location unknown       |   1985|  0.0000000|  0.00|  0.00|
+|other locations        |   1985|  0.0040267|  0.29|  0.51|
+|travelling             |   1985|  0.0006871|  0.04|  0.09|
+|at own home            |   1995|  0.0258182|  2.37|  2.79|
+|at restaurant, bar etc |   1995|  0.0000000|  0.00|  0.00|
+|at school              |   1995|  0.0000000|  0.00|  0.00|
+|at services or shops   |   1995|  0.0000000|  0.00|  0.00|
+|at workplace           |   1995|  0.0000000|  0.00|  0.00|
+|location unknown       |   1995|  0.0000000|  0.00|  0.00|
+|travelling             |   1995|  0.0000000|  0.00|  0.00|
+|at another’s home    |   2000|  0.0356277|  3.16|  3.97|
+|at own home            |   2000|  0.0172113|  1.67|  1.77|
+|at place of worship    |   2000|  0.0000000|  0.00|  0.00|
+|at restaurant, bar etc |   2000|  0.0010393|  0.00|  0.21|
+|at school              |   2000|  0.0000000|  0.00|  0.00|
+|at services or shops   |   2000|  0.0031791|  0.18|  0.45|
+|at workplace           |   2000|  0.1282233| 12.34| 13.30|
+|location unknown       |   2000|  0.1554864| 10.59| 20.50|
+|other locations        |   2000|  0.0451386|  4.02|  5.01|
+|travelling             |   2000|  0.0008810|  0.06|  0.12|
+|at own home            |   2005|  0.0167780|  1.58|  1.77|
+|at restaurant, bar etc |   2005|  0.0000000|  0.00|  0.00|
+|at school              |   2005|  0.0000000|  0.00|  0.00|
+|at services or shops   |   2005|  0.0000000|  0.00|  0.00|
+|at workplace           |   2005|  0.0000000|  0.00|  0.00|
+|location unknown       |   2005|  0.0340578|  2.97|  3.84|
+|other locations        |   2005|  0.0000000|  0.00|  0.00|
+|travelling             |   2005|  0.0000000|  0.00|  0.00|
 
-```
-##       
-##        Monday Tuesday Wednesday Thursday Friday Saturday Sunday   <NA>
-##   0    181027  184177    173808   178538 175762   237527 224682      0
-##   1         0       0         0        0      0        0   8526      0
-##   <NA>      0       0         0        0      0        0      0      0
-```
-
-The following table summrises the prevalence of these 'eating practices' in the different surveys.
-
-
-| ba_survey| Weekday lunch| Dinner| Sunday lunch|
-|---------:|-------------:|------:|------------:|
-|      1974|          2.88|   3.70|         0.54|
-|      1985|          1.67|   3.59|         0.49|
-|      1995|          1.70|   4.42|         0.49|
-|      2000|          1.38|   3.94|         0.87|
-|      2005|          1.36|   3.77|         0.43|
+| ba_survey|eloc                   | Weekday lunch| Dinner| Sunday lunch|
+|---------:|:----------------------|-------------:|------:|------------:|
+|      1974|at own home            |          2.26|   4.86|         0.69|
+|      1974|travelling             |          0.00|   0.00|         0.00|
+|      1974|at workplace           |         13.88|   0.28|         0.06|
+|      1974|other locations        |          7.65|   1.87|         0.38|
+|      1974|at services or shops   |          0.00|   0.00|         0.00|
+|      1974|at restaurant, bar etc |          0.00|   0.00|         0.00|
+|      1974|at school              |          0.00|   0.00|         0.00|
+|      1974|at place of worship    |          0.00|   0.00|         0.00|
+|      1974|location unknown       |          0.70|   0.70|         0.00|
+|      1985|at own home            |          1.68|   4.80|         0.64|
+|      1985|travelling             |          0.07|   0.10|         0.03|
+|      1985|at workplace           |          5.03|   0.52|         0.05|
+|      1985|at restaurant, bar etc |          1.33|   0.15|         0.08|
+|      1985|at another’s home    |          1.00|   1.66|         0.44|
+|      1985|at services or shops   |          0.38|   0.15|         0.01|
+|      1985|other locations        |          0.40|   0.62|         0.07|
+|      1985|at place of worship    |          0.12|   1.32|         0.84|
+|      1985|at school              |         10.26|   0.29|         0.10|
+|      1985|location unknown       |          0.00|   0.00|         0.00|
+|      1995|at own home            |          2.69|   7.02|         0.77|
+|      1995|travelling             |          0.00|   0.00|         0.00|
+|      1995|at workplace           |          0.00|   0.00|         0.00|
+|      1995|location unknown       |          0.00|   0.00|         0.00|
+|      1995|at services or shops   |          0.00|   0.00|         0.00|
+|      1995|at restaurant, bar etc |          0.00|   0.00|         0.00|
+|      1995|at school              |          0.00|   0.00|         0.00|
+|      2000|at own home            |          1.18|   4.87|         0.96|
+|      2000|travelling             |          0.06|   0.05|         0.03|
+|      2000|at place of worship    |          0.00|   0.00|         0.00|
+|      2000|at services or shops   |          0.22|   0.53|         0.28|
+|      2000|at another’s home    |          2.24|   7.15|         2.55|
+|      2000|at workplace           |         11.51|   0.49|         0.61|
+|      2000|at restaurant, bar etc |          0.07|   0.00|         0.00|
+|      2000|other locations        |          3.01|   4.66|         1.87|
+|      2000|location unknown       |         10.92|   5.46|         2.87|
+|      2000|at school              |          0.00|   0.00|         0.00|
+|      2005|at own home            |          1.80|   4.92|         0.59|
+|      2005|at restaurant, bar etc |          0.00|   0.00|         0.00|
+|      2005|travelling             |          0.00|   0.00|         0.00|
+|      2005|at services or shops   |          0.00|   0.00|         0.00|
+|      2005|other locations        |          0.00|   0.00|         0.00|
+|      2005|at workplace           |          0.00|   0.00|         0.00|
+|      2005|location unknown       |          3.49|  10.48|         0.92|
+|      2005|at school              |          0.00|   0.00|         0.00|
 
 Finally, in order to control for the potentially different levels of reporting due to the different diary slot durations, we calculate an indicator which is 1 if at least one epsiode in a given half hour is reported to be the activity of interest and 0 otherwise. In the case of the 1974 data where the diary slot duration was 30 minutes there will be no difference. However in the case of the other diaries where data was collected in slots of 15 minutes (1983, 1987, 1995) or 10 minutes (2000/1, 2005) duration, this will have the effect of increasing the apparent rate as the denominator is no longer the sum of all episodes in the half hour but the (lower) number of half hours.
 
@@ -707,7 +770,7 @@ As for cooking, the 'at least once in a given half hour' indicator records sligh
 
 ***
 __Meta:__
-Analysis completed in: 8.528 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+Analysis completed in: 9.073 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
 
 ***
 __Footnotes:__
