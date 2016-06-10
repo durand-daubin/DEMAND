@@ -122,7 +122,34 @@ setkey(mtusUKEpisodes_DT, ba_diarypid)
 # > XX need to fix: ----
 # >> text glich restaurant, caf\xe9, bar, pub ----
 
-
+# > order r_dow correctly ----
+mtusUKEpisodes_DT[, r_dow := factor(r_dow, 
+				levels = c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
+				)
+		]
+		
+# > create a weekday/weekend factor ----
+mtusUKEpisodes_DT[, ba_weekday := ifelse(r_dow == "Saturday",
+						"Saturday",
+						r_dow
+					)
+		]
+		
+mtusUKEpisodes_DT[, ba_weekday := ifelse(r_dow == "Sunday",
+				"Sunday",
+				ba_weekday
+			)
+]
+mtusUKEpisodes_DT[, ba_weekday := ifelse(r_dow != "Saturday" & r_dow != "Sunday",
+				"Weekday",
+				ba_weekday
+			)
+]
+# check
+with(mtusUKEpisodes_DT,
+	table(r_dow, ba_weekday)
+	)
+	
 # > add month ----
 # there will be a few NAs
 mtusUKEpisodes_DT[, r_month := as.POSIXlt(mtusUKEpisodes_DT$r_date)$mon] # 0 = January
@@ -287,6 +314,8 @@ t <- mtusUKEpisodes_DTj[,
                     ),
                     by = .(ba_survey.x, sex) # ba_survey pools 1983/4 and 1987
                     ][order(ba_survey.x,sex)]
+
+# set the names to be pretty
 setnames(t, c("Survey", "Sex", "N episodes", 
               "Main (% of episodes)",
               "Secondary (% of episodes)",
@@ -309,7 +338,9 @@ t <- mtusUKEpisodes_DTj[,
                       "Either (% of episodes)" = round(mean(is_eating_all)*100, 2)
                     ),
                     by = .(ba_survey.x, sex) # ba_survey pools 1983/4 and 1987
-                    ][order(ba_survey.x,sex)]
+                    ][order(ba_survey.x, sex)]
+
+# set the names to be pretty
 setnames(t, c("Survey", "Sex", "N episodes", 
               "Main (% of episodes)",
               "Secondary (% of episodes)",
@@ -342,7 +373,7 @@ svymtusUKEpisodes_DTj <- svydesign(ids = ~ba_diarypid,
 
 ```
 
-The following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from `r 2.11/12.13` in 1974 to `r 6.62/10.16` by 2005.
+Having the established the overall unweighted distributions of eating and cooking, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from `r 2.11/12.13` in 1974 to `r 6.62/10.16` by 2005.
 
 ```{r weightedCooking}
 # how many weighted cooking episodes do we have?
@@ -374,7 +405,7 @@ kable(caption = "Weighted proportion of episodes reported as cooking as a main a
       )
 ```
 
-In comparison, eating is reported far more equally (see below) with both men and women consistently reporting eating as a main activity in between 11 and 14% of episodes.
+In comparison, eating is reported far more equally (see below) with both men and women consistently reporting eating as a main activity in between 11 and 14 percent of episodes.
 
 ```{r weightedEating}
 # how many weighted eating episodes do we have?
@@ -410,7 +441,7 @@ XX Needs a sensible colour scheme XX
 ```{r cookingByHalfhour}
 
 cookEpsHalfhour <- svyby(~is_cooking_m, # the variable to calculate the stat for
-                   ~st_halfhour + ba_survey.x + r_dow, # the factors
+                   ~st_halfhour + ba_survey.x + ba_weekday, # the factors
                    svymtusUKEpisodes_DTj, # the data in survey form
                    svymean # the stat function
                    )
@@ -424,12 +455,13 @@ ggplot(cookEpsHalfhour) +
                 col=as.factor(ba_survey.x)
                 )
             )+
+  scale_fill_continuous(low="green", high="black") + 
   theme(legend.position = "bottom") +
   theme(legend.title = element_blank()) +
   labs(x = "Time",
        y = "%"
   ) +
-  facet_grid(r_dow ~ .) +
+  facet_grid(ba_weekday ~ .) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
   theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
@@ -440,7 +472,7 @@ The following chart shows the distribution of eating across time of day and day 
 
 ```{r eatingByHalfhour}
 eatEpsHalfhour <- svyby(~is_eating_m, # the variable to calculate the stat for
-                   ~st_halfhour + ba_survey.x + r_dow, # the factors
+                   ~st_halfhour + ba_survey.x + ba_weekday, # the factors
                    svymtusUKEpisodes_DTj, # the data in survey form
                    svymean # the stat function
                    )
@@ -454,12 +486,13 @@ ggplot(eatEpsHalfhour) +
                 col=as.factor(ba_survey.x)
                 )
             )+
+  scale_fill_continuous(low="green", high="black") + 
   theme(legend.position = "bottom") +
   theme(legend.title = element_blank()) +
   labs(x = "Time",
        y = "%"
   ) +
-  facet_grid(r_dow ~ .) +
+  facet_grid(ba_weekday ~ .) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
   theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
