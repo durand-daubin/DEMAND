@@ -189,6 +189,7 @@ mtusUKSurveyUniq_DT <- unique(mtusUKSurvey_DT)
 
 # check
 table(mtusUKSurveyUniq_DT$survey)
+
 ```
 
 
@@ -266,45 +267,62 @@ mtusUKEpisodes_DT[, is_eating_all:= ifelse(is_eating_m == 1 | is_eating_s == 1,
                                           )
                   ]
 
+# join the survey to the episodes
+setkey(mtusUKEpisodes_DT, ba_diarypid)
+setkey(mtusUKSurvey_DT, ba_diarypid)
+mtusUKEpisodes_DTj <- merge(mtusUKEpisodes_DT, mtusUKSurvey_DT)
+
 ```
 
-
-
-## Unweighted eating and cooking episodes
-Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the percentage of episodes reported as cooking has stayed roughly constant at around 9% between 1974 and 2005. As we can also see the reporting of cooking as a secondary act was low in most surveys. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the paper we focus only on cooking as a main activity.
+## Cooking and eating episodes
+Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the reporting of cooking as a secondary act was low in most surveys irrespective of gender. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the chapter we will focus on cooking as a main activity only.
 
 ```{r cookingEpisodes}
-kable(caption = "Distribution of food preparation/cooking episodes by survey year (unweighted)",
-  mtusUKEpisodes_DT[,
+t <- mtusUKEpisodes_DTj[,
                     .(
                       "N episodes" = sum(is_cooking_m),
                       "Main (% of episodes)" = round(mean(is_cooking_m)*100, 2),
                       "Secondary (% of episodes)" = round(mean(is_cooking_s)*100, 2),
                       "Either (% of episodes)" = round(mean(is_cooking_all)*100, 2)
                     ),
-                    by = .(ba_survey,sex) # ba_survey pools 1983/4 and 1987
-                    ]
+                    by = .(ba_survey.x, sex) # ba_survey pools 1983/4 and 1987
+                    ][order(ba_survey.x,sex)]
+setnames(t, c("Survey", "Sex", "N episodes", 
+              "Main (% of episodes)",
+              "Secondary (% of episodes)",
+              "Either (% of episodes)"
+              )
+         )
+kable(caption = "Distribution of cooking/food preparation episodes by survey year (unweighted)",
+  t
   )
 ```
 
-As the following table shows, eating is reported in around 12% of main activity episodes and between 1% and 4% of secondary activity episodes and the rate has stayed roughly constant for main activities over time. As above due to uncertainties over the intepretation of secondary activities, in the remainder of the paper we will focus only on eating as a main activity.
+Similarly, eating is reported in between one and four percent of secondary activity episodes irrespective of gender (see below). As above, due to uncertainties over the intepretation of secondary activities we will focus on eating as a main activity only in the remainder of the chapter
 
 ```{r eatingEpisodes}
-kable(caption = "Distribution of meals/snack episodes by survey year (unweighted)",
-  mtusUKEpisodes_DT[,
+t <- mtusUKEpisodes_DTj[,
                     .(
                       "N episodes" = sum(is_eating_m),
                       "Main (% of episodes)" = round(mean(is_eating_m)*100, 2),
                       "Secondary (% of episodes)" = round(mean(is_eating_s)*100, 2),
                       "Either (% of episodes)" = round(mean(is_eating_all)*100, 2)
                     ),
-                    by = .(ba_survey, sex) # ba_survey pools 1983/4 and 1987
-                    ]
+                    by = .(ba_survey.x, sex) # ba_survey pools 1983/4 and 1987
+                    ][order(ba_survey.x,sex)]
+setnames(t, c("Survey", "Sex", "N episodes", 
+              "Main (% of episodes)",
+              "Secondary (% of episodes)",
+              "Either (% of episodes)"
+              )
+         )
+kable(caption = "Distribution of meals/snack episodes by survey year (unweighted)",
+  t
   )
 ```
 
 
-## Weighted cooking and eating as main activities
+## The distribution of cooking and eating as main activities in the UK 1974 - 2005
 
 ```{r setUpSurvey}
 
@@ -315,11 +333,7 @@ svymtusUKSurveyUniq_DT <- svydesign(ids = ~ba_pid,
                                     data = mtusUKSurveyUniq_DT
 ) # the data table is now part of the survey object
 
-# episodes
-# need to get propwt on to episodes
-setkey(mtusUKEpisodes_DT, ba_diarypid)
-setkey(mtusUKSurvey_DT, ba_diarypid)
-mtusUKEpisodes_DTj <- merge(mtusUKEpisodes_DT, mtusUKSurvey_DT)
+# episodes (after joining)
 # tell survey that the diarypids are the ids (they repeat)
 svymtusUKEpisodes_DTj <- svydesign(ids = ~ba_diarypid, 
                                   weight = ~propwt, 
@@ -328,7 +342,7 @@ svymtusUKEpisodes_DTj <- svydesign(ids = ~ba_diarypid,
 
 ```
 
-The following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey.
+The following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from `r 2.11/12.13` in 1974 to `r 6.62/10.16` by 2005.
 
 ```{r weightedCooking}
 # how many weighted cooking episodes do we have?
@@ -337,15 +351,30 @@ cookEpsWt <- svytable(~ba_survey.x + sex + is_cooking_m, # the row * columns we 
                     )
 
 cookEpsWm <- svyby(~is_cooking_m, # the variable to calculate the stat for
-                   ~ba_survey.x + sex, # the factors
+                   ~sex + ba_survey.x, # the factors
                    svymtusUKEpisodes_DTj, # the data in survey form
+                   #svyciprop, method = "logit"
                    svymean # the stat function
                    )
+
+# fiddle to get the right look to the table
+t <- as.data.table(cookEpsWm)
+t[, is_cooking_m := round(100*is_cooking_m, 2)]
+t[, se := NULL] # drop SE as we're going to add the 95% CI
+
+c <- round(confint(cookEpsWm), 4) # will get * by 100 below
+t <- cbind(t,c)
+setnames(t, c("Sex", "Survey", "% episodes", "lci", "uci")) # must be an easier way
+t[, lci := lci * 100]
+t[, uci := uci * 100]
+setnames(t, c("Sex", "Survey", "% episodes", "2.5%", "97.5%"))
+
+kable(caption = "Weighted proportion of episodes reported as cooking as a main activity by men and women",
+      t
+      )
 ```
 
-`r ftable(cookEpsWm)`
-
-The following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen,  in contrast to the unweighted proportions
+In comparison, eating is reported far more equally (see below) with both men and women consistently reporting eating as a main activity in between 11 and 14% of episodes.
 
 ```{r weightedEating}
 # how many weighted eating episodes do we have?
@@ -353,156 +382,91 @@ eatEpsWt <- svytable(~ba_survey.x + sex + is_eating_m, # the row * columns we wa
                     svymtusUKEpisodes_DTj # the data in survey form
 )
 eatEpsWm <- svyby(~is_eating_m, # the variable to calculate the stat for
-                   ~ba_survey.x + sex, # the factors
+                   ~sex + ~ba_survey.x, # the factors
                    svymtusUKEpisodes_DTj, # the data in survey form
                    svymean # the stat function
                    )
+# fiddle to get the right look to the table
+t <- as.data.table(eatEpsWm)
+t[, is_eating_m := round(100*is_eating_m, 2)]
+t[, se := NULL] # drop SE as we're going to add the 95% CI
+
+c <- round(confint(eatEpsWm), 4) # will get * by 100 below
+t <- cbind(t,c)
+setnames(t, c("Sex", "Survey", "% episodes", "lci", "uci")) # must be an easier way
+t[, lci := lci * 100]
+t[, uci := uci * 100]
+setnames(t, c("Sex", "Survey", "% episodes", "2.5%", "97.5%"))
+
+kable(caption = "Weighted proportion of episodes reported as eating as a main activity by men and women",
+      t
+      )
 ```
 
-`r ftable(eatEpsWm)`
+However as the introiduction to this chapter explains, the concern here is less with gender inequalities per se but more with the porentially changing temporal distronution of cooking and eating and the role that gendered norms may play. The following chart shows the weighted distribution of cooking as a main activity across time of day and day of the week for the different surveys irrespective of gender.
 
-The following chart shows the unweighted distribution of cooking as a  main activity across time of day for the different surveys.
+XX Needs a sensible colour scheme XX
 
 ```{r cookingByHalfhour}
-cookeps_1974 <- mtusUKEpisodes_DT[ba_survey == 1974,
-                      .(
-                      cook_eps_pc_1974 = round(mean(is_cooking_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
-cookeps_1985 <- mtusUKEpisodes_DT[ba_survey == 1985,
-                      .(
-                      cook_eps_pc_1985 = round(mean(is_cooking_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
-cookeps_1995 <- mtusUKEpisodes_DT[ba_survey == 1995,
-                      .(
-                      cook_eps_pc_1995 = round(mean(is_cooking_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
-cookeps_2000 <- mtusUKEpisodes_DT[ba_survey == 2000,
-                      .(
-                      cook_eps_pc_2000 = round(mean(is_cooking_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
-cookeps_2005 <- mtusUKEpisodes_DT[ba_survey == 2005,
-                      .(
-                      cook_eps_pc_2005 = round(mean(is_cooking_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
 
-# must be able to do this using data.table & melt
-cookeps_cols <- cbind(cookeps_1974, cookeps_1985, cookeps_1995, cookeps_2000, cookeps_2005)
+cookEpsHalfhour <- svyby(~is_cooking_m, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x + r_dow, # the factors
+                   svymtusUKEpisodes_DTj, # the data in survey form
+                   svymean # the stat function
+                   )
 
-ggplot(cookeps_cols) +
-
-  ggtitle("Cooking: % of episodes per halfhour") +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = cook_eps_pc_1974, col = "1974")
-             ) +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = cook_eps_pc_1985, col = "1985")
-             ) +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = cook_eps_pc_1995, col = "1995")
-             ) +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = cook_eps_pc_2000, col = "2000")
-             ) +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = cook_eps_pc_2005, col = "2005")
-             ) +
+ggplot(cookEpsHalfhour) +
+  ggtitle("Cooking: % of episodes per halfhour by day of the week (need ordering)") +
+  geom_line(aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"), 
+                y = is_cooking_m, 
+                col=as.factor(ba_survey.x)
+                )
+            )+
   theme(legend.position = "bottom") +
   theme(legend.title = element_blank()) +
   labs(x = "Time",
        y = "%"
   ) +
+  facet_grid(r_dow ~ .) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
   theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
+# could add confints to this but...
 ```
 
-The following chart shows the distribution of eating across time of day for the different surveys.
+The following chart shows the distribution of eating across time of day and day of the week for the different surveys.
 
 ```{r eatingByHalfhour}
-eateps_1974 <- mtusUKEpisodes_DT[ba_survey == 1974,
-                      .(
-                      eat_eps_pc_1974 = round(mean(is_eating_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
-eateps_1985 <- mtusUKEpisodes_DT[ba_survey == 1985,
-                      .(
-                      eat_eps_pc_1985 = round(mean(is_eating_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
-eateps_1995 <- mtusUKEpisodes_DT[ba_survey == 1995,
-                      .(
-                      eat_eps_pc_1995 = round(mean(is_eating_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
-eateps_2000 <- mtusUKEpisodes_DT[ba_survey == 2000,
-                      .(
-                      eat_eps_pc_2000 = round(mean(is_eating_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
-eateps_2005 <- mtusUKEpisodes_DT[ba_survey == 2005,
-                      .(
-                      eat_eps_pc_2005 = round(mean(is_eating_m)*100, 2)
-                    ),
-                    by = .(st_halfhour)
-                    ][order(st_halfhour)]
-eateps_cols <- cbind(eateps_1974, eateps_1985, eateps_1995, eateps_2000, eateps_2005)
+eatEpsHalfhour <- svyby(~is_eating_m, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x + r_dow, # the factors
+                   svymtusUKEpisodes_DTj, # the data in survey form
+                   svymean # the stat function
+                   )
 
-ggplot(eateps_cols) +
-
-  ggtitle("Eating: % of episodes per halfhour") +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = eat_eps_pc_1974, col = "1974")
-             ) +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = eat_eps_pc_1985, col = "1985")
-             ) +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = eat_eps_pc_1995, col = "1995")
-             ) +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = eat_eps_pc_2000, col = "2000")
-             ) +
-  geom_line(aes(x = as.POSIXct(st_halfhour, format = "%H:%M", tz="UTC"), y = eat_eps_pc_2005, col = "2005")
-             ) +
+ggplot(eatEpsHalfhour) +
+  ggtitle("Eating: % of episodes per halfhour by day of the week (need ordering)") +
+  geom_line(aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"), 
+                y = is_eating_m, 
+                col=as.factor(ba_survey.x)
+                )
+            )+
   theme(legend.position = "bottom") +
   theme(legend.title = element_blank()) +
   labs(x = "Time",
        y = "%"
   ) +
+  facet_grid(r_dow ~ .) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
   theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
+# could add confints to this but...
 ```
 
-The following table shows the percentage of main activity episodes that were reported as cooking or eating by gender. Whilst there is little difference between men and women for eating, there was clearly a sharp gender divide for cooking in 1974 which had reduced considerably by 2005.
-
-```{r genderPatterns}
-# join survey & episodes
-# make sure keys are set correctly first
-setkey(mtusUKEpisodes_DT, ba_diarypid)
-setkey(mtusUKSurvey_DT, ba_diarypid)
-
-mtusJoinedEps_DT <- merge(mtusUKEpisodes_DT,mtusUKSurvey_DT)
-kable(caption = "Distribution of food preparation/cooking episodes as a main activity by survey year and gender (unweighted)",
- mtusJoinedEps_DT[,
-                    .(
-                      "% of episodes" = round(mean(is_cooking_m)*100, 2),
-                      "% of episodes" = round(mean(is_eating_m)*100, 2)
-                    ),
-                    by = .(ba_survey.x, sex) # ba_survey pools 1983/4 and 1987
-                    ][order(ba_survey.x,-sex)]
-  )
-
-```
-
-
-
-Brief discussion of how we code weekday lunch, weekday dinner and sunday lunch in the MTUS:
+Brief discussion of our consequential interest in patterns of weekday lunch, weekday dinner and sunday lunch and discussion of how we code them in the MTUS:
 
  * Weekday lunch is coded as eating between 12:00 and 14:00 at any location on a week day
  * Dinner is coded as any eating 17:00 - 22:00
