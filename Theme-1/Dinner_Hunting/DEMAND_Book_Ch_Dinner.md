@@ -102,7 +102,19 @@ A relatively brief introduction to the time use diary data for each country:
 ```
 
 ```
-## Read 61.6% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
+## Read 60.1% of 1364047 rowsRead 96.8% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
+```
+
+```
+##            ba_weekday
+## r_dow       Saturday Sunday Weekday
+##   Monday           0      0  181027
+##   Tuesday          0      0  184177
+##   Wednesday        0      0  173808
+##   Thursday         0      0  178538
+##   Friday           0      0  175762
+##   Saturday    237527      0       0
+##   Sunday           0 233208       0
 ```
 
 ```
@@ -184,7 +196,7 @@ Similarly, eating is reported in between one and four percent of secondary activ
 
 
 
-The following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 0.1739489 in 1974 to 0.6515748 by 2005.
+Having the established the overall unweighted distributions of eating and cooking, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 0.1739489 in 1974 to 0.6515748 by 2005.
 
 
 |Sex   | Survey| % episodes|  2.5%| 97.5%|
@@ -200,7 +212,7 @@ The following table shows the weighted proportion of episodes which were reporte
 |Man   |   2005|       6.62|  6.33|  6.91|
 |Woman |   2005|      10.16|  9.89| 10.43|
 
-In comparison, eating is reported far more equally (see below) with both men and women consistently reporting eating as a main activity in between 11 and 14% of episodes.
+In comparison, eating is reported far more equally (see below) with both men and women consistently reporting eating as a main activity in between 11 and 14 percent of episodes.
 
 
 |Sex   | Survey| % episodes|  2.5%| 97.5%|
@@ -256,10 +268,10 @@ table(mtusUKEpisodes_DT$weekdayLunch,
 
 ```
 ##       
-##        Friday Monday Saturday Sunday Thursday Tuesday Wednesday   <NA>
-##   0    171045 175672   237527 233208   173819  178979    169003      0
-##   1      4717   5355        0      0     4719    5198      4805      0
-##   <NA>      0      0        0      0        0       0         0      0
+##        Monday Tuesday Wednesday Thursday Friday Saturday Sunday   <NA>
+##   0    175672  178979    169003   173819 171045   237527 233208      0
+##   1      5355    5198      4805     4719   4717        0      0      0
+##   <NA>      0       0         0        0      0        0      0      0
 ```
 
 
@@ -325,10 +337,10 @@ table(mtusUKEpisodes_DT$sundayLunch,
 
 ```
 ##       
-##        Friday Monday Saturday Sunday Thursday Tuesday Wednesday   <NA>
-##   0    175762 181027   237527 224682   178538  184177    173808      0
-##   1         0      0        0   8526        0       0         0      0
-##   <NA>      0      0        0      0        0       0         0      0
+##        Monday Tuesday Wednesday Thursday Friday Saturday Sunday   <NA>
+##   0    181027  184177    173808   178538 175762   237527 224682      0
+##   1         0       0         0        0      0        0   8526      0
+##   <NA>      0       0         0        0      0        0      0      0
 ```
 
 The following table summrises the prevalence of these 'eating practices' in the different surveys.
@@ -695,7 +707,7 @@ As for cooking, the 'at least once in a given half hour' indicator records sligh
 
 ***
 __Meta:__
-Analysis completed in: 17.657 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+Analysis completed in: 8.528 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
 
 ***
 __Footnotes:__
