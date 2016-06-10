@@ -294,6 +294,55 @@ mtusUKEpisodes_DT[, is_eating_all:= ifelse(is_eating_m == 1 | is_eating_s == 1,
                                           )
                   ]
 
+# Create the specific eating practices
+
+# createWeekdayLunch ----
+# Need to create an hour variable from r_epStartTime to avoid losing all those  not set in r_epStartDateTime
+mtusUKEpisodes_DT[, hour := as.POSIXlt(r_epStartTime)$hour]
+mtusUKEpisodes_DT[, mins := as.POSIXlt(r_epStartTime)$min]
+
+
+mtusUKEpisodes_DT[, weekdayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 14 & 
+                                             r_dow != "Saturday" & r_dow != "Sunday",
+                                                      1, # is weekday lunch
+                                                      0 # is not
+                                                      )
+                             ]
+# check - should be weekdays only
+table(mtusUKEpisodes_DT$weekdayLunch,
+      mtusUKEpisodes_DT$r_dow,
+      useNA = "always"
+      )
+
+
+# createDinner ----
+# flag dinner
+mtusUKEpisodes_DT[, dinner := ifelse(is_eating_m == 1 & hour >= 17 & hour < 22,
+                                                      1, # is dinner
+                                                      0 # is not
+                                                      )
+                             ]
+# check - should only be in the evening
+table(mtusUKEpisodes_DT$hour,
+      mtusUKEpisodes_DT$dinner,
+      useNA = "always")
+```
+
+
+```{r createSundayLunch, echo = TRUE}
+# flag sunday lunch
+mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 15 &
+                                            r_dow == "Sunday",
+                                          1, # is sunday lunch
+                                          0 # is not
+                                          )
+                             ]
+# check (should only be on Sunday)
+table(mtusUKEpisodes_DT$sundayLunch,
+      mtusUKEpisodes_DT$r_dow,
+      useNA = "always"
+      )
+
 # join the survey to the episodes
 setkey(mtusUKEpisodes_DT, ba_diarypid)
 setkey(mtusUKSurvey_DT, ba_diarypid)
@@ -505,60 +554,34 @@ Brief discussion of our consequential interest in patterns of weekday lunch, wee
  * Dinner is coded as any eating 17:00 - 22:00
  * Sunday lunch is coded as any eating between 12:00 and 15:00 on Sundays
 
-In the following we show the code used to identify these 'practices'. 
 
-```{r createWeekdayLunch, echo = TRUE}
-# Need to create an hour variable from r_epStartTime to avoid losing all those  not set in r_epStartDateTime
-mtusUKEpisodes_DT[, hour := as.POSIXlt(r_epStartTime)$hour]
-mtusUKEpisodes_DT[, mins := as.POSIXlt(r_epStartTime)$min]
+The following table summrises the prevalence of these 'eating practices' in the different surveys by their location.
 
-# flag weekday lunch
-mtusUKEpisodes_DT[, weekdayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 14 & 
-                                             r_dow != "Saturday" & r_dow != "Sunday",
-                                                      1, # is weekday lunch
-                                                      0 # is not
-                                                      )
-                             ]
-# check - should be weekdays only
-table(mtusUKEpisodes_DT$weekdayLunch,
-      mtusUKEpisodes_DT$r_dow,
-      useNA = "always"
+```{r eatingPractices}
+# weekday lunch
+eatPracticesWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
+                   ~eloc + ba_survey.x, # the factors
+                   svymtusUKEpisodes_DTj, # the data in survey form
+                   #svyciprop, method = "logit"
+                   svymean # the stat function
+                   )
+
+# fiddle to get the right look to the table
+t <- as.data.table(eatPracticesWm)
+t[, is_cooking_m := round(100*is_cooking_m, 2)]
+t[, se := NULL] # drop SE as we're going to add the 95% CI
+
+c <- round(confint(eatPracticesWm), 4) # will get * by 100 below
+t <- cbind(t,c)
+setnames(t, c("Location", "Survey", "% episodes", "lci", "uci")) # must be an easier way
+t[, lci := lci * 100]
+t[, uci := uci * 100]
+setnames(t, c("Location", "Survey", "% episodes", "2.5%", "97.5%"))
+
+kable(caption = "Weighted proportion of episodes coded as weekday lunch as a main activity by location",
+      t
       )
-
 ```
-
-```{r createDinner, echo = TRUE}
-# flag dinner
-mtusUKEpisodes_DT[, dinner := ifelse(is_eating_m == 1 & hour >= 17 & hour < 22,
-                                                      1, # is dinner
-                                                      0 # is not
-                                                      )
-                             ]
-# check - should only be in the evening
-table(mtusUKEpisodes_DT$hour,
-      mtusUKEpisodes_DT$dinner,
-      useNA = "always")
-```
-
-
-```{r createSundayLunch, echo = TRUE}
-# flag sunday lunch
-mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 15 &
-                                            r_dow == "Sunday",
-                                          1, # is sunday lunch
-                                          0 # is not
-                                          )
-                             ]
-# check (should only be on Sunday)
-table(mtusUKEpisodes_DT$sundayLunch,
-      mtusUKEpisodes_DT$r_dow,
-      useNA = "always"
-      )
-
-```
-
-The following table summrises the prevalence of these 'eating practices' in the different surveys.
-
 ```{r sumarisePractices}
 
 kable(caption = "% of episodes that are coded as a specific eating practice by survey (unweighted)",
@@ -568,7 +591,7 @@ kable(caption = "% of episodes that are coded as a specific eating practice by s
                       "Dinner" = round(mean(dinner)*100, 2),
                       "Sunday lunch" = round(mean(sundayLunch)*100, 2)
                     ),
-                    by = .(ba_survey)
+                    by = .(ba_survey, eloc)
                     ]
 )
 ```
