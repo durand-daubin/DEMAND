@@ -347,7 +347,7 @@ mtusUKEpisodes_DTj <- merge(mtusUKEpisodes_DT, mtusUKSurvey_DT)
 ```
 
 ## Cooking and eating episodes
-Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the reporting of cooking as a secondary act was low in most surveys irrespective of gender. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the chapter we will focus on cooking as a main activity only.
+Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the reporting of cooking as a secondary act was low in most surveys. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the chapter we will focus on cooking as a main activity only.
 
 ```{r cookingEpisodes}
 t <- mtusUKEpisodes_DTj[,
@@ -357,11 +357,11 @@ t <- mtusUKEpisodes_DTj[,
                       "Secondary (% of episodes)" = round(mean(is_cooking_s)*100, 2),
                       "Either (% of episodes)" = round(mean(is_cooking_all)*100, 2)
                     ),
-                    by = .(ba_survey.x, sex) # ba_survey pools 1983/4 and 1987
-                    ][order(ba_survey.x,sex)]
+                    by = .(ba_survey.x) # ba_survey pools 1983/4 and 1987
+                    ][order(ba_survey.x)]
 
 # set the names to be pretty
-setnames(t, c("Survey", "Sex", "N episodes", 
+setnames(t, c("Survey", "N episodes", 
               "Main (% of episodes)",
               "Secondary (% of episodes)",
               "Either (% of episodes)"
@@ -372,7 +372,7 @@ kable(caption = "Distribution of cooking/food preparation episodes by survey yea
   )
 ```
 
-Similarly, eating is reported in between one and four percent of secondary activity episodes irrespective of gender (see below). As above, due to uncertainties over the intepretation of secondary activities we will focus on eating as a main activity only in the remainder of the chapter
+Similarly, eating is reported in between one and four percent of secondary activity episodes. As above, due to uncertainties over the intepretation of secondary activities we will focus on eating as a main activity only in the remainder of the chapter
 
 ```{r eatingEpisodes}
 t <- mtusUKEpisodes_DTj[,
@@ -382,11 +382,11 @@ t <- mtusUKEpisodes_DTj[,
                       "Secondary (% of episodes)" = round(mean(is_eating_s)*100, 2),
                       "Either (% of episodes)" = round(mean(is_eating_all)*100, 2)
                     ),
-                    by = .(ba_survey.x, sex) # ba_survey pools 1983/4 and 1987
-                    ][order(ba_survey.x, sex)]
+                    by = .(ba_survey.x) # ba_survey pools 1983/4 and 1987
+                    ][order(ba_survey.x)]
 
 # set the names to be pretty
-setnames(t, c("Survey", "Sex", "N episodes", 
+setnames(t, c("Survey", "N episodes", 
               "Main (% of episodes)",
               "Secondary (% of episodes)",
               "Either (% of episodes)"
@@ -418,7 +418,7 @@ svymtusUKEpisodes_DTj <- svydesign(ids = ~ba_diarypid,
 
 ```
 
-Having the established the overall unweighted distributions of eating and cooking, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from `r 2.11/12.13` in 1974 to `r 6.62/10.16` by 2005.
+Having the established the overall unweighted distributions of eating and cooking, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 1:`r 2.11/12.13` in 1974 to 1:`r 6.62/10.16` by 2005.
 
 ```{r weightedCooking}
 # how many weighted cooking episodes do we have?
@@ -479,7 +479,7 @@ kable(caption = "Weighted proportion of episodes reported as eating as a main ac
       )
 ```
 
-However as the introiduction to this chapter explains, the concern here is less with gender inequalities per se but more with the porentially changing temporal distronution of cooking and eating and the role that gendered norms may play. The following chart shows the weighted distribution of cooking as a main activity across time of day and day of the week for the different surveys irrespective of gender.
+However as the introiduction to this chapter explains, the concern here is less with gender inequalities per se but more with the porentially changing temporal distronution of cooking and eating and the role that gendered norms may play. The following chart shows the weighted distribution of cooking as a main activity across time of day and day of the week for the different surveys for all adults.
 
 XX Needs a sensible colour scheme XX
 
@@ -497,7 +497,7 @@ ggplot(cookEpsHalfhour) +
                                format = "%H:%M", 
                                tz="UTC"), 
                 y = is_cooking_m, 
-                col=as.factor(ba_survey.x)
+                fill=as.factor(ba_survey.x)
                 )
             )+
   scale_fill_continuous(low="green", high="black") + 
@@ -551,12 +551,36 @@ Brief discussion of our consequential interest in patterns of weekday lunch, wee
  * Sunday lunch is coded as any eating between 12:00 and 15:00 on Sundays
 
 
-The following table summrises the prevalence of these 'eating practices' in the different surveys by their location.
+The following table summarises the prevalence of these 'eating practices' in the different surveys.
 
-```{r eatingPractices}
-# weekday lunch
+```{r eatingPracticesSummary}
+# weekday lunch ----
+weekdayLunchWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
+                   ~ba_survey.x, # the factors
+                   svymtusUKEpisodes_DTj, # the data in survey form
+                   #svyciprop, method = "logit"
+                   svymean # the stat function
+                   )
+
+# fiddle to get the right look to the table
+t <- as.data.table(weekdayLunchWm)
+t[, weekdayLunch := round(100*is_cooking_m, 2)]
+t[, se := NULL] # drop SE as we're going to add the 95% CI
+
+c <- round(confint(eatPracticesWm), 4) # will get * by 100 below
+t <- cbind(t,c)
+setnames(t, c("Survey", "% episodes", "lci", "uci")) # must be an easier way
+t[, lci := lci * 100]
+t[, uci := uci * 100]
+setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
+
+kable(caption = "Weighted proportion of episodes coded as weekday lunch as a main activity by location",
+      t
+      )
+
+# dinner
 eatPracticesWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
-                   ~eloc + ba_survey.x, # the factors
+                   ~ba_survey.x, # the factors
                    svymtusUKEpisodes_DTj, # the data in survey form
                    #svyciprop, method = "logit"
                    svymean # the stat function
@@ -569,10 +593,10 @@ t[, se := NULL] # drop SE as we're going to add the 95% CI
 
 c <- round(confint(eatPracticesWm), 4) # will get * by 100 below
 t <- cbind(t,c)
-setnames(t, c("Location", "Survey", "% episodes", "lci", "uci")) # must be an easier way
+setnames(t, c("Survey", "% episodes", "lci", "uci")) # must be an easier way
 t[, lci := lci * 100]
 t[, uci := uci * 100]
-setnames(t, c("Location", "Survey", "% episodes", "2.5%", "97.5%"))
+setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
 
 kable(caption = "Weighted proportion of episodes coded as weekday lunch as a main activity by location",
       t
