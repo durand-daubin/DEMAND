@@ -102,7 +102,7 @@ A relatively brief introduction to the time use diary data for each country:
 ```
 
 ```
-## Read 61.6% of 1364047 rowsRead 99.0% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
+## Read 46.2% of 1364047 rowsRead 88.7% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
 ```
 
 ```
@@ -157,115 +157,36 @@ Report some basic (unweighted) descriptive statsitics of the sample we will use.
 |NA    |    0|    0|    0|    0|    0|  0|
 
 
-```
-##       
-##        Monday Tuesday Wednesday Thursday Friday Saturday Sunday   <NA>
-##   0    175672  178979    169003   173819 171045   237527 233208      0
-##   1      5355    5198      4805     4719   4717        0      0      0
-##   <NA>      0       0         0        0      0        0      0      0
-```
-
-```
-##       
-##            0     1  <NA>
-##   0    29169     0     0
-##   1     9848     0     0
-##   2     3570     0     0
-##   3     2644     0     0
-##   4    59002     0     0
-##   5     8483     0     0
-##   6    29871     0     0
-##   7    74780     0     0
-##   8    90107     0     0
-##   9    78334     0     0
-##   10   69065     0     0
-##   11   57956     0     0
-##   12   78537     0     0
-##   13   80433     0     0
-##   14   59944     0     0
-##   15   57473     0     0
-##   16   68879     0     0
-##   17   69248 18271     0
-##   18   72923 14743     0
-##   19   67653  7625     0
-##   20   59511  5358     0
-##   21   52996  5310     0
-##   22   71000     0     0
-##   23   61314     0     0
-##   <NA>     0     0     0
-```
-
-
-
-```r
-# flag sunday lunch
-mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 15 &
-                                            r_dow == "Sunday",
-                                          1, # is sunday lunch
-                                          0 # is not
-                                          )
-                             ]
-# check (should only be on Sunday)
-table(mtusUKEpisodes_DT$sundayLunch,
-      mtusUKEpisodes_DT$r_dow,
-      useNA = "always"
-      )
-```
-
-```
-##       
-##        Monday Tuesday Wednesday Thursday Friday Saturday Sunday   <NA>
-##   0    181027  184177    173808   178538 175762   237527 224682      0
-##   1         0       0         0        0      0        0   8526      0
-##   <NA>      0       0         0        0      0        0      0      0
-```
-
-```r
-# join the survey to the episodes
-setkey(mtusUKEpisodes_DT, ba_diarypid)
-setkey(mtusUKSurvey_DT, ba_diarypid)
-mtusUKEpisodes_DTj <- merge(mtusUKEpisodes_DT, mtusUKSurvey_DT)
-```
 
 ## Cooking and eating episodes
-Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the reporting of cooking as a secondary act was low in most surveys irrespective of gender. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the chapter we will focus on cooking as a main activity only.
+Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the reporting of cooking as a secondary act was low in most surveys. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the chapter we will focus on cooking as a main activity only.
 
 
-| Survey|Sex   | N episodes| Main (% of episodes)| Secondary (% of episodes)| Either (% of episodes)|
-|------:|:-----|----------:|--------------------:|-------------------------:|----------------------:|
-|   1974|Man   |       2581|                 2.08|                      0.44|                   2.52|
-|   1974|Woman |      21871|                12.31|                      1.73|                  14.04|
-|   1985|Man   |       8068|                 4.42|                      1.01|                   5.38|
-|   1985|Woman |      27900|                 9.57|                      1.68|                  11.14|
-|   1995|Man   |        867|                 7.27|                      0.00|                   7.27|
-|   1995|Woman |       1881|                11.59|                      0.00|                  11.59|
-|   2000|Man   |      11149|                 5.97|                      0.37|                   6.34|
-|   2000|Woman |      26740|                 9.64|                      0.56|                  10.20|
-|   2005|Man   |       2818|                 6.97|                      0.39|                   7.36|
-|   2005|Woman |       5835|                10.49|                      0.57|                  11.06|
+| Survey| N episodes| Main (% of episodes)| Secondary (% of episodes)| Either (% of episodes)|
+|------:|----------:|--------------------:|-------------------------:|----------------------:|
+|   1974|      24452|                 8.11|                      1.20|                   9.30|
+|   1985|      35968|                 7.59|                      1.42|                   8.92|
+|   1995|       2748|                 9.76|                      0.00|                   9.76|
+|   2000|      37889|                 8.16|                      0.48|                   8.64|
+|   2005|       8653|                 9.01|                      0.50|                   9.51|
 
-Similarly, eating is reported in between one and four percent of secondary activity episodes irrespective of gender (see below). As above, due to uncertainties over the intepretation of secondary activities we will focus on eating as a main activity only in the remainder of the chapter
+Similarly, eating is reported in between one and four percent of secondary activity episodes. As above, due to uncertainties over the intepretation of secondary activities we will focus on eating as a main activity only in the remainder of the chapter
 
 
-| Survey|Sex   | N episodes| Main (% of episodes)| Secondary (% of episodes)| Either (% of episodes)|
-|------:|:-----|----------:|--------------------:|-------------------------:|----------------------:|
-|   1974|Man   |      17518|                14.14|                      3.39|                  17.48|
-|   1974|Woman |      20371|                11.47|                      3.24|                  14.67|
-|   1985|Man   |      23816|                13.04|                      4.09|                  16.76|
-|   1985|Woman |      32871|                11.28|                      3.90|                  14.92|
-|   1995|Man   |       1536|                12.88|                      0.00|                  12.88|
-|   1995|Woman |       2047|                12.61|                      0.00|                  12.61|
-|   2000|Man   |      25434|                13.62|                      3.88|                  17.11|
-|   2000|Woman |      33249|                11.98|                      3.26|                  15.05|
-|   2005|Man   |       4769|                11.80|                      1.09|                  12.89|
-|   2005|Woman |       6269|                11.27|                      0.95|                  12.23|
+| Survey| N episodes| Main (% of episodes)| Secondary (% of episodes)| Either (% of episodes)|
+|------:|----------:|--------------------:|-------------------------:|----------------------:|
+|   1974|      37889|                12.56|                      3.30|                  15.83|
+|   1985|      56687|                11.96|                      3.97|                  15.63|
+|   1995|       3583|                12.72|                      0.00|                  12.72|
+|   2000|      58683|                12.64|                      3.51|                  15.88|
+|   2005|      11038|                11.49|                      1.01|                  12.51|
 
 
 ## The distribution of cooking and eating as main activities in the UK 1974 - 2005
 
 
 
-Having the established the overall unweighted distributions of eating and cooking, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 0.1739489 in 1974 to 0.6515748 by 2005.
+Having the established the overall unweighted distributions of eating and cooking, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 1:0.1739489 in 1974 to 1:0.6515748 by 2005.
 
 
 |Sex   | Survey| % episodes|  2.5%| 97.5%|
@@ -297,9 +218,14 @@ In comparison, eating is reported far more equally (see below) with both men and
 |Man   |   2005|      11.48| 11.19| 11.76|
 |Woman |   2005|      11.03| 10.79| 11.26|
 
-However as the introiduction to this chapter explains, the concern here is less with gender inequalities per se but more with the porentially changing temporal distronution of cooking and eating and the role that gendered norms may play. The following chart shows the weighted distribution of cooking as a main activity across time of day and day of the week for the different surveys irrespective of gender.
+However as the introiduction to this chapter explains, the concern here is less with gender inequalities per se but more with the porentially changing temporal distronution of cooking and eating and the role that gendered norms may play. The following chart shows the weighted distribution of cooking as a main activity across time of day and day of the week for the different surveys for all adults.
 
 XX Needs a sensible colour scheme XX
+
+
+```
+## Error: Discrete value supplied to continuous scale
+```
 
 ![plot of chunk cookingByHalfhour](figure/cookingByHalfhour-1.png)
 
@@ -314,8 +240,31 @@ Brief discussion of our consequential interest in patterns of weekday lunch, wee
  * Sunday lunch is coded as any eating between 12:00 and 15:00 on Sundays
 
 
-The following table summrises the prevalence of these 'eating practices' in the different surveys by their location.
+The following table summarises the prevalence of these 'eating practices' in the different surveys.
 
+
+```
+## Error in eval(expr, envir, enclos): object 'is_cooking_m' not found
+```
+
+```
+## Error in confint(eatPracticesWm): object 'eatPracticesWm' not found
+```
+
+
+
+| Survey| % episodes|  2.5%| 97.5%|
+|------:|----------:|-----:|-----:|
+|   1974|  0.0277429| 13.89| 14.22|
+|   1985|  0.0167300| 11.30| 11.56|
+|   1995|  0.0160885| 12.74| 13.05|
+|   2000|  0.0197993| 11.25| 11.49|
+|   2005|  0.0125353| 12.23| 13.27|
+|   1974|  0.0277429| 11.81| 12.68|
+|   1985|  0.0167300| 13.51| 13.84|
+|   1995|  0.0160885| 11.85| 12.12|
+|   2000|  0.0197993| 11.19| 11.76|
+|   2005|  0.0125353| 10.79| 11.26|
 
 ```
 ## Error in eval(expr, envir, enclos): object 'is_cooking_m' not found
@@ -323,52 +272,13 @@ The following table summrises the prevalence of these 'eating practices' in the 
 
 
 
-|Location               | Survey| % episodes|  2.5%| 97.5%|
-|:----------------------|------:|----------:|-----:|-----:|
-|at own home            |   1974|  0.0218408|  2.13|  2.24|
-|at place of worship    |   1974|  0.0000000|  0.00|  0.00|
-|at restaurant, bar etc |   1974|  0.0000000|  0.00|  0.00|
-|at school              |   1974|  0.0000000|  0.00|  0.00|
-|at services or shops   |   1974|  0.0000000|  0.00|  0.00|
-|at workplace           |   1974|  0.1369192| 13.28| 14.10|
-|location unknown       |   1974|  0.0076804| -0.52|  2.05|
-|other locations        |   1974|  0.0729200|  6.89|  7.69|
-|travelling             |   1974|  0.0000000|  0.00|  0.00|
-|at another’s home    |   1985|  0.0097460|  0.82|  1.13|
-|at own home            |   1985|  0.0166258|  1.62|  1.70|
-|at place of worship    |   1985|  0.0011368| -0.11|  0.34|
-|at restaurant, bar etc |   1985|  0.0137473|  1.05|  1.69|
-|at school              |   1985|  0.1019707|  8.41| 11.98|
-|at services or shops   |   1985|  0.0039516|  0.28|  0.51|
-|at workplace           |   1985|  0.0521769|  4.96|  5.48|
-|location unknown       |   1985|  0.0000000|  0.00|  0.00|
-|other locations        |   1985|  0.0040267|  0.29|  0.51|
-|travelling             |   1985|  0.0006871|  0.04|  0.09|
-|at own home            |   1995|  0.0258182|  2.37|  2.79|
-|at restaurant, bar etc |   1995|  0.0000000|  0.00|  0.00|
-|at school              |   1995|  0.0000000|  0.00|  0.00|
-|at services or shops   |   1995|  0.0000000|  0.00|  0.00|
-|at workplace           |   1995|  0.0000000|  0.00|  0.00|
-|location unknown       |   1995|  0.0000000|  0.00|  0.00|
-|travelling             |   1995|  0.0000000|  0.00|  0.00|
-|at another’s home    |   2000|  0.0356277|  3.16|  3.97|
-|at own home            |   2000|  0.0172113|  1.67|  1.77|
-|at place of worship    |   2000|  0.0000000|  0.00|  0.00|
-|at restaurant, bar etc |   2000|  0.0010393|  0.00|  0.21|
-|at school              |   2000|  0.0000000|  0.00|  0.00|
-|at services or shops   |   2000|  0.0031791|  0.18|  0.45|
-|at workplace           |   2000|  0.1282233| 12.34| 13.30|
-|location unknown       |   2000|  0.1554864| 10.59| 20.50|
-|other locations        |   2000|  0.0451386|  4.02|  5.01|
-|travelling             |   2000|  0.0008810|  0.06|  0.12|
-|at own home            |   2005|  0.0167780|  1.58|  1.77|
-|at restaurant, bar etc |   2005|  0.0000000|  0.00|  0.00|
-|at school              |   2005|  0.0000000|  0.00|  0.00|
-|at services or shops   |   2005|  0.0000000|  0.00|  0.00|
-|at workplace           |   2005|  0.0000000|  0.00|  0.00|
-|location unknown       |   2005|  0.0340578|  2.97|  3.84|
-|other locations        |   2005|  0.0000000|  0.00|  0.00|
-|travelling             |   2005|  0.0000000|  0.00|  0.00|
+| Survey| % episodes| 2.5%| 97.5%|
+|------:|----------:|----:|-----:|
+|   1974|  0.0277429| 2.72|  2.83|
+|   1985|  0.0167300| 1.64|  1.71|
+|   1995|  0.0160885| 1.47|  1.75|
+|   2000|  0.0197993| 1.94|  2.02|
+|   2005|  0.0125353| 1.19|  1.32|
 
 | ba_survey|eloc                   | Weekday lunch| Dinner| Sunday lunch|
 |---------:|:----------------------|-------------:|------:|------------:|
@@ -770,7 +680,7 @@ As for cooking, the 'at least once in a given half hour' indicator records sligh
 
 ***
 __Meta:__
-Analysis completed in: 9.073 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+Analysis completed in: 9.005 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
 
 ***
 __Footnotes:__
