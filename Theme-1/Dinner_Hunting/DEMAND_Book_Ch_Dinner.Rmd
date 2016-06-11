@@ -246,9 +246,6 @@ kable(caption="MTUS survey repondents by age range and survey (unweighted)",
 kable(caption="MTUS survey repondents by sex and survey (unweighted)",
   table(mtusUKSurveyUniq_DT$sex, mtusUKSurveyUniq_DT$ba_survey, useNA = "always")
 )
-
-# this works but it's not pretty - does not work with kable
-# xtabs(id ~  ba_age_r + sex + ba_survey  , data = mtusUKSurveyUniq_DT)
 ```
 
 ```{r ukCookingEatingDataPrep}
@@ -309,10 +306,10 @@ mtusUKEpisodes_DT[, weekdayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour 
                                                       )
                              ]
 # check - should be weekdays only
-table(mtusUKEpisodes_DT$weekdayLunch,
-      mtusUKEpisodes_DT$r_dow,
-      useNA = "always"
-      )
+#table(mtusUKEpisodes_DT$weekdayLunch,
+#      mtusUKEpisodes_DT$r_dow,
+#      useNA = "always"
+#      )
 
 
 # createDinner ----
@@ -323,13 +320,12 @@ mtusUKEpisodes_DT[, dinner := ifelse(is_eating_m == 1 & hour >= 17 & hour < 22,
                                                       )
                              ]
 # check - should only be in the evening
-table(mtusUKEpisodes_DT$hour,
-      mtusUKEpisodes_DT$dinner,
-      useNA = "always")
-```
+#table(mtusUKEpisodes_DT$hour,
+#      mtusUKEpisodes_DT$dinner,
+#      useNA = "always")
 
 
-```{r createSundayLunch, echo = TRUE}
+# createSundayLunch ----
 # flag sunday lunch
 mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 15 &
                                             r_dow == "Sunday",
@@ -338,12 +334,12 @@ mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <
                                           )
                              ]
 # check (should only be on Sunday)
-table(mtusUKEpisodes_DT$sundayLunch,
-      mtusUKEpisodes_DT$r_dow,
-      useNA = "always"
-      )
+#table(mtusUKEpisodes_DT$sundayLunch,
+#      mtusUKEpisodes_DT$r_dow,
+#      useNA = "always"
+#      )
 
-# join the survey to the episodes
+# join the survey to the episodes ----
 setkey(mtusUKEpisodes_DT, ba_diarypid)
 setkey(mtusUKSurvey_DT, ba_diarypid)
 mtusUKEpisodes_DTj <- merge(mtusUKEpisodes_DT, mtusUKSurvey_DT)
