@@ -219,7 +219,6 @@ table(mtusUKSurveyUniq_DT$survey)
 
 ```
 
-
 Key codes in the MTUS:
 
  * meals at work or school = 5 (not available in all surveys)
@@ -551,9 +550,9 @@ Brief discussion of our consequential interest in patterns of weekday lunch, wee
  * Sunday lunch is coded as any eating between 12:00 and 15:00 on Sundays
 
 
-The following table summarises the prevalence of these 'eating practices' in the different surveys.
+The following tables summarise the prevalence of these 'eating practices' in the different surveys.
 
-```{r eatingPracticesSummary}
+```{r weekdayLunchSummary}
 # weekday lunch ----
 weekdayLunchWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
                    ~ba_survey.x, # the factors
@@ -564,22 +563,24 @@ weekdayLunchWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
 
 # fiddle to get the right look to the table
 t <- as.data.table(weekdayLunchWm)
-t[, weekdayLunch := round(100*is_cooking_m, 2)]
+t[, weekdayLunch := round(100*weekdayLunch, 2)]
 t[, se := NULL] # drop SE as we're going to add the 95% CI
 
-c <- round(confint(eatPracticesWm), 4) # will get * by 100 below
+c <- round(confint(weekdayLunchWm), 4) # will get * by 100 below
 t <- cbind(t,c)
 setnames(t, c("Survey", "% episodes", "lci", "uci")) # must be an easier way
 t[, lci := lci * 100]
 t[, uci := uci * 100]
 setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
 
-kable(caption = "Weighted proportion of episodes coded as weekday lunch as a main activity by location",
+kable(caption = "Weighted proportion of episodes coded as weekday lunch as a main activity",
       t
       )
+```
 
+```{r dinnerSummary}
 # dinner
-eatPracticesWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
+dinnerWm <- svyby(~dinner, # the variable to calculate the stat for
                    ~ba_survey.x, # the factors
                    svymtusUKEpisodes_DTj, # the data in survey form
                    #svyciprop, method = "logit"
@@ -587,86 +588,47 @@ eatPracticesWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
                    )
 
 # fiddle to get the right look to the table
-t <- as.data.table(eatPracticesWm)
-t[, is_cooking_m := round(100*is_cooking_m, 2)]
+t <- as.data.table(dinnerWm)
+t[, dinner := round(100*dinner, 2)]
 t[, se := NULL] # drop SE as we're going to add the 95% CI
 
-c <- round(confint(eatPracticesWm), 4) # will get * by 100 below
+c <- round(confint(dinnerWm), 4) # will get * by 100 below
 t <- cbind(t,c)
 setnames(t, c("Survey", "% episodes", "lci", "uci")) # must be an easier way
 t[, lci := lci * 100]
 t[, uci := uci * 100]
 setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
 
-kable(caption = "Weighted proportion of episodes coded as weekday lunch as a main activity by location",
+kable(caption = "Weighted proportion of episodes coded as dinner as a main activity",
       t
       )
 ```
-```{r sumarisePractices}
 
-kable(caption = "% of episodes that are coded as a specific eating practice by survey (unweighted)",
-  mtusUKEpisodes_DT[,
-                    .(
-                      "Weekday lunch" = round(mean(weekdayLunch)*100, 2),
-                      "Dinner" = round(mean(dinner)*100, 2),
-                      "Sunday lunch" = round(mean(sundayLunch)*100, 2)
-                    ),
-                    by = .(ba_survey, eloc)
-                    ]
-)
-```
+```{r sundayLunchSummary}
+# dinner
+sundayLunchWm <- svyby(~sundayLunch, # the variable to calculate the stat for
+                   ~ba_survey.x, # the factors
+                   svymtusUKEpisodes_DTj, # the data in survey form
+                   #svyciprop, method = "logit"
+                   svymean # the stat function
+                   )
 
-Finally, in order to control for the potentially different levels of reporting due to the different diary slot durations, we calculate an indicator which is 1 if at least one epsiode in a given half hour is reported to be the activity of interest and 0 otherwise. In the case of the 1974 data where the diary slot duration was 30 minutes there will be no difference. However in the case of the other diaries where data was collected in slots of 15 minutes (1983, 1987, 1995) or 10 minutes (2000/1, 2005) duration, this will have the effect of increasing the apparent rate as the denominator is no longer the sum of all episodes in the half hour but the (lower) number of half hours.
+# fiddle to get the right look to the table
+t <- as.data.table(sundayLunchWm)
+t[, sundayLunch := round(100*sundayLunch, 2)]
+t[, se := NULL] # drop SE as we're going to add the 95% CI
 
-The tables below show the distribution of these indicators across years.
+c <- round(confint(sundayLunchWm), 4) # will get * by 100 below
+t <- cbind(t,c)
+setnames(t, c("Survey", "% episodes", "lci", "uci")) # must be an easier way
+t[, lci := lci * 100]
+t[, uci := uci * 100]
+setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
 
-```{r ukHHIndicatorTable}
-# Create halfhour indicator table for cooking & eating (only)
-# Keep survey & ba_diarypid for linkage if needed
+kable(caption = "Weighted proportion of episodes coded as sunday lunch as a
+main activity",       t       ) ``` 
 
-# this is where we focus only on main acts
-mtusUKHalfhourIndicator_DT <- mtusUKEpisodes_DT[,
-                    .(
-                      n_main_cook_eps = sum(is_cooking_m),
-                      n_main_eat_eps = sum(is_eating_m)
-                    ),
-                    by = .(survey, ba_survey, season, ba_diarypid,eloc,mtrav,st_halfhour)
-                    ]
-mtusUKHalfhourIndicator_DT[, any_cook_m := ifelse(n_main_cook_eps > 0,
-                           1, # at least 1 episode of cooking
-                           0)
-]
 
-mtusUKHalfhourIndicator_DT[, any_eat_m := ifelse(n_main_eat_eps > 0,
-                           1, # at least 1 episode of eating
-                           0)
-]
-
-kable(caption = "Cooking: Half hour indicator summaries (unweighted)",
-  mtusUKHalfhourIndicator_DT[,
-                    .(
-                      "Cooking (mean n episodes per halfhour)" = round(mean(n_main_cook_eps), 2),
-                      "Cooking (max episodes per hh)" = max(n_main_cook_eps),
-                      "Cooking (% 'at least 1')" = round(mean(any_cook_m)*100,2)
-                    ),
-                    by = .(ba_survey)
-                    ]
-)
-  kable(caption = "Eating: Half hour indicator summaries (unweighted)",
-  mtusUKHalfhourIndicator_DT[,
-                    .(
-                      "Eating (mean n episodes per halfhour)" = round(mean(n_main_eat_eps),2),
-                      "Eating (max episodes per halfhour)" = max(n_main_eat_eps),
-                      "Eating (% 'at least 1')" = round(mean(any_eat_m)*100,2)
-                    ),
-                    by = .(ba_survey)
-                    ]
-)
-```
-
-We would expect there to be a maximum count of 1 in 1974 (the diary slots were 30 minutes long) but higher in the later years (diary slots are shorter). There appear to be some half hours with a lot of episode 'churn' - where the maximum is greater than 4. However the stem plots in the annex below suggest that these are extremely rare events.
-
-XX could include the figure from the appendix here to demonstrate this is OK? XX
 
 ## France (MTUS)
 
@@ -781,7 +743,62 @@ stem(mtusUKHalfhourIndicator_DT$n_main_cook_eps)
 Not frequent at all!
 
 ## Testing methods to analyse temporal distributions of cooking & eating episodes
-In this section we explore two different approaches to comparing temporal distirbutions. The first graph in each section simply shows the percentage of episodes in a given half hour that were reported as being the activity of interest.
+XX In order to control for the potentially different levels of reporting due to the different diary slot durations, we could also calculate an indicator which is 1 if at least one epsiode in a
+given half hour is reported to be the activity of interest and 0 otherwise. In the case of the 1974 data where the diary slot duration was 30 minutes there
+will be no difference. However in the case of the other diaries where data was collected in slots of 15 minutes (1983, 1987, 1995) or 10 minutes (2000/1,
+2005) duration, this will have the effect of increasing the apparent rate as the denominator is no longer the sum of all episodes in the half hour but the
+(lower) number of half hours.
+
+The tables below show the distribution of these indicators across years.
+
+```{r ukHHIndicatorTable}
+# Create halfhour indicator table for cooking & eating (only)
+# Keep survey & ba_diarypid for linkage if needed
+
+# this is where we focus only on main acts
+mtusUKHalfhourIndicator_DT <- mtusUKEpisodes_DT[,
+                    .(
+                      n_main_cook_eps = sum(is_cooking_m),
+                      n_main_eat_eps = sum(is_eating_m)
+                    ),
+                    by = .(survey, ba_survey, season, ba_diarypid,eloc,mtrav,st_halfhour)
+                    ]
+mtusUKHalfhourIndicator_DT[, any_cook_m := ifelse(n_main_cook_eps > 0,
+                           1, # at least 1 episode of cooking
+                           0)
+]
+
+mtusUKHalfhourIndicator_DT[, any_eat_m := ifelse(n_main_eat_eps > 0,
+                           1, # at least 1 episode of eating
+                           0)
+]
+
+kable(caption = "Cooking: Half hour indicator summaries (unweighted)",
+  mtusUKHalfhourIndicator_DT[,
+                    .(
+                      "Cooking (mean n episodes per halfhour)" = round(mean(n_main_cook_eps), 2),
+                      "Cooking (max episodes per hh)" = max(n_main_cook_eps),
+                      "Cooking (% 'at least 1')" = round(mean(any_cook_m)*100,2)
+                    ),
+                    by = .(ba_survey)
+                    ]
+)
+  kable(caption = "Eating: Half hour indicator summaries (unweighted)",
+  mtusUKHalfhourIndicator_DT[,
+                    .(
+                      "Eating (mean n episodes per halfhour)" = round(mean(n_main_eat_eps),2),
+                      "Eating (max episodes per halfhour)" = max(n_main_eat_eps),
+                      "Eating (% 'at least 1')" = round(mean(any_eat_m)*100,2)
+                    ),
+                    by = .(ba_survey)
+                    ]
+)
+```
+
+We would expect there to be a maximum count of 1 in 1974 (the diary slots were 30 minutes long) but higher in the later years (diary slots are shorter). There appear to be some half hours with a lot of episode 'churn' - where the maximum is greater than 4. However the stem plots suggest that these are extremely rare events.
+
+
+In the rest of this section we explore the two different approaches to comparing temporal distirbutions. The first graph in each section simply shows the percentage of episodes in a given half hour that were reported as being the activity of interest.
 
 This second graphs repeat the above analysis but instead uses the 'any in the half hour' indicator. In theory this should control for any affects of the shorter diary slots in the more recent diaries but it will, of course, treat (e.g.) 1 or 3 episodes within a half hour as equivalent.
 
