@@ -102,7 +102,7 @@ A relatively brief introduction to the time use diary data for each country:
 ```
 
 ```
-## Read 70.4% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:03
+## Read 60.8% of 1364047 rowsRead 98.2% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
 ```
 
 ```
@@ -225,14 +225,15 @@ XX Needs a sensible colour scheme XX
 
 
 ```
-## Error: Discrete value supplied to continuous scale
+## Error in discrete_scale("fill", "hue", hue_pal(h, c, l, h.start, direction), : unused arguments (low = "green", high = "black")
 ```
-
-![plot of chunk cookingByHalfhour](figure/cookingByHalfhour-1.png)
 
 The following chart shows the distribution of eating across time of day and day of the week for the different surveys.
 
-![plot of chunk eatingByHalfhour](figure/eatingByHalfhour-1.png)
+
+```
+## Error in discrete_scale("fill", "hue", hue_pal(h, c, l, h.start, direction), : unused arguments (low = "green", high = "black")
+```
 
 Brief discussion of our consequential interest in patterns of weekday lunch, weekday dinner and sunday lunch and discussion of how we code them in the MTUS:
 
@@ -285,83 +286,22 @@ Sunday lunch:
 
 Brief discussion of how we code weekday lunch, weekday dinner and sunday lunch in the French data
 
-# The changing temporality of cooking in the UK and France
+# The changing temporality of cooking and eating in the UK and France
 
 Here we use the MTUS (UK) and French data to look at change in cooking (& eating?) over the last 30 years through the lenses of the three meal type.
 
 XX ? use the definition as 'at least one episode in the half hour'? XX
  
-## Week-day lunch
+# UK
+## Week-day eating
 		- Contemporary : timing, location, participants, seasons, who cooks (content can change depending on the relevance for this type of meal)
 		- What changed in history -> energy implications
 		- What varies between regions -> energy implications
 
-The changing location of weekday lunch:
 
 ```
-## Error in setnames(t, c("Survey", "% episodes", "lci", "uci")): Can't assign 4 names to a 5 column data.table
+## Error in discrete_scale("fill", "hue", hue_pal(h, c, l, h.start, direction), : unused arguments (low = "green", high = "black")
 ```
-
-```
-## Error in eval(expr, envir, enclos): object 'lci' not found
-```
-
-```
-## Error in eval(expr, envir, enclos): object 'uci' not found
-```
-
-```
-## Error in setnames(t, c("Survey", "% episodes", "2.5%", "97.5%")): Can't assign 4 names to a 5 column data.table
-```
-
-
-
-|eloc                   | ba_survey.x| weekdayLunch|   2.5 %| 97.5 %|
-|:----------------------|-----------:|------------:|-------:|------:|
-|at own home            |        1974|         2.18|  0.0213| 0.0224|
-|at place of worship    |        1974|         0.00|  0.0000| 0.0000|
-|at restaurant, bar etc |        1974|         0.00|  0.0000| 0.0000|
-|at school              |        1974|         0.00|  0.0000| 0.0000|
-|at services or shops   |        1974|         0.00|  0.0000| 0.0000|
-|at workplace           |        1974|        13.69|  0.1328| 0.1410|
-|location unknown       |        1974|         0.77| -0.0052| 0.0205|
-|other locations        |        1974|         7.29|  0.0689| 0.0769|
-|travelling             |        1974|         0.00|  0.0000| 0.0000|
-|at another’s home    |        1985|         0.97|  0.0082| 0.0113|
-|at own home            |        1985|         1.66|  0.0162| 0.0170|
-|at place of worship    |        1985|         0.11| -0.0011| 0.0034|
-|at restaurant, bar etc |        1985|         1.37|  0.0105| 0.0169|
-|at school              |        1985|        10.20|  0.0841| 0.1198|
-|at services or shops   |        1985|         0.40|  0.0028| 0.0051|
-|at workplace           |        1985|         5.22|  0.0496| 0.0548|
-|location unknown       |        1985|         0.00|  0.0000| 0.0000|
-|other locations        |        1985|         0.40|  0.0029| 0.0051|
-|travelling             |        1985|         0.07|  0.0004| 0.0009|
-|at own home            |        1995|         2.58|  0.0237| 0.0279|
-|at restaurant, bar etc |        1995|         0.00|  0.0000| 0.0000|
-|at school              |        1995|         0.00|  0.0000| 0.0000|
-|at services or shops   |        1995|         0.00|  0.0000| 0.0000|
-|at workplace           |        1995|         0.00|  0.0000| 0.0000|
-|location unknown       |        1995|         0.00|  0.0000| 0.0000|
-|travelling             |        1995|         0.00|  0.0000| 0.0000|
-|at another’s home    |        2000|         3.56|  0.0316| 0.0397|
-|at own home            |        2000|         1.72|  0.0167| 0.0177|
-|at place of worship    |        2000|         0.00|  0.0000| 0.0000|
-|at restaurant, bar etc |        2000|         0.10|  0.0000| 0.0021|
-|at school              |        2000|         0.00|  0.0000| 0.0000|
-|at services or shops   |        2000|         0.32|  0.0018| 0.0045|
-|at workplace           |        2000|        12.82|  0.1234| 0.1330|
-|location unknown       |        2000|        15.55|  0.1059| 0.2050|
-|other locations        |        2000|         4.51|  0.0402| 0.0501|
-|travelling             |        2000|         0.09|  0.0006| 0.0012|
-|at own home            |        2005|         1.68|  0.0158| 0.0177|
-|at restaurant, bar etc |        2005|         0.00|  0.0000| 0.0000|
-|at school              |        2005|         0.00|  0.0000| 0.0000|
-|at services or shops   |        2005|         0.00|  0.0000| 0.0000|
-|at workplace           |        2005|         0.00|  0.0000| 0.0000|
-|location unknown       |        2005|         3.41|  0.0297| 0.0384|
-|other locations        |        2005|         0.00|  0.0000| 0.0000|
-|travelling             |        2005|         0.00|  0.0000| 0.0000|
 
 X Might not be able to say that much here as location at workplace was inferred in 2005 from the 'working' activity XX
 
@@ -653,7 +593,7 @@ As for cooking, the 'at least once in a given half hour' indicator records sligh
 
 ***
 __Meta:__
-Analysis completed in: 9.462 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+Analysis completed in: 12.572 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
 
 ***
 __Footnotes:__
