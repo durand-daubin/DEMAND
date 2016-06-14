@@ -123,7 +123,6 @@ A relatively brief introduction to the time use diary data for each country:
 ## 2598 1350 1586 1962 8688 4854
 ```
 
-
 Key codes in the MTUS:
 
  * meals at work or school = 5 (not available in all surveys)
@@ -240,142 +239,30 @@ Brief discussion of our consequential interest in patterns of weekday lunch, wee
  * Sunday lunch is coded as any eating between 12:00 and 15:00 on Sundays
 
 
-The following table summarises the prevalence of these 'eating practices' in the different surveys.
-
-
-```
-## Error in eval(expr, envir, enclos): object 'is_cooking_m' not found
-```
-
-```
-## Error in confint(eatPracticesWm): object 'eatPracticesWm' not found
-```
-
-
-
-| Survey| % episodes|  2.5%| 97.5%|
-|------:|----------:|-----:|-----:|
-|   1974|  0.0277429| 13.89| 14.22|
-|   1985|  0.0167300| 11.30| 11.56|
-|   1995|  0.0160885| 12.74| 13.05|
-|   2000|  0.0197993| 11.25| 11.49|
-|   2005|  0.0125353| 12.23| 13.27|
-|   1974|  0.0277429| 11.81| 12.68|
-|   1985|  0.0167300| 13.51| 13.84|
-|   1995|  0.0160885| 11.85| 12.12|
-|   2000|  0.0197993| 11.19| 11.76|
-|   2005|  0.0125353| 10.79| 11.26|
-
-```
-## Error in eval(expr, envir, enclos): object 'is_cooking_m' not found
-```
-
+The following tables summarise the prevalence of these 'eating practices' in the different surveys.
 
 
 | Survey| % episodes| 2.5%| 97.5%|
 |------:|----------:|----:|-----:|
-|   1974|  0.0277429| 2.72|  2.83|
-|   1985|  0.0167300| 1.64|  1.71|
-|   1995|  0.0160885| 1.47|  1.75|
-|   2000|  0.0197993| 1.94|  2.02|
-|   2005|  0.0125353| 1.19|  1.32|
-
-| ba_survey|eloc                   | Weekday lunch| Dinner| Sunday lunch|
-|---------:|:----------------------|-------------:|------:|------------:|
-|      1974|at own home            |          2.26|   4.86|         0.69|
-|      1974|travelling             |          0.00|   0.00|         0.00|
-|      1974|at workplace           |         13.88|   0.28|         0.06|
-|      1974|other locations        |          7.65|   1.87|         0.38|
-|      1974|at services or shops   |          0.00|   0.00|         0.00|
-|      1974|at restaurant, bar etc |          0.00|   0.00|         0.00|
-|      1974|at school              |          0.00|   0.00|         0.00|
-|      1974|at place of worship    |          0.00|   0.00|         0.00|
-|      1974|location unknown       |          0.70|   0.70|         0.00|
-|      1985|at own home            |          1.68|   4.80|         0.64|
-|      1985|travelling             |          0.07|   0.10|         0.03|
-|      1985|at workplace           |          5.03|   0.52|         0.05|
-|      1985|at restaurant, bar etc |          1.33|   0.15|         0.08|
-|      1985|at another’s home    |          1.00|   1.66|         0.44|
-|      1985|at services or shops   |          0.38|   0.15|         0.01|
-|      1985|other locations        |          0.40|   0.62|         0.07|
-|      1985|at place of worship    |          0.12|   1.32|         0.84|
-|      1985|at school              |         10.26|   0.29|         0.10|
-|      1985|location unknown       |          0.00|   0.00|         0.00|
-|      1995|at own home            |          2.69|   7.02|         0.77|
-|      1995|travelling             |          0.00|   0.00|         0.00|
-|      1995|at workplace           |          0.00|   0.00|         0.00|
-|      1995|location unknown       |          0.00|   0.00|         0.00|
-|      1995|at services or shops   |          0.00|   0.00|         0.00|
-|      1995|at restaurant, bar etc |          0.00|   0.00|         0.00|
-|      1995|at school              |          0.00|   0.00|         0.00|
-|      2000|at own home            |          1.18|   4.87|         0.96|
-|      2000|travelling             |          0.06|   0.05|         0.03|
-|      2000|at place of worship    |          0.00|   0.00|         0.00|
-|      2000|at services or shops   |          0.22|   0.53|         0.28|
-|      2000|at another’s home    |          2.24|   7.15|         2.55|
-|      2000|at workplace           |         11.51|   0.49|         0.61|
-|      2000|at restaurant, bar etc |          0.07|   0.00|         0.00|
-|      2000|other locations        |          3.01|   4.66|         1.87|
-|      2000|location unknown       |         10.92|   5.46|         2.87|
-|      2000|at school              |          0.00|   0.00|         0.00|
-|      2005|at own home            |          1.80|   4.92|         0.59|
-|      2005|at restaurant, bar etc |          0.00|   0.00|         0.00|
-|      2005|travelling             |          0.00|   0.00|         0.00|
-|      2005|at services or shops   |          0.00|   0.00|         0.00|
-|      2005|other locations        |          0.00|   0.00|         0.00|
-|      2005|at workplace           |          0.00|   0.00|         0.00|
-|      2005|location unknown       |          3.49|  10.48|         0.92|
-|      2005|at school              |          0.00|   0.00|         0.00|
-
-Finally, in order to control for the potentially different levels of reporting due to the different diary slot durations, we calculate an indicator which is 1 if at least one epsiode in a given half hour is reported to be the activity of interest and 0 otherwise. In the case of the 1974 data where the diary slot duration was 30 minutes there will be no difference. However in the case of the other diaries where data was collected in slots of 15 minutes (1983, 1987, 1995) or 10 minutes (2000/1, 2005) duration, this will have the effect of increasing the apparent rate as the denominator is no longer the sum of all episodes in the half hour but the (lower) number of half hours.
-
-The tables below show the distribution of these indicators across years.
+|   1974|       2.77| 2.72|  2.83|
+|   1985|       1.67| 1.64|  1.71|
+|   1995|       1.61| 1.47|  1.75|
+|   2000|       1.98| 1.94|  2.02|
+|   2005|       1.25| 1.19|  1.32|
 
 
-| ba_survey| Cooking (mean n episodes per halfhour)| Cooking (max episodes per hh)| Cooking (% 'at least 1')|
-|---------:|--------------------------------------:|-----------------------------:|------------------------:|
-|      1974|                                   0.08|                             1|                     8.39|
-|      1985|                                   0.09|                             6|                     8.69|
-|      1995|                                   0.10|                             1|                    10.25|
-|      2000|                                   0.11|                             3|                    10.10|
-|      2005|                                   0.10|                             3|                    10.23|
+| Survey| % episodes| 2.5%| 97.5%|
+|------:|----------:|----:|-----:|
+|   1974|       3.66| 3.61|  3.71|
+|   1985|       3.60| 3.55|  3.64|
+|   1995|       4.41| 4.24|  4.58|
+|   2000|       4.02| 3.97|  4.08|
+|   2005|       3.76| 3.67|  3.86|
 
 
-
-| ba_survey| Eating (mean n episodes per halfhour)| Eating (max episodes per halfhour)| Eating (% 'at least 1')|
-|---------:|-------------------------------------:|----------------------------------:|-----------------------:|
-|      1974|                                  0.13|                                  2|                   12.99|
-|      1985|                                  0.14|                                  4|                   14.11|
-|      1995|                                  0.13|                                  1|                   13.36|
-|      2000|                                  0.17|                                  3|                   15.69|
-|      2005|                                  0.13|                                  3|                   13.13|
-
-We would expect there to be a maximum count of 1 in 1974 (the diary slots were 30 minutes long) but higher in the later years (diary slots are shorter). There appear to be some half hours with a lot of episode 'churn' - where the maximum is greater than 4. However the stem plots in the annex below suggest that these are extremely rare events.
-
-XX could include the figure from the appendix here to demonstrate this is OK? XX
-
-## France (MTUS)
-
- * 1986 - 5 minutes resolution
- * 1998 - 10 minutes resolution
- * 2010 - 10 minutes resolution
-
-...
-
-Brief discussion of how we code weekday lunch, weekday dinner and sunday lunch in the French data
-
-# The changing temporality of cooking in the UK and France
-
-Here we use the MTUS (UK) and French data to look at change in cooking (& eating?) over the last 30 years through the lenses of the three meal type.
-
-XX ? use the definition as 'at least one episode in the half hour'? XX
- 
-## Week-day lunch
-		- Contemporary : timing, location, participants, seasons, who cooks (content can change depending on the relevance for this type of meal)
-		- What changed in history -> energy implications
-		- What varies between regions -> energy implications
-
-The changing location of weekday lunch:
+```
+## Error: attempt to use zero-length variable name
+```
 
 |                       | 1974| 1985| 1995| 2000| 2005|
 |:----------------------|----:|----:|----:|----:|----:|
@@ -620,47 +507,47 @@ How frequent are multiple episodes of cooking or eating per half hour?
 
 
 ```
-## 
-##   The decimal point is at the |
-## 
-##   0 | 00000000000000000000000000000000000000000000000000000000000000000000+1033378
-##   0 | 
-##   1 | 00000000000000000000000000000000000000000000000000000000000000000000+99738
-##   1 | 
-##   2 | 00000000000000000000000000000000000000000000000000000000000000000000+4281
-##   2 | 
-##   3 | 00000000000000000000000000000000000000000000000000000000000000000000+293
-##   3 | 
-##   4 | 0000000000
-##   4 | 
-##   5 | 0
-##   5 | 
-##   6 | 0
+## Error in stem(mtusUKHalfhourIndicator_DT$n_main_cook_eps): object 'mtusUKHalfhourIndicator_DT' not found
 ```
 
 ```
-## 
-##   The decimal point is at the |
-## 
-##   0 | 00000000000000000000000000000000000000000000000000000000000000000000+1033378
-##   0 | 
-##   1 | 00000000000000000000000000000000000000000000000000000000000000000000+99738
-##   1 | 
-##   2 | 00000000000000000000000000000000000000000000000000000000000000000000+4281
-##   2 | 
-##   3 | 00000000000000000000000000000000000000000000000000000000000000000000+293
-##   3 | 
-##   4 | 0000000000
-##   4 | 
-##   5 | 0
-##   5 | 
-##   6 | 0
+## Error in stem(mtusUKHalfhourIndicator_DT$n_main_cook_eps): object 'mtusUKHalfhourIndicator_DT' not found
 ```
 
 Not frequent at all!
 
 ## Testing methods to analyse temporal distributions of cooking & eating episodes
-In this section we explore two different approaches to comparing temporal distirbutions. The first graph in each section simply shows the percentage of episodes in a given half hour that were reported as being the activity of interest.
+XX In order to control for the potentially different levels of reporting due to the different diary slot durations, we could also calculate an indicator which is 1 if at least one epsiode in a
+given half hour is reported to be the activity of interest and 0 otherwise. In the case of the 1974 data where the diary slot duration was 30 minutes there
+will be no difference. However in the case of the other diaries where data was collected in slots of 15 minutes (1983, 1987, 1995) or 10 minutes (2000/1,
+2005) duration, this will have the effect of increasing the apparent rate as the denominator is no longer the sum of all episodes in the half hour but the
+(lower) number of half hours.
+
+The tables below show the distribution of these indicators across years.
+
+
+| ba_survey| Cooking (mean n episodes per halfhour)| Cooking (max episodes per hh)| Cooking (% 'at least 1')|
+|---------:|--------------------------------------:|-----------------------------:|------------------------:|
+|      1974|                                   0.08|                             1|                     8.39|
+|      1985|                                   0.09|                             6|                     8.69|
+|      1995|                                   0.10|                             1|                    10.25|
+|      2000|                                   0.11|                             3|                    10.10|
+|      2005|                                   0.10|                             3|                    10.23|
+
+
+
+| ba_survey| Eating (mean n episodes per halfhour)| Eating (max episodes per halfhour)| Eating (% 'at least 1')|
+|---------:|-------------------------------------:|----------------------------------:|-----------------------:|
+|      1974|                                  0.13|                                  2|                   12.99|
+|      1985|                                  0.14|                                  4|                   14.11|
+|      1995|                                  0.13|                                  1|                   13.36|
+|      2000|                                  0.17|                                  3|                   15.69|
+|      2005|                                  0.13|                                  3|                   13.13|
+
+We would expect there to be a maximum count of 1 in 1974 (the diary slots were 30 minutes long) but higher in the later years (diary slots are shorter). There appear to be some half hours with a lot of episode 'churn' - where the maximum is greater than 4. However the stem plots suggest that these are extremely rare events.
+
+
+In the rest of this section we explore the two different approaches to comparing temporal distirbutions. The first graph in each section simply shows the percentage of episodes in a given half hour that were reported as being the activity of interest.
 
 This second graphs repeat the above analysis but instead uses the 'any in the half hour' indicator. In theory this should control for any affects of the shorter diary slots in the more recent diaries but it will, of course, treat (e.g.) 1 or 3 episodes within a half hour as equivalent.
 
@@ -680,7 +567,7 @@ As for cooking, the 'at least once in a given half hour' indicator records sligh
 
 ***
 __Meta:__
-Analysis completed in: 9.005 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+Analysis completed in: 8.957 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
 
 ***
 __Footnotes:__
