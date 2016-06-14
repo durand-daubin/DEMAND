@@ -82,7 +82,7 @@ It is possible that 're-arranging' cooking habits may be one way to reduce the p
 
 Digression on time use as a footprint/proxy for practices?
 
-This paper uses natioanlly representative time use diary data form the United Kingdom and France to compare and contrast the changing timing of cooking and eating in each country over the last 30 years. It then uses the most recent data to analyse and comapre the social and spatial variation in current eating practices in each country. Finally the paper provides preliminary analysis of French regional residential electricity consumption data which highlights the role of regional variation in cooking practices. The paper concludes with a discussion of the implications of the results for electricity demand in the UK and France and outlines directions for future research
+This paper uses nationally representative time use diary data form the United Kingdom and France to compare and contrast the changing timing of cooking and eating in each country over the last 30 years. It then uses the most recent data to analyse and comapre the social and spatial variation in current eating practices in each country. Finally the paper provides preliminary analysis of French regional residential electricity consumption data which highlights the role of regional variation in cooking practices. The paper concludes with a discussion of the implications of the results for electricity demand in the UK and France and outlines directions for future research
 
 # Cooking, Eating and Energy
 Here we need to talk about the changing nature of cooking & eating from the literature (if there is any) - quant (e.g. Southerton) & qual (e.g. Warde).
@@ -417,8 +417,9 @@ svymtusUKEpisodes_DTj <- svydesign(ids = ~ba_diarypid,
 
 ```
 
-Having the established the overall unweighted distributions of eating and cooking, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 1:`r 2.11/12.13` in 1974 to 1:`r 6.62/10.16` by 2005.
+Having the established the overall unweighted distributions of eating and cooking and chosen to focus on these as main activities, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 1:`r round(2.11/12.13,2)` in 1974 to 1:`r round(6.62/10.16,2)` by 2005.
 
+Weighted proportion of episodes reported as cooking as a main activity by men and women:
 ```{r weightedCooking}
 # how many weighted cooking episodes do we have?
 cookEpsWt <- svytable(~ba_survey.x + sex + is_cooking_m, # the row * columns we want
@@ -451,6 +452,7 @@ kable(caption = "Weighted proportion of episodes reported as cooking as a main a
 
 In comparison, eating is reported far more equally (see below) with both men and women consistently reporting eating as a main activity in between 11 and 14 percent of episodes.
 
+Weighted proportion of episodes reported as eating as a main activity by men and women:
 ```{r weightedEating}
 # how many weighted eating episodes do we have?
 eatEpsWt <- svytable(~ba_survey.x + sex + is_eating_m, # the row * columns we want
@@ -552,6 +554,7 @@ Brief discussion of our consequential interest in patterns of weekday lunch, wee
 
 The following tables summarise the prevalence of these 'eating practices' in the different surveys.
 
+Weekday lunch:
 ```{r weekdayLunchSummary}
 # weekday lunch ----
 weekdayLunchWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
@@ -578,6 +581,7 @@ kable(caption = "Weighted proportion of episodes coded as weekday lunch as a mai
       )
 ```
 
+Dinner:
 ```{r dinnerSummary}
 # dinner
 dinnerWm <- svyby(~dinner, # the variable to calculate the stat for
@@ -604,6 +608,7 @@ kable(caption = "Weighted proportion of episodes coded as dinner as a main activ
       )
 ```
 
+Sunday lunch:
 ```{r sundayLunchSummary}
 # dinner
 sundayLunchWm <- svyby(~sundayLunch, # the variable to calculate the stat for
@@ -624,9 +629,10 @@ setnames(t, c("Survey", "% episodes", "lci", "uci")) # must be an easier way
 t[, lci := lci * 100]
 t[, uci := uci * 100]
 setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
-
-kable(caption = "Weighted proportion of episodes coded as sunday lunch as a
-main activity",       t       ) ``` 
+kable(caption = "Weighted proportion of episodes coded as sunday lunch as a main activity",       
+	t       
+) 
+``` 
 
 
 
@@ -653,10 +659,29 @@ XX ? use the definition as 'at least one episode in the half hour'? XX
 
 The changing location of weekday lunch:
 ```{r weekdayLunchLocation}
+# weekday lunch ----
+weekdayLunchWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
+                   ~eloc + ba_survey.x, # the factors
+                   svymtusUKEpisodes_DTj, # the data in survey form
+                   #svyciprop, method = "logit"
+                   svymean # the stat function
+                   )
 
-kable(caption = "Number of episodes that are coded as weekday lunch by survey (unweighted)",
-  xtabs(~ eloc + ba_survey, data = mtusUKEpisodes_DT[weekdayLunch == 1])
-)
+# fiddle to get the right look to the table
+t <- as.data.table(weekdayLunchWm)
+t[, weekdayLunch := round(100*weekdayLunch, 2)]
+t[, se := NULL] # drop SE as we're going to add the 95% CI
+
+c <- round(confint(weekdayLunchWm), 4) # will get * by 100 below
+t <- cbind(t,c)
+setnames(t, c("Survey", "% episodes", "lci", "uci")) # must be an easier way
+t[, lci := lci * 100]
+t[, uci := uci * 100]
+setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
+
+kable(caption = "Weighted proportion of episodes coded as weekday lunch as a main activity by location",
+      t
+      )
 ```
 
 X Might not be able to say that much here as location at workplace was inferred in 2005 from the 'working' activity XX
