@@ -67,7 +67,7 @@ It is possible that 're-arranging' cooking habits may be one way to reduce the p
 
 Digression on time use as a footprint/proxy for practices?
 
-This paper uses natioanlly representative time use diary data form the United Kingdom and France to compare and contrast the changing timing of cooking and eating in each country over the last 30 years. It then uses the most recent data to analyse and comapre the social and spatial variation in current eating practices in each country. Finally the paper provides preliminary analysis of French regional residential electricity consumption data which highlights the role of regional variation in cooking practices. The paper concludes with a discussion of the implications of the results for electricity demand in the UK and France and outlines directions for future research
+This paper uses nationally representative time use diary data form the United Kingdom and France to compare and contrast the changing timing of cooking and eating in each country over the last 30 years. It then uses the most recent data to analyse and comapre the social and spatial variation in current eating practices in each country. Finally the paper provides preliminary analysis of French regional residential electricity consumption data which highlights the role of regional variation in cooking practices. The paper concludes with a discussion of the implications of the results for electricity demand in the UK and France and outlines directions for future research
 
 # Cooking, Eating and Energy
 Here we need to talk about the changing nature of cooking & eating from the literature (if there is any) - quant (e.g. Southerton) & qual (e.g. Warde).
@@ -102,7 +102,7 @@ A relatively brief introduction to the time use diary data for each country:
 ```
 
 ```
-## Read 46.2% of 1364047 rowsRead 88.7% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
+## Read 70.4% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:03
 ```
 
 ```
@@ -185,8 +185,9 @@ Similarly, eating is reported in between one and four percent of secondary activ
 
 
 
-Having the established the overall unweighted distributions of eating and cooking, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. As can be seen the correction for non-response bias using the survey weights has adjusted the figures slightly. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 1:0.1739489 in 1974 to 1:0.6515748 by 2005.
+Having the established the overall unweighted distributions of eating and cooking and chosen to focus on these as main activities, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 1:0.17 in 1974 to 1:0.65 by 2005.
 
+Weighted proportion of episodes reported as cooking as a main activity by men and women:
 
 |Sex   | Survey| % episodes|  2.5%| 97.5%|
 |:-----|------:|----------:|-----:|-----:|
@@ -203,6 +204,7 @@ Having the established the overall unweighted distributions of eating and cookin
 
 In comparison, eating is reported far more equally (see below) with both men and women consistently reporting eating as a main activity in between 11 and 14 percent of episodes.
 
+Weighted proportion of episodes reported as eating as a main activity by men and women:
 
 |Sex   | Survey| % episodes|  2.5%| 97.5%|
 |:-----|------:|----------:|-----:|-----:|
@@ -241,6 +243,7 @@ Brief discussion of our consequential interest in patterns of weekday lunch, wee
 
 The following tables summarise the prevalence of these 'eating practices' in the different surveys.
 
+Weekday lunch:
 
 | Survey| % episodes| 2.5%| 97.5%|
 |------:|----------:|----:|-----:|
@@ -250,6 +253,7 @@ The following tables summarise the prevalence of these 'eating practices' in the
 |   2000|       1.98| 1.94|  2.02|
 |   2005|       1.25| 1.19|  1.32|
 
+Dinner:
 
 | Survey| % episodes| 2.5%| 97.5%|
 |------:|----------:|----:|-----:|
@@ -259,23 +263,105 @@ The following tables summarise the prevalence of these 'eating practices' in the
 |   2000|       4.02| 3.97|  4.08|
 |   2005|       3.76| 3.67|  3.86|
 
+Sunday lunch:
+
+| Survey| % episodes| 2.5%| 97.5%|
+|------:|----------:|----:|-----:|
+|   1974|       0.59| 0.56|  0.62|
+|   1985|       0.49| 0.47|  0.52|
+|   1995|       0.49| 0.41|  0.58|
+|   2000|       0.51| 0.49|  0.53|
+|   2005|       0.37| 0.33|  0.41|
+
+
+
+## France (MTUS)
+
+ * 1986 - 5 minutes resolution
+ * 1998 - 10 minutes resolution
+ * 2010 - 10 minutes resolution
+
+...
+
+Brief discussion of how we code weekday lunch, weekday dinner and sunday lunch in the French data
+
+# The changing temporality of cooking in the UK and France
+
+Here we use the MTUS (UK) and French data to look at change in cooking (& eating?) over the last 30 years through the lenses of the three meal type.
+
+XX ? use the definition as 'at least one episode in the half hour'? XX
+ 
+## Week-day lunch
+		- Contemporary : timing, location, participants, seasons, who cooks (content can change depending on the relevance for this type of meal)
+		- What changed in history -> energy implications
+		- What varies between regions -> energy implications
+
+The changing location of weekday lunch:
 
 ```
-## Error: attempt to use zero-length variable name
+## Error in setnames(t, c("Survey", "% episodes", "lci", "uci")): Can't assign 4 names to a 5 column data.table
 ```
 
-|                       | 1974| 1985| 1995| 2000| 2005|
-|:----------------------|----:|----:|----:|----:|----:|
-|at another’s home    |    0|  174|    0|  428|    0|
-|at own home            | 5003| 5718|  478| 3925| 1087|
-|at place of worship    |    0|    1|    0|    0|    0|
-|at restaurant, bar etc |    0|   81|    0|    4|    0|
-|at school              |    0|  105|    0|    0|    0|
-|at services or shops   |    0|   49|    0|   29|    0|
-|at workplace           | 2174| 1694|    0| 1589|    0|
-|location unknown       |    1|    0|    0|   38|  215|
-|other locations        | 1502|   55|    0|  369|    0|
-|travelling             |    0|   33|    0|   42|    0|
+```
+## Error in eval(expr, envir, enclos): object 'lci' not found
+```
+
+```
+## Error in eval(expr, envir, enclos): object 'uci' not found
+```
+
+```
+## Error in setnames(t, c("Survey", "% episodes", "2.5%", "97.5%")): Can't assign 4 names to a 5 column data.table
+```
+
+
+
+|eloc                   | ba_survey.x| weekdayLunch|   2.5 %| 97.5 %|
+|:----------------------|-----------:|------------:|-------:|------:|
+|at own home            |        1974|         2.18|  0.0213| 0.0224|
+|at place of worship    |        1974|         0.00|  0.0000| 0.0000|
+|at restaurant, bar etc |        1974|         0.00|  0.0000| 0.0000|
+|at school              |        1974|         0.00|  0.0000| 0.0000|
+|at services or shops   |        1974|         0.00|  0.0000| 0.0000|
+|at workplace           |        1974|        13.69|  0.1328| 0.1410|
+|location unknown       |        1974|         0.77| -0.0052| 0.0205|
+|other locations        |        1974|         7.29|  0.0689| 0.0769|
+|travelling             |        1974|         0.00|  0.0000| 0.0000|
+|at another’s home    |        1985|         0.97|  0.0082| 0.0113|
+|at own home            |        1985|         1.66|  0.0162| 0.0170|
+|at place of worship    |        1985|         0.11| -0.0011| 0.0034|
+|at restaurant, bar etc |        1985|         1.37|  0.0105| 0.0169|
+|at school              |        1985|        10.20|  0.0841| 0.1198|
+|at services or shops   |        1985|         0.40|  0.0028| 0.0051|
+|at workplace           |        1985|         5.22|  0.0496| 0.0548|
+|location unknown       |        1985|         0.00|  0.0000| 0.0000|
+|other locations        |        1985|         0.40|  0.0029| 0.0051|
+|travelling             |        1985|         0.07|  0.0004| 0.0009|
+|at own home            |        1995|         2.58|  0.0237| 0.0279|
+|at restaurant, bar etc |        1995|         0.00|  0.0000| 0.0000|
+|at school              |        1995|         0.00|  0.0000| 0.0000|
+|at services or shops   |        1995|         0.00|  0.0000| 0.0000|
+|at workplace           |        1995|         0.00|  0.0000| 0.0000|
+|location unknown       |        1995|         0.00|  0.0000| 0.0000|
+|travelling             |        1995|         0.00|  0.0000| 0.0000|
+|at another’s home    |        2000|         3.56|  0.0316| 0.0397|
+|at own home            |        2000|         1.72|  0.0167| 0.0177|
+|at place of worship    |        2000|         0.00|  0.0000| 0.0000|
+|at restaurant, bar etc |        2000|         0.10|  0.0000| 0.0021|
+|at school              |        2000|         0.00|  0.0000| 0.0000|
+|at services or shops   |        2000|         0.32|  0.0018| 0.0045|
+|at workplace           |        2000|        12.82|  0.1234| 0.1330|
+|location unknown       |        2000|        15.55|  0.1059| 0.2050|
+|other locations        |        2000|         4.51|  0.0402| 0.0501|
+|travelling             |        2000|         0.09|  0.0006| 0.0012|
+|at own home            |        2005|         1.68|  0.0158| 0.0177|
+|at restaurant, bar etc |        2005|         0.00|  0.0000| 0.0000|
+|at school              |        2005|         0.00|  0.0000| 0.0000|
+|at services or shops   |        2005|         0.00|  0.0000| 0.0000|
+|at workplace           |        2005|         0.00|  0.0000| 0.0000|
+|location unknown       |        2005|         3.41|  0.0297| 0.0384|
+|other locations        |        2005|         0.00|  0.0000| 0.0000|
+|travelling             |        2005|         0.00|  0.0000| 0.0000|
 
 X Might not be able to say that much here as location at workplace was inferred in 2005 from the 'working' activity XX
 
@@ -567,7 +653,7 @@ As for cooking, the 'at least once in a given half hour' indicator records sligh
 
 ***
 __Meta:__
-Analysis completed in: 8.957 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+Analysis completed in: 9.462 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
 
 ***
 __Footnotes:__
