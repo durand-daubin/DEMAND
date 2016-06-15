@@ -82,8 +82,8 @@ A relatively brief introduction to the time use diary data for each country:
 
 ```
 ## 
-Read 33.0% of 1364047 rows
-Read 82.8% of 1364047 rows
+Read 47.7% of 1364047 rows
+Read 96.0% of 1364047 rows
 Read 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
 ```
 
@@ -193,16 +193,14 @@ Brief discussion of how we code weekday lunch, weekday dinner and sunday lunch i
 Here we use the MTUS (UK) and French data to look at change in cooking (& eating?) over the last 30 years through the lenses of the three meal type.
 
 XX ? use the definition as 'at least one episode in the half hour'? XX
- 
-# UK
 
 
-## The distribution of cooking and eating as main activities in the UK 1974 - 2005
+## The distribution of cooking and eating as main activities
 
 Having the established the overall distributions of eating and cooking and chosen to focus on these as main activities, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 1:0.17 in 1974 to 1:0.65 by 2005.
 
 
-Table: Weighted proportion of episodes reported as cooking as a main activity by men and women (with 95% CI)
+Table: UK: Weighted proportion of episodes reported as cooking as a main activity by men and women (with 95% CI)
 
 Sex      Survey   % episodes    2.5%   97.5%
 ------  -------  -----------  ------  ------
@@ -218,7 +216,7 @@ Woman      2005        10.16    9.89   10.43
 In comparison, eating is reported far more equally (see below) with both men and women consistently reporting eating as a main activity in between 11 and 14 percent of episodes.
 
 
-Table: Weighted proportion of episodes reported as eating as a main activity by men and women (with 95% CI)
+Table: UK: Weighted proportion of episodes reported as eating as a main activity by men and women (with 95% CI)
 
 Sex      Survey   % episodes    2.5%   97.5%
 ------  -------  -----------  ------  ------
@@ -241,11 +239,11 @@ The first chart shows the results using the '% of episodes' per half hour whilst
 
 The following charts show the distribution of eating across time of day and day of the week for the different surveys.
 
-XX The data point at 04:00 for 1995 is very odd but then 1995 is a strange data
-
 ![](DEMAND_Book_Ch_Dinner_files/figure-html/eatingByHalfhourEps-1.png)<!-- -->
 
 ![](DEMAND_Book_Ch_Dinner_files/figure-html/eatingByHalfhourIndicator-1.png)<!-- -->
+
+XX Patterns look similar - shall we stick with the % of episodes? XX
 
 XX Brief discussion of our consequential interest in patterns of weekday lunch, weekday dinner and sunday lunch and discussion of how we code them in the MTUS: XX
 
@@ -258,7 +256,7 @@ The following tables summarise the prevalence of these 'eating practices' in the
 
 Weekday lunch:
 
-Table: Weighted proportion of episodes coded as weekday lunch as a main activity
+Table: UK: Weighted proportion of episodes coded as weekday lunch as a main activity
 
  Survey   % episodes   2.5%   97.5%
 -------  -----------  -----  ------
@@ -269,7 +267,7 @@ Table: Weighted proportion of episodes coded as weekday lunch as a main activity
 
 Dinner:
 
-Table: Weighted proportion of episodes coded as dinner as a main activity
+Table: UK: Weighted proportion of episodes coded as dinner as a main activity
 
  Survey   % episodes   2.5%   97.5%
 -------  -----------  -----  ------
@@ -280,7 +278,7 @@ Table: Weighted proportion of episodes coded as dinner as a main activity
 
 Sunday lunch:
 
-Table: Weighted proportion of episodes coded as sunday lunch as a main activity
+Table: UK: Weighted proportion of episodes coded as sunday lunch as a main activity
 
  Survey   % episodes   2.5%   97.5%
 -------  -----------  -----  ------
@@ -297,7 +295,7 @@ Table: Weighted proportion of episodes coded as sunday lunch as a main activity
 
 ![](DEMAND_Book_Ch_Dinner_files/figure-html/weekdayEating-1.png)<!-- -->
 
-X Might not be able to say that much here as location at workplace was inferred in 2005 from the 'working' activity XX
+XX This chart is the proportion of episodes within each location type - need to re-calculate to be specific about kind of eating practice across all episodes XX
 
 ## Dinner
 		- Contemporary : timing, location, participants, seasons, who cooks
@@ -548,7 +546,7 @@ As for cooking, the 'at least once in a given half hour' indicator records sligh
 
 ***
 __Meta:__
-Analysis completed in: 10.751 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+Analysis completed in: 10.293 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
 
 ***
 __Footnotes:__
