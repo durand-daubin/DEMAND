@@ -4,9 +4,12 @@ title: 'The Changing Timing of Cooking in the United Kingdom and France: Implica
 author: "Mathieu Durand-Daubin, Ben Anderson (mathieu.durand-daubin@edf.fr; b.anderson@soton.ac.uk)"
 date: 'Last run at: `r Sys.time()`'
 output:
-  pdf_document:
+  html_document:
     fig_caption: yes
+    keep_md: yes
     number_sections: yes
+    self_contained: no
+    theme: journal
     toc: yes
   md_document:
     fig_caption: yes
@@ -14,12 +17,10 @@ output:
     theme: journal
     toc: yes
     toc_depth: 3
-  html_document:
+  pdf_document:
     fig_caption: yes
     number_sections: yes
-    theme: journal
     toc: yes
-    toc_depth: 3
   word_document:
     fig_caption: yes
     number_sections: yes
@@ -873,7 +874,7 @@ t <- as.data.table(sundayLunchWm)
 t[, sundayLunch := round(sundayLunch*100, 2)]
 t[, se := NULL] # drop SE as we're going to add the 95% CI
 
-c <- round(confint(sundayLunchWm*100), 2) 
+c <- round(confint(sundayLunchWm)*100, 2) 
 t <- cbind(t,c)
 setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
 kable(caption = "UK: Weighted proportion of episodes coded as sunday lunch as a main activity",       
