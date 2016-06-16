@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Mathieu Durand-Daubin, Ben Anderson (mathieu.durand-daubin@edf.fr; b.anderson@soton.ac.uk)" />
+
+
+<title>The Changing Timing of Cooking in the United Kingdom and France: Implications for Energy Demand</title>
+
+<script src="DEMAND_Book_Ch_Dinner_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="DEMAND_Book_Ch_Dinner_files/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="DEMAND_Book_Ch_Dinner_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="DEMAND_Book_Ch_Dinner_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="DEMAND_Book_Ch_Dinner_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="DEMAND_Book_Ch_Dinner_files/highlight/default.css"
+      type="text/css" />
+<script src="DEMAND_Book_Ch_Dinner_files/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="DEMAND_Book_Ch_Dinner_files/navigation-1.0/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">The Changing Timing of Cooking in the United Kingdom and France: Implications for Energy Demand</h1>
+<h4 class="author"><em>Mathieu Durand-Daubin, Ben Anderson (<a href="mailto:mathieu.durand-daubin@edf.fr">mathieu.durand-daubin@edf.fr</a>; <a href="mailto:b.anderson@soton.ac.uk">b.anderson@soton.ac.uk</a>)</em></h4>
+<h4 class="date"><em>Last run at: 2016-06-16 23:37:57</em></h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#cooking-eating-and-energy"><span class="toc-section-number">2</span> Cooking, Eating and Energy</a></li>
+<li><a href="#data-and-methods"><span class="toc-section-number">3</span> Data and Methods</a><ul>
+<li><a href="#united-kingdom-mtus"><span class="toc-section-number">3.1</span> United Kingdom (MTUS)</a><ul>
+<li><a href="#cooking-and-eating-episodes"><span class="toc-section-number">3.1.1</span> Cooking and eating episodes</a></li>
+</ul></li>
+<li><a href="#france-mtus"><span class="toc-section-number">3.2</span> France (MTUS)</a></li>
+</ul></li>
+<li><a href="#the-changing-temporality-of-cooking-and-eating-in-the-uk-and-france"><span class="toc-section-number">4</span> The changing temporality of cooking and eating in the UK and France</a><ul>
+<li><a href="#the-distribution-of-cooking-and-eating-as-main-activities"><span class="toc-section-number">4.1</span> The distribution of cooking and eating as main activities</a></li>
+<li><a href="#week-day-eating"><span class="toc-section-number">4.2</span> Week-day eating</a></li>
+<li><a href="#dinner"><span class="toc-section-number">4.3</span> Dinner</a></li>
+<li><a href="#sunday-lunch"><span class="toc-section-number">4.4</span> Sunday lunch</a></li>
+</ul></li>
+<li><a href="#discussion"><span class="toc-section-number">5</span> Discussion</a></li>
+<li><a href="#acknowledgements"><span class="toc-section-number">6</span> Acknowledgements</a></li>
+<li><a href="#statistical-annexes-if-needed"><span class="toc-section-number">7</span> Statistical annexes (if needed)</a><ul>
+<li><a href="#mtus-uk-sample"><span class="toc-section-number">7.1</span> MTUS UK sample</a></li>
+<li><a href="#testing-methods-to-analyse-temporal-distributions-of-cooking-eating-episodes"><span class="toc-section-number">7.2</span> Testing methods to analyse temporal distributions of cooking &amp; eating episodes</a><ul>
+<li><a href="#cooking"><span class="toc-section-number">7.2.1</span> Cooking</a></li>
+<li><a href="#eating"><span class="toc-section-number">7.2.2</span> Eating</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<p></p>
+<p>Abstract (original)</p>
+<p>Aggregate energy demand follows strong repetitive patterns on multiple scales (day, week, seasons), due to social rhythms coordinating the synchronicity of consuming practices. These patterns are not only related to natural cycles that remain unchanged, but also to social structures and technology, that change over the years and across different geographical areas. How do these changes and regional differences affect energy demand rhythms? Answering this question, would improve our understanding of demand flexibility and possible future evolutions.</p>
+<p>In this research we study the energy footprint of practices which are widely shared, highly regular, and key markers of the social organisation: eating practices. Different types of meals and food preparation are described based on the quantitative data collected by the means of Time Use Surveys in France and in the United Kingdom. These practices are defined in terms of time, durations, primary, secondary and surrounding activities, participants, and places. The distribution of these practices are studied across several time scales (week days, seasons, and decades from 1974 to 2010) and areas (UK, France and French regions). The temporal and spatial variations of eating practices can then be compared with the energy demand measured by the power grids or in specific campaigns, and varying along the same axes. This comparison reveals how parts of the energy demand dynamic are related to specific practices and their synchronisation. Finally, the mechanism of this coevolution can be partly interpreted in the light of wider social and technical changes depicted in socio-economic and demographic series (employment structure, food consumption, home equipment).</p>
+<p></p>
+<pre><code>## [1] &quot;# Setting up R environment&quot;</code></pre>
+<pre><code>## [1] &quot;Loading required packages:&quot;</code></pre>
+<pre><code>## [1] &quot;ggplot2&quot;    &quot;data.table&quot; &quot;knitr&quot;      &quot;survey&quot;</code></pre>
+<pre><code>## [[1]]
+## [1] TRUE
+## 
+## [[2]]
+## [1] TRUE
+## 
+## [[3]]
+## [1] TRUE
+## 
+## [[4]]
+## [1] TRUE</code></pre>
+<p></p>
+<div id="introduction" class="section level1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p>Discussion of temporal nature of electricity demand, interest in peaks (reasons for this) and the ability to shift in general.</p>
+<p>Recent work (DECC HES?) has highlighted the role of cooking (and subequently eating) in generating demand for electricity during the evening peak period (give times).</p>
+<p>At the same time recent work (Southerton et al) has shown how the habits and practices of eating have changed over time in the UK anbd Spain. Although this work only provides an analysis of the duration of acts (episodes) it provides evidence of the ongoing evolution of eating habits which may have implications for cooking and thus for electricity/energy demand.</p>
+<p>It is possible that ‘re-arranging’ cooking habits may be one way to reduce the problematic evening peak electricity demand. However without a more detailed analysis of what kinds of eating (and especially cooking) are already changing and of the variation in cooking practices across the population, we have little idea where to start.</p>
+<p>Digression on time use as a footprint/proxy for practices?</p>
+<p>This paper uses nationally representative time use diary data form the United Kingdom and France to compare and contrast the changing timing of cooking and eating in each country over the last 30 years. It then uses the most recent data to analyse and comapre the social and spatial variation in current eating practices in each country. Finally the paper provides preliminary analysis of French regional residential electricity consumption data which highlights the role of regional variation in cooking practices. The paper concludes with a discussion of the implications of the results for electricity demand in the UK and France and outlines directions for future research</p>
+</div>
+<div id="cooking-eating-and-energy" class="section level1">
+<h1><span class="header-section-number">2</span> Cooking, Eating and Energy</h1>
+<p>Here we need to talk about the changing nature of cooking &amp; eating from the literature (if there is any) - quant (e.g. Southerton) &amp; qual (e.g. Warde).</p>
+<p>Need then to link it to energy consumption - in UK gas &amp; electricity used for cooking, in France = electricity (mostly, but LPG?).</p>
+<p>More detailed discussion of the problem of peak demand? - expensive/dirty generation?</p>
+<ul>
+<li>energy implication of different preparations : cooking/not cooking, in different places, with different appliances</li>
+<li>giving time : synchronising a number of other energy demanding practices -&gt; peaks</li>
+</ul>
+<p>We then need to explain here how we come to discuss these meal types:</p>
+<ul>
+<li>weekday lunch</li>
+<li>weekday dinner</li>
+<li>sunday lunch</li>
+</ul>
+<p>Should this come after a general exploration of the data? So that we can look at the timings and then explain why we concentrate on these ‘practices’?</p>
+</div>
+<div id="data-and-methods" class="section level1">
+<h1><span class="header-section-number">3</span> Data and Methods</h1>
+<p>A relatively brief introduction to the time use diary data for each country:</p>
+<ul>
+<li>years &amp; sources</li>
+<li>key collection/diary features</li>
+<li>categories of activities &amp; any coding issues/missing attributes</li>
+</ul>
+<p>Discussion of stats tools used. For UK, R and in particular:</p>
+<ul>
+<li>base R - for the basics <span class="citation">(R Core Team 2016)</span></li>
+<li>data.table - for fast (big) data handling <span class="citation">(Dowle et al. 2015)</span></li>
+<li>ggplot2 - for slick grpahics <span class="citation">(Wickham 2009)</span></li>
+<li>survey - for weighted survey analysis <span class="citation">(Lumley 2014)</span></li>
+<li>knitr - to create this document <span class="citation">(Xie 2016)</span></li>
+</ul>
+<div id="united-kingdom-mtus" class="section level2">
+<h2><span class="header-section-number">3.1</span> United Kingdom (MTUS)</h2>
+<pre><code>## 
+Read 36.7% of 1364047 rows
+Read 81.4% of 1364047 rows
+Read 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04</code></pre>
+<pre><code>##            ba_weekday
+## r_dow       Saturday Sunday Weekday
+##   Monday           0      0  177300
+##   Tuesday          0      0  179170
+##   Wednesday        0      0  169684
+##   Thursday         0      0  174795
+##   Friday           0      0  171673
+##   Saturday    233789      0       0
+##   Sunday           0 229471       0</code></pre>
+<p>Key codes in the MTUS:</p>
+<ul>
+<li>meals at work or school = 5 (not available in all surveys)</li>
+<li>meals or snacks in other places = 6</li>
+<li>food preparation, cooking = 18</li>
+<li>restaurant, cafe, bar, pub = 39 (but may not be eating?!)</li>
+<li>out with friends could be eating = 48 (but check location as might also be at home)</li>
+<li>eloc = location</li>
+</ul>
+<p>Mention pooling 1983/4 &amp; 1987 to form one ‘12 month’ survey ref MTUS userguide p13</p>
+<p>Mention not using 1995 as it was only collected in May (and location poorly recorded</p>
+<p>Report some basic (unweighted) descriptive statsitics of the sample we will use.</p>
+<table>
+<caption>MTUS survey repondents by age range and survey (unweighted)</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">1974</th>
+<th align="right">1985</th>
+<th align="right">2000</th>
+<th align="right">2005</th>
+<th align="right">NA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(16,25]</td>
+<td align="right">493</td>
+<td align="right">496</td>
+<td align="right">1058</td>
+<td align="right">384</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">(25,35]</td>
+<td align="right">552</td>
+<td align="right">737</td>
+<td align="right">1675</td>
+<td align="right">798</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">(35,45]</td>
+<td align="right">462</td>
+<td align="right">612</td>
+<td align="right">1732</td>
+<td align="right">911</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">(45,55]</td>
+<td align="right">527</td>
+<td align="right">507</td>
+<td align="right">1630</td>
+<td align="right">769</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">(55,65]</td>
+<td align="right">317</td>
+<td align="right">356</td>
+<td align="right">1133</td>
+<td align="right">812</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">(65,75]</td>
+<td align="right">180</td>
+<td align="right">168</td>
+<td align="right">927</td>
+<td align="right">633</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">(75,85]</td>
+<td align="right">54</td>
+<td align="right">60</td>
+<td align="right">533</td>
+<td align="right">547</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">NA</td>
+<td align="right">13</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>MTUS survey repondents by sex and survey (unweighted)</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">1974</th>
+<th align="right">1985</th>
+<th align="right">2000</th>
+<th align="right">2005</th>
+<th align="right">NA</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Man</td>
+<td align="right">1239</td>
+<td align="right">1291</td>
+<td align="right">3935</td>
+<td align="right">2185</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">1359</td>
+<td align="right">1645</td>
+<td align="right">4753</td>
+<td align="right">2669</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>Finally we are also interested in trends in the location of both cooking and eating as this may also have implications for the nature of energy demand. The following table reports the weighted count of episodes by location and shows extent to which location of episodes is known in the different surveys.</p>
+<pre><code>##                 ba_survey.x   1974   1985   2000   2005
+## ba_eloc                                                
+## Family/friends                   0  18250  18407      0
+## Home                        223925 356642 359719  58986
+## Out (somewhere)              65238  85804 105989  26024
+## Unknown                        145     26    370   6199
+## Work or school               15768  36923  19356   4584</code></pre>
+<p>Clearly we are unable to tell if the episode location was at family/friends in any year except 1985 and 2000 whilst a large number are unkown in 2005 when location was poorly coded.</p>
+<div id="cooking-and-eating-episodes" class="section level3">
+<h3><span class="header-section-number">3.1.1</span> Cooking and eating episodes</h3>
+<p>Both cooking and eating could have been reported as main and secondary acts in all surveys except 1995 when secondary activities were not collected. For cooking we can see from the table below that the reporting of cooking was roughly constant over time but as a secondary act was low (0.5 to 2 %) in most surveys. As it is never clear whether secondary activities are simply rare, under-reported or not completed due to respondent burden (XX reference XX) in the remainder of the chapter we will focus on cooking as a main activity only.</p>
+<table>
+<caption>Weighted proportion of episodes reported as cooking (with 95% CI)</caption>
+<thead>
+<tr class="header">
+<th align="right">Survey</th>
+<th align="right">Main (% all episodes)</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+<th align="right">Secondary (% all episodes)</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1974</td>
+<td align="right">8.13</td>
+<td align="right">7.99</td>
+<td align="right">8.27</td>
+<td align="right">1.19</td>
+<td align="right">1.14</td>
+<td align="right">1.24</td>
+</tr>
+<tr class="even">
+<td align="right">1985</td>
+<td align="right">7.54</td>
+<td align="right">7.45</td>
+<td align="right">7.64</td>
+<td align="right">1.41</td>
+<td align="right">1.37</td>
+<td align="right">1.45</td>
+</tr>
+<tr class="odd">
+<td align="right">2000</td>
+<td align="right">8.13</td>
+<td align="right">8.02</td>
+<td align="right">8.23</td>
+<td align="right">0.47</td>
+<td align="right">0.45</td>
+<td align="right">0.50</td>
+</tr>
+<tr class="even">
+<td align="right">2005</td>
+<td align="right">8.57</td>
+<td align="right">8.36</td>
+<td align="right">8.77</td>
+<td align="right">0.49</td>
+<td align="right">0.43</td>
+<td align="right">0.55</td>
+</tr>
+</tbody>
+</table>
+<p>Similarly, the reporting of eating is also faily constant over time and was reported in between one and four percent of secondary activity episodes. As above, due to uncertainties over the intepretation of secondary activities we will focus on eating as a main activity only in the remainder of the chapter</p>
+<table>
+<caption>Weighted proportion of episodes reported as eating (with 95% CI)</caption>
+<thead>
+<tr class="header">
+<th align="right">Survey</th>
+<th align="right">Main (% all episodes)</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+<th align="right">Secondary (% all episodes)</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1974</td>
+<td align="right">12.51</td>
+<td align="right">12.41</td>
+<td align="right">12.62</td>
+<td align="right">3.30</td>
+<td align="right">3.22</td>
+<td align="right">3.38</td>
+</tr>
+<tr class="even">
+<td align="right">1985</td>
+<td align="right">11.98</td>
+<td align="right">11.89</td>
+<td align="right">12.08</td>
+<td align="right">3.95</td>
+<td align="right">3.88</td>
+<td align="right">4.01</td>
+</tr>
+<tr class="odd">
+<td align="right">2000</td>
+<td align="right">12.70</td>
+<td align="right">12.59</td>
+<td align="right">12.81</td>
+<td align="right">3.60</td>
+<td align="right">3.52</td>
+<td align="right">3.68</td>
+</tr>
+<tr class="even">
+<td align="right">2005</td>
+<td align="right">11.23</td>
+<td align="right">11.05</td>
+<td align="right">11.41</td>
+<td align="right">0.99</td>
+<td align="right">0.91</td>
+<td align="right">1.07</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="france-mtus" class="section level2">
+<h2><span class="header-section-number">3.2</span> France (MTUS)</h2>
+<ul>
+<li>1986 - 5 minutes resolution</li>
+<li>1998 - 10 minutes resolution</li>
+<li>2010 - 10 minutes resolution</li>
+</ul>
+<p>…</p>
+<p>Brief discussion of how we code weekday lunch, weekday dinner and sunday lunch in the French data</p>
+</div>
+</div>
+<div id="the-changing-temporality-of-cooking-and-eating-in-the-uk-and-france" class="section level1">
+<h1><span class="header-section-number">4</span> The changing temporality of cooking and eating in the UK and France</h1>
+<p>Here we use the MTUS (UK) and French data to look at change in cooking (&amp; eating?) over the last 30 years through the lenses of the three meal type.</p>
+<blockquote>
+<p>Need to decide whether to use: * % of episodes OR * % of halfhours in which the activity was recorded at least once (= ‘any in the half hour’ indicator) I have tested the two approaches below and they seem to give similar results…?</p>
+</blockquote>
+<div id="the-distribution-of-cooking-and-eating-as-main-activities" class="section level2">
+<h2><span class="header-section-number">4.1</span> The distribution of cooking and eating as main activities</h2>
+<p>Having the established the overall distributions of eating and cooking and chosen to focus on these as main activities, the following table shows the weighted proportion of episodes which were reported as cooking as a main activity by men and women in each survey. In general women report a far higher percentage of episodes as cooking/food preparation than men although the ratio has equalised somewhat from 1:0.17 in 1974 to 1:0.65 by 2005.</p>
+<table>
+<caption>UK: Weighted proportion of episodes reported as cooking as a main activity by men and women (with 95% CI)</caption>
+<thead>
+<tr class="header">
+<th align="left">Sex</th>
+<th align="right">Survey</th>
+<th align="right">% episodes</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Man</td>
+<td align="right">1974</td>
+<td align="right">2.11</td>
+<td align="right">2.01</td>
+<td align="right">2.22</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">1974</td>
+<td align="right">12.35</td>
+<td align="right">12.18</td>
+<td align="right">12.52</td>
+</tr>
+<tr class="odd">
+<td align="left">Man</td>
+<td align="right">1985</td>
+<td align="right">4.40</td>
+<td align="right">4.28</td>
+<td align="right">4.53</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">1985</td>
+<td align="right">9.65</td>
+<td align="right">9.53</td>
+<td align="right">9.77</td>
+</tr>
+<tr class="odd">
+<td align="left">Man</td>
+<td align="right">2000</td>
+<td align="right">5.96</td>
+<td align="right">5.81</td>
+<td align="right">6.12</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">2000</td>
+<td align="right">9.71</td>
+<td align="right">9.57</td>
+<td align="right">9.85</td>
+</tr>
+<tr class="odd">
+<td align="left">Man</td>
+<td align="right">2005</td>
+<td align="right">6.62</td>
+<td align="right">6.33</td>
+<td align="right">6.91</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">2005</td>
+<td align="right">10.16</td>
+<td align="right">9.89</td>
+<td align="right">10.43</td>
+</tr>
+</tbody>
+</table>
+<p>In comparison, eating is reported far more equally (see below) with both men and women consistently reporting eating as a main activity in between 11 and 14 percent of episodes.</p>
+<table>
+<caption>UK: Weighted proportion of episodes reported as eating as a main activity by men and women (with 95% CI)</caption>
+<thead>
+<tr class="header">
+<th align="left">Sex</th>
+<th align="right">Survey</th>
+<th align="right">% episodes</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Man</td>
+<td align="right">1974</td>
+<td align="right">14.05</td>
+<td align="right">13.89</td>
+<td align="right">14.22</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">1974</td>
+<td align="right">11.43</td>
+<td align="right">11.30</td>
+<td align="right">11.56</td>
+</tr>
+<tr class="odd">
+<td align="left">Man</td>
+<td align="right">1985</td>
+<td align="right">12.90</td>
+<td align="right">12.74</td>
+<td align="right">13.05</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">1985</td>
+<td align="right">11.37</td>
+<td align="right">11.25</td>
+<td align="right">11.49</td>
+</tr>
+<tr class="odd">
+<td align="left">Man</td>
+<td align="right">2000</td>
+<td align="right">13.68</td>
+<td align="right">13.51</td>
+<td align="right">13.84</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">2000</td>
+<td align="right">11.99</td>
+<td align="right">11.85</td>
+<td align="right">12.12</td>
+</tr>
+<tr class="odd">
+<td align="left">Man</td>
+<td align="right">2005</td>
+<td align="right">11.48</td>
+<td align="right">11.19</td>
+<td align="right">11.76</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">2005</td>
+<td align="right">11.03</td>
+<td align="right">10.79</td>
+<td align="right">11.26</td>
+</tr>
+</tbody>
+</table>
+<p>However as the introduction to this chapter explained, the concern here is less with gender inequalities per se but more with the porentially changing temporal distronution of cooking and eating and the role that gendered norms may play. The following charts show the weighted distribution of cooking as a main activity across time of day and day of the week for the different surveys for all adults.</p>
+<p>The first chart shows the results using the ‘% of episodes’ recorded as cooking in each half hour whilst the second shows the results using the ‘any in the half hour’ indicator. We do not see substantial differences.</p>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/cookingByHalfhourEps-1.png" alt="" /><!-- --></p>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/cookingByHalfhourIndicator-1.png" alt="" /><!-- --></p>
+<p>The following charts show the distribution of eating across time of day and day of the week for the different surveys. Again the first chart shows the % of episodes recorded as eating whilst the second uses the ‘any in the half hour’ indicator. Again we do not see substantial differences.</p>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/eatingByHalfhourEps-1.png" alt="" /><!-- --></p>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/eatingByHalfhourIndicator-1.png" alt="" /><!-- --></p>
+<blockquote>
+<p>XX The % episodes &amp; ‘any in the half hour’ indicator patterns look similar - shall we stick with the % of episodes? See also further comparisons in the Annex Section 8.2 XX</p>
+</blockquote>
+<p>XX Brief discussion of our consequential interest in patterns of weekday lunch, weekday dinner and sunday lunch and discussion of how we code them in the MTUS: XX</p>
+<ul>
+<li>Weekday lunch is coded as eating between 12:00 and 14:00 at any location on a week day</li>
+<li>Dinner is coded as any eating 17:00 - 22:00</li>
+<li>Sunday lunch is coded as any eating between 12:00 and 15:00 on Sundays</li>
+</ul>
+<p>The following tables summarise the prevalence of these ‘eating practices’ in the different UK surveys.</p>
+<table>
+<caption>UK: Weighted proportion of episodes coded as weekday lunch as a main activity</caption>
+<thead>
+<tr class="header">
+<th align="right">Survey</th>
+<th align="right">% episodes</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1974</td>
+<td align="right">2.77</td>
+<td align="right">2.72</td>
+<td align="right">2.83</td>
+</tr>
+<tr class="even">
+<td align="right">1985</td>
+<td align="right">1.67</td>
+<td align="right">1.64</td>
+<td align="right">1.71</td>
+</tr>
+<tr class="odd">
+<td align="right">2000</td>
+<td align="right">1.98</td>
+<td align="right">1.94</td>
+<td align="right">2.02</td>
+</tr>
+<tr class="even">
+<td align="right">2005</td>
+<td align="right">1.25</td>
+<td align="right">1.19</td>
+<td align="right">1.32</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>UK: Weighted proportion of episodes coded as dinner as a main activity</caption>
+<thead>
+<tr class="header">
+<th align="right">Survey</th>
+<th align="right">% episodes</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1974</td>
+<td align="right">3.66</td>
+<td align="right">3.61</td>
+<td align="right">3.71</td>
+</tr>
+<tr class="even">
+<td align="right">1985</td>
+<td align="right">3.60</td>
+<td align="right">3.55</td>
+<td align="right">3.64</td>
+</tr>
+<tr class="odd">
+<td align="right">2000</td>
+<td align="right">4.02</td>
+<td align="right">3.97</td>
+<td align="right">4.08</td>
+</tr>
+<tr class="even">
+<td align="right">2005</td>
+<td align="right">3.76</td>
+<td align="right">3.67</td>
+<td align="right">3.86</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>UK: Weighted proportion of episodes coded as sunday lunch as a main activity</caption>
+<thead>
+<tr class="header">
+<th align="right">Survey</th>
+<th align="right">% episodes</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1974</td>
+<td align="right">0.59</td>
+<td align="right">0.56</td>
+<td align="right">0.62</td>
+</tr>
+<tr class="even">
+<td align="right">1985</td>
+<td align="right">0.49</td>
+<td align="right">0.47</td>
+<td align="right">0.52</td>
+</tr>
+<tr class="odd">
+<td align="right">2000</td>
+<td align="right">0.51</td>
+<td align="right">0.49</td>
+<td align="right">0.53</td>
+</tr>
+<tr class="even">
+<td align="right">2005</td>
+<td align="right">0.37</td>
+<td align="right">0.33</td>
+<td align="right">0.41</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="week-day-eating" class="section level2">
+<h2><span class="header-section-number">4.2</span> Week-day eating</h2>
+<pre><code>    - Contemporary : timing, location, participants, seasons, who cooks (content can change depending on the relevance for this type of meal)
+    - What changed in history -&gt; energy implications
+    - What varies between regions -&gt; energy implications</code></pre>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/weekdayEatingAtHome-1.png" alt="" /><!-- --></p>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/weekdayEatingAtFf-1.png" alt="" /><!-- --></p>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/weekdayEatingAtWs-1.png" alt="" /><!-- --></p>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/weekdayEatingOut-1.png" alt="" /><!-- --></p>
+<p>NB: eating out could include travelling.</p>
+</div>
+<div id="dinner" class="section level2">
+<h2><span class="header-section-number">4.3</span> Dinner</h2>
+<pre><code>    - Contemporary : timing, location, participants, seasons, who cooks
+    - What changed in history -&gt; energy implications
+    - What varies between regions -&gt; energy implications</code></pre>
+</div>
+<div id="sunday-lunch" class="section level2">
+<h2><span class="header-section-number">4.4</span> Sunday lunch</h2>
+<pre><code>    - Contemporary : timing, location, participants, seasons, who cooks
+    - What changed in history -&gt; energy implications
+    - What varies between regions -&gt; energy implications</code></pre>
+</div>
+</div>
+<div id="discussion" class="section level1">
+<h1><span class="header-section-number">5</span> Discussion</h1>
+<p>Draw together the threads of the results to discuss:</p>
+<ul>
+<li>Main eating daily structure and synchronisation: giving time</li>
+<li>Energy demand location: home, tertiary, industry</li>
+<li>Employment, gender roles: how other practices change and constrain</li>
+</ul>
+</div>
+<div id="acknowledgements" class="section level1">
+<h1><span class="header-section-number">6</span> Acknowledgements</h1>
+<p>This work was funded by RCUK through the End User Energy Demand Centres Programme via the “DEMAND: Dynamics of Energy, Mobility and Demand” Centre:</p>
+<ul>
+<li><a href="http://www.demand.ac.uk" class="uri">http://www.demand.ac.uk</a></li>
+<li><a href="http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1" class="uri">http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1</a></li>
+</ul>
+</div>
+<div id="statistical-annexes-if-needed" class="section level1">
+<h1><span class="header-section-number">7</span> Statistical annexes (if needed)</h1>
+<div id="mtus-uk-sample" class="section level2">
+<h2><span class="header-section-number">7.1</span> MTUS UK sample</h2>
+<p>MTUS activity codes collected per year.</p>
+<pre><code>##                                                 
+##                                                   1974  1985  2000  2005
+##   adult care                                         0  1237  1235   301
+##   art or music                                       0   682   634     0
+##   attend sporting event                            173   352   431     0
+##   child/adult care travel                         3275  5542  4528   996
+##   cinema, theatre, opera, concert                  182   284   394   179
+##   cleaning                                       13082 12694 15158  3032
+##   computer games                                     0   142   825     0
+##   consume other services                             0  1482  1119     0
+##   consume personal care services                   622  1248   974     0
+##   conversation (in person, phone)                 3855 12327  9047  1032
+##   correspondence (not e-mail)                        0  1773   622     0
+##   cycling                                            0    53   255    88
+##   e-mail, surf internet, computing                   0   100  2252   601
+##   education travel                                 175   646   602     0
+##   food preparation, cooking                      24452 35968 37889  8653
+##   games (social &amp; solitary)/other in-home social     0  1720  2029     0
+##   gardening/pick mushrooms                        1956  2589  3863     0
+##   general indoor leisure                          2645   651     1   648
+##   general out-of-home leisure                     1619   443   316     0
+##   general sport or exercise                        494  1494  2129   507
+##   homework                                         102   880   472   100
+##   imputed personal or household care              2622  5273  1287    10
+##   imputed sleep                                    487    39    54    25
+##   imputed time away from home                      244   220   379    27
+##   knit, crafts or hobbies                         1969  2769  1367  1098
+##   laundry, ironing, clothing repair               1236  8078 10003  1376
+##   leisure &amp; other education or training            109   259   375    51
+##   listen to music or other audio content           655   962  1069     0
+##   listen to radio                                 2272  2110  2347     0
+##   look for work                                      0   394    82     0
+##   maintain home/vehicle, including collect fuel   3161  4389  5414  1080
+##   meals at work or school                         2519  4540  2455     0
+##   meals or snacks in other places                35370 52147 56228 11038
+##   no activity, imputed or recorded transport       499     2   114     0
+##   no recorded activity                             145  5168  3937    80
+##   other domestic work                             2751  9093  8961     0
+##   other outside recreation                         564   174   491     0
+##   other public event, venue                        300   250   789     0
+##   other time at workplace                           59    31   217     0
+##   other travel                                   12674 13599 16373  5997
+##   paid work at home                                813  1746  1677   625
+##   paid work-main job (not at home)               13031 22042  9194  4478
+##   party, social event, gambling                    987  1857   830     0
+##   pet care (not walk dog)                          739  2925  3640  1090
+##   physical, medical child care                    4024 12762 11177  2883
+##   purchase goods                                  6187  9793 10188  2540
+##   read                                            6818 13457 13625  2335
+##   read to, talk or play with child                1154  2779  4551     0
+##   receive or visit friends                        9392 12522 14475  3832
+##   regular schooling, education                     217   746   341   117
+##   relax, think, do nothing                       23515  8891 11290  4200
+##   restaurant, café, bar, pub                      1912  4865  3028  2136
+##   second or other job not at home                  124   122    99     0
+##   set table, wash/put away dishes                    0 15317 14522     0
+##   shop, person/hhld care travel                   3052  8268 16032  2456
+##   sleep and naps                                 40316 41077 36264 10051
+##   supervise, accompany, other child care             0  1477   704     0
+##   teach, help with homework                          0   244   524     0
+##   travel as a part of work                         351   606    65     0
+##   travel to/from work                            14219 14296 10717  2435
+##   unpaid work to generate household income           0    43     0     0
+##   voluntary, civic, organisational act             448  2162  4558   206
+##   voluntary/civic/religious travel                   0   944  3858     0
+##   walk dogs                                          0  1231  2743     0
+##   walking                                         1768  2562  7020  2149
+##   wash, dress, care for self                     27995 51442 38498  8709
+##   watch TV, video, DVD, streamed film            23919 39912 45025  8640
+##   work breaks                                        0  7130  1494     0
+##   worship and religion                             337  1074  1308   235</code></pre>
+<p>MTUS episodes per month by year</p>
+<table>
+<caption>UK episodes per month by survey</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">1974</th>
+<th align="right">1985</th>
+<th align="right">2000</th>
+<th align="right">2005</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">January</td>
+<td align="right">0</td>
+<td align="right">83303</td>
+<td align="right">33715</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">February</td>
+<td align="right">129080</td>
+<td align="right">17762</td>
+<td align="right">38166</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">March</td>
+<td align="right">49613</td>
+<td align="right">80533</td>
+<td align="right">30790</td>
+<td align="right">31178</td>
+</tr>
+<tr class="even">
+<td align="left">April</td>
+<td align="right">0</td>
+<td align="right">151098</td>
+<td align="right">33372</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">May</td>
+<td align="right">0</td>
+<td align="right">32416</td>
+<td align="right">44442</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">June</td>
+<td align="right">0</td>
+<td align="right">1304</td>
+<td align="right">39563</td>
+<td align="right">23198</td>
+</tr>
+<tr class="odd">
+<td align="left">July</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">55426</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">August</td>
+<td align="right">96472</td>
+<td align="right">0</td>
+<td align="right">54732</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">September</td>
+<td align="right">26421</td>
+<td align="right">257</td>
+<td align="right">44863</td>
+<td align="right">22144</td>
+</tr>
+<tr class="even">
+<td align="left">October</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">33098</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">November</td>
+<td align="right">0</td>
+<td align="right">101961</td>
+<td align="right">34559</td>
+<td align="right">19516</td>
+</tr>
+<tr class="even">
+<td align="left">December</td>
+<td align="right">0</td>
+<td align="right">5462</td>
+<td align="right">21438</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>MTUS episodes per season by year</p>
+<table>
+<caption>UK episodes per season by survey</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">1974</th>
+<th align="right">1985</th>
+<th align="right">2000</th>
+<th align="right">2005</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Autumn</td>
+<td align="right">26421</td>
+<td align="right">102218</td>
+<td align="right">112520</td>
+<td align="right">41660</td>
+</tr>
+<tr class="even">
+<td align="left">Spring</td>
+<td align="right">49613</td>
+<td align="right">264047</td>
+<td align="right">108604</td>
+<td align="right">31178</td>
+</tr>
+<tr class="odd">
+<td align="left">Summer</td>
+<td align="right">96472</td>
+<td align="right">1304</td>
+<td align="right">149721</td>
+<td align="right">23198</td>
+</tr>
+<tr class="even">
+<td align="left">Winter</td>
+<td align="right">129080</td>
+<td align="right">106527</td>
+<td align="right">93319</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>MTUS episode locations per year</p>
+<table>
+<caption>UK episodes per location (original) by survey</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">1974</th>
+<th align="right">1985</th>
+<th align="right">2000</th>
+<th align="right">2005</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">at another’s home</td>
+<td align="right">0</td>
+<td align="right">17430</td>
+<td align="right">19109</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">at own home</td>
+<td align="right">220990</td>
+<td align="right">340883</td>
+<td align="right">331560</td>
+<td align="right">60529</td>
+</tr>
+<tr class="odd">
+<td align="left">at place of worship</td>
+<td align="right">337</td>
+<td align="right">833</td>
+<td align="right">768</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">at restaurant, bar etc</td>
+<td align="right">1700</td>
+<td align="right">6095</td>
+<td align="right">6124</td>
+<td align="right">2499</td>
+</tr>
+<tr class="odd">
+<td align="left">at school</td>
+<td align="right">326</td>
+<td align="right">1023</td>
+<td align="right">527</td>
+<td align="right">104</td>
+</tr>
+<tr class="even">
+<td align="left">at services or shops</td>
+<td align="right">6787</td>
+<td align="right">13011</td>
+<td align="right">13091</td>
+<td align="right">2021</td>
+</tr>
+<tr class="odd">
+<td align="left">at workplace</td>
+<td align="right">15658</td>
+<td align="right">33658</td>
+<td align="right">13809</td>
+<td align="right">4037</td>
+</tr>
+<tr class="even">
+<td align="left">location unknown</td>
+<td align="right">142</td>
+<td align="right">25</td>
+<td align="right">348</td>
+<td align="right">6163</td>
+</tr>
+<tr class="odd">
+<td align="left">other locations</td>
+<td align="right">19633</td>
+<td align="right">13631</td>
+<td align="right">12242</td>
+<td align="right">6424</td>
+</tr>
+<tr class="even">
+<td align="left">travelling</td>
+<td align="right">36013</td>
+<td align="right">47507</td>
+<td align="right">66586</td>
+<td align="right">14259</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="testing-methods-to-analyse-temporal-distributions-of-cooking-eating-episodes" class="section level2">
+<h2><span class="header-section-number">7.2</span> Testing methods to analyse temporal distributions of cooking &amp; eating episodes</h2>
+<p>In order to control for the potentially different levels of reporting due to the different diary slot durations, we could also calculate an indicator which is 1 if at least one epsiode in a given half hour is reported to be the activity of interest and 0 otherwise. In the case of the 1974 data where the diary slot duration was 30 minutes there will be no difference. However in the case of the other diaries where data was collected in slots of 15 minutes (1983, 1987) or 10 minutes (2000/1, 2005) duration, this will have the effect of increasing the apparent rate as the denominator is no longer the sum of all episodes in the half hour but the (lower) number of half hours.</p>
+<p>The tables below show the distribution of these indicators across years.</p>
+<table>
+<caption>Cooking: Half hour indicator summaries (unweighted)</caption>
+<thead>
+<tr class="header">
+<th align="right">ba_survey</th>
+<th align="right">Cooking (mean n episodes per halfhour)</th>
+<th align="right">Cooking (max episodes per hh)</th>
+<th align="right">Cooking (% ‘at least 1’)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1974</td>
+<td align="right">0.08</td>
+<td align="right">1</td>
+<td align="right">8.39</td>
+</tr>
+<tr class="even">
+<td align="right">1985</td>
+<td align="right">0.09</td>
+<td align="right">6</td>
+<td align="right">8.70</td>
+</tr>
+<tr class="odd">
+<td align="right">2000</td>
+<td align="right">0.11</td>
+<td align="right">3</td>
+<td align="right">10.12</td>
+</tr>
+<tr class="even">
+<td align="right">2005</td>
+<td align="right">0.11</td>
+<td align="right">3</td>
+<td align="right">10.29</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Eating: Half hour indicator summaries (unweighted)</caption>
+<thead>
+<tr class="header">
+<th align="right">ba_survey</th>
+<th align="right">Eating (mean n episodes per halfhour)</th>
+<th align="right">Eating (max episodes per halfhour)</th>
+<th align="right">Eating (% ‘at least 1’)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1974</td>
+<td align="right">0.13</td>
+<td align="right">2</td>
+<td align="right">12.99</td>
+</tr>
+<tr class="even">
+<td align="right">1985</td>
+<td align="right">0.14</td>
+<td align="right">4</td>
+<td align="right">14.12</td>
+</tr>
+<tr class="odd">
+<td align="right">2000</td>
+<td align="right">0.17</td>
+<td align="right">3</td>
+<td align="right">15.73</td>
+</tr>
+<tr class="even">
+<td align="right">2005</td>
+<td align="right">0.13</td>
+<td align="right">3</td>
+<td align="right">13.20</td>
+</tr>
+</tbody>
+</table>
+<p>We would expect there to be a maximum count of 1 in 1974 (the diary slots were 30 minutes long) but higher in the later years (diary slots are shorter). There appear to be some half hours with a lot of episode ‘churn’ - where the maximum is greater than 4. The following stem and leaf plots show the frequency of multiple episodes of cooking or eating per half hour.</p>
+<p>Cooking:</p>
+<pre><code>## 
+##   The decimal point is at the |
+## 
+##   0 | 00000000000000000000000000000000000000000000000000000000000000000000+1007676
+##   0 | 
+##   1 | 00000000000000000000000000000000000000000000000000000000000000000000+96990
+##   1 | 
+##   2 | 00000000000000000000000000000000000000000000000000000000000000000000+4281
+##   2 | 
+##   3 | 00000000000000000000000000000000000000000000000000000000000000000000+293
+##   3 | 
+##   4 | 0000000000
+##   4 | 
+##   5 | 0
+##   5 | 
+##   6 | 0</code></pre>
+<p>Eating:</p>
+<pre><code>## 
+##   The decimal point is 1 digit(s) to the left of the |
+## 
+##    0 | 00000000000000000000000000000000000000000000000000000000000000000000+951337
+##    2 | 
+##    4 | 
+##    6 | 
+##    8 | 
+##   10 | 00000000000000000000000000000000000000000000000000000000000000000000+152259
+##   12 | 
+##   14 | 
+##   16 | 
+##   18 | 
+##   20 | 00000000000000000000000000000000000000000000000000000000000000000000+5417
+##   22 | 
+##   24 | 
+##   26 | 
+##   28 | 
+##   30 | 00000000000000000000000000000000000000000000000000000000000000000000+232
+##   32 | 
+##   34 | 
+##   36 | 
+##   38 | 
+##   40 | 0000000</code></pre>
+<p>The stem plots suggest that these are extremely rare events and so can be discounted as affecting the indicator unduly.</p>
+<p>In the rest of this section we explore the two different approaches to comparing temporal distirbutions. The first graph in each section simply shows the percentage of episodes in a given half hour that were reported as being the activity of interest.</p>
+<p>This second graphs repeat the above analysis but instead uses the ‘any in the half hour’ indicator. In theory this should control for any affects of the shorter diary slots in the more recent diaries but it will, of course, treat (e.g.) 1 or 3 episodes within a half hour as equivalent.</p>
+<div id="cooking" class="section level3">
+<h3><span class="header-section-number">7.2.1</span> Cooking</h3>
+<p>The following graph compares the results of these two methods for cooking.</p>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/compareUKCookingHalfhour2005-1.png" alt="" /><!-- --></p>
+<p>As we can see (as expected) that the ‘at least 1 in a given half hour’ matches to the % episodes per half hour in 1974 (1/2 hour diary slots), is higher in the morning in 1983/1987 (15 minute slots), similar in 1995 (15 minute slots) and higher in the mornings in 2000 &amp; 2005 (10 minute slots). The indicator does not appear to unduly affect the observed patterns although it may over-emphasise cooking done in shorter durations such as in the early morning. This may lead us to conclude that ‘more’ cooking is being done in the morning which is not the case since this indicator cannot measure ‘levels’ of an activity.</p>
+</div>
+<div id="eating" class="section level3">
+<h3><span class="header-section-number">7.2.2</span> Eating</h3>
+<p>And now we do the same for eating.</p>
+<p><img src="DEMAND_Book_Ch_Dinner_files/figure-html/compareUKEatingHalfhour2005-1.png" alt="" /><!-- --></p>
+<p>As for cooking, the ‘at least once in a given half hour’ indicator records slightly higher values than the % episodes indicator from 1983 onwards (but not 1995) and especially in the morning. The same cautions therefore apply.</p>
+<hr />
+<p><strong>Meta:</strong> Analysis completed in: 11.516 seconds using <a href="https://cran.r-project.org/package=knitr">knitr</a> in <a href="http://www.rstudio.com">RStudio</a>.</p>
+<hr />
+<p><strong>Footnotes:</strong></p>
+</div>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-data.table">
+<p>Dowle, M, A Srinivasan, T Short, S Lianoglou with contributions from R Saporta, and E Antonyan. 2015. <em>Data.table: Extension of Data.frame</em>. <a href="https://CRAN.R-project.org/package=data.table" class="uri">https://CRAN.R-project.org/package=data.table</a>.</p>
+</div>
+<div id="ref-survey">
+<p>Lumley, T. 2014. <em>Survey: Analysis of Complex Survey Samples</em>. <a href="https://CRAN.R-project.org/package=survey" class="uri">https://CRAN.R-project.org/package=survey</a>.</p>
+</div>
+<div id="ref-baseR">
+<p>R Core Team. 2016. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/" class="uri">https://www.R-project.org/</a>.</p>
+</div>
+<div id="ref-ggplot2">
+<p>Wickham, Hadley. 2009. <em>Ggplot2: Elegant Graphics for Data Analysis</em>. Springer-Verlag New York. <a href="http://ggplot2.org" class="uri">http://ggplot2.org</a>.</p>
+</div>
+<div id="ref-knitr">
+<p>Xie, Yihui. 2016. <em>Knitr: A General-Purpose Package for Dynamic Report Generation in R</em>. <a href="https://CRAN.R-project.org/package=knitr" class="uri">https://CRAN.R-project.org/package=knitr</a>.</p>
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
