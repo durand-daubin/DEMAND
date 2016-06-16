@@ -1,8 +1,10 @@
 .Rhistory
 .RData
+.DS_Store
+.Rproj.user
 *.csv
 *.xls
 *.dta
 *.docx
 *.pdf
-.Rproj.user
+
