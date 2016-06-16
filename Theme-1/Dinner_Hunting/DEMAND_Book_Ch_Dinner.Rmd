@@ -4,12 +4,9 @@ title: 'The Changing Timing of Cooking in the United Kingdom and France: Implica
 author: "Mathieu Durand-Daubin, Ben Anderson (mathieu.durand-daubin@edf.fr; b.anderson@soton.ac.uk)"
 date: 'Last run at: `r Sys.time()`'
 output:
-  html_document:
+  pdf_document:
     fig_caption: yes
-    keep_md: yes
     number_sections: yes
-    self_contained: no
-    theme: journal
     toc: yes
   md_document:
     fig_caption: yes
@@ -17,9 +14,11 @@ output:
     theme: journal
     toc: yes
     toc_depth: 3
-  pdf_document:
+  html_document:
     fig_caption: yes
     number_sections: yes
+    self_contained: no
+    theme: journal
     toc: yes
   word_document:
     fig_caption: yes
