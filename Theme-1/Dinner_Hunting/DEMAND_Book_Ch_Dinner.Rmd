@@ -37,6 +37,8 @@ knitr::opts_chunk$set(fig_caption = TRUE)
 knitr::opts_chunk$set(tidy = TRUE)
 ```
 
+\pagebreak
+
 Abstract (original)
 
 Aggregate energy demand follows strong repetitive patterns on multiple scales (day, week, seasons), due to social rhythms coordinating the synchronicity of consuming practices. These patterns are not only related to natural cycles that remain unchanged, but also to social structures and technology, that change over the years and across different geographical areas.
@@ -44,6 +46,7 @@ How do these changes and regional differences affect energy demand rhythms? Answ
 
 In this research we study the energy footprint of practices which are widely shared, highly regular, and key markers of the social organisation: eating practices. Different types of meals and food preparation are described based on the quantitative data collected by the means of Time Use Surveys in France and in the United Kingdom. These practices are defined in terms of time, durations, primary, secondary and surrounding activities, participants, and places. The distribution of these practices are studied across several time scales (week days, seasons, and decades from 1974 to 2010) and areas (UK, France and French regions). The temporal and spatial variations of eating practices can then be compared with the energy demand measured by the power grids or in specific campaigns, and varying along the same axes. This comparison reveals how parts of the energy demand dynamic are related to specific practices and their synchronisation. Finally, the mechanism of this coevolution can be partly interpreted in the light of wider social and technical changes depicted in socio-economic and demographic series (employment structure, food consumption, home equipment).
 
+\pagebreak
 
 ````{r houseKeeping}
 print("# Setting up R environment")
@@ -79,6 +82,8 @@ episodesFile <- "MTUSW6UKdiaryEps_DT.csv.gz"
 sfile <- paste0(mtusPath, surveyFile)
 efile <- paste0(mtusPath, episodesFile)
 ````
+
+\pagebreak
 
 # Introduction
 Discussion of temporal nature of electricity demand, interest in peaks (reasons for this) and the ability to shift in general.
@@ -123,6 +128,7 @@ Discussion of stats tools used. For UK, R and in particular:
  * base R - for the basics [@baseR]
  * data.table - for fast (big) data handling [@data.table]
  * ggplot2 - for slick grpahics [@ggplot2]
+ * survey - for weighted survey analysis [@survey]
  * knitr - to create this document [@knitr]
  
 ## United Kingdom (MTUS)
@@ -518,10 +524,10 @@ main <- svyby(~is_cooking_m, # the variable to calculate the stat for
                    )
 # fiddle to get the right look to the table
 tm <- as.data.table(main)
-tm[, is_cooking_m := round(is_cooking_m, 2)]
+tm[, is_cooking_m := round(is_cooking_m*100, 2)]
 tm[, se := NULL] # drop SE as we're going to add the 95% CI
 
-cm <- round(confint(main),2)
+cm <- round(confint(main)*100,2)
 tm <- as.data.table(cbind(tm,cm))
 setnames(tm, c("Survey", "Main (% all episodes)", "2.5%", "97.5%"))
 
@@ -533,10 +539,10 @@ sec <- svyby(~is_cooking_s, # the variable to calculate the stat for
                    )
 # fiddle to get the right look to the table
 ts <- as.data.table(sec)
-ts[, is_cooking_s := round(is_cooking_s, 2)]
+ts[, is_cooking_s := round(is_cooking_s*100, 2)]
 ts[, se := NULL] # drop SE as we're going to add the 95% CI
 
-cs <- round(confint(sec),2)
+cs <- round(confint(sec)*100,2)
 ts <- as.data.table(cbind(ts,cs))
 
 setnames(ts, c("Survey", "Secondary (% all episodes)", "2.5%", "97.5%"))
@@ -563,10 +569,10 @@ main <- svyby(~is_eating_m, # the variable to calculate the stat for
                    )
 # fiddle to get the right look to the table
 tm <- as.data.table(main)
-tm[, is_eating_m := round(is_eating_m, 2)]
+tm[, is_eating_m := round(is_eating_m*100, 2)]
 tm[, se := NULL] # drop SE as we're going to add the 95% CI
 
-cm <- round(confint(main),2)
+cm <- round(confint(main)*100,2)
 tm <- as.data.table(cbind(tm,cm))
 setnames(tm, c("Survey", "Main (% all episodes)", "2.5%", "97.5%"))
 
@@ -578,10 +584,10 @@ sec <- svyby(~is_eating_s, # the variable to calculate the stat for
                    )
 # fiddle to get the right look to the table
 ts <- as.data.table(sec)
-ts[, is_eating_s := round(is_eating_s, 2)]
+ts[, is_eating_s := round(is_eating_s*100, 2)]
 ts[, se := NULL] # drop SE as we're going to add the 95% CI
 
-cs <- round(confint(sec),2)
+cs <- round(confint(sec)*100,2)
 ts <- as.data.table(cbind(ts,cs))
 
 setnames(ts, c("Survey", "Secondary (% all episodes)", "2.5%", "97.5%"))
@@ -630,10 +636,10 @@ cookEpsWm <- svyby(~is_cooking_m, # the variable to calculate the stat for
 
 # fiddle to get the right look to the table
 t <- as.data.table(cookEpsWm)
-t[, is_cooking_m := round(is_cooking_m, 2)]
+t[, is_cooking_m := round(is_cooking_m*100, 2)]
 t[, se := NULL] # drop SE as we're going to add the 95% CI
 
-c <- round(confint(cookEpsWm),2)
+c <- round(confint(cookEpsWm)*100,2)
 t <- cbind(t,c)
 setnames(t, c("Sex", "Survey", "% episodes", "2.5%", "97.5%"))
 
@@ -656,10 +662,10 @@ eatEpsWm <- svyby(~is_eating_m, # the variable to calculate the stat for
                    )
 # fiddle to get the right look to the table
 t <- as.data.table(eatEpsWm)
-t[, is_eating_m := round(is_eating_m, 2)]
+t[, is_eating_m := round(is_eating_m*100, 2)]
 t[, se := NULL] # drop SE as we're going to add the 95% CI
 
-c <- round(confint(eatEpsWm), 2) 
+c <- round(confint(eatEpsWm)*100, 2) 
 t <- cbind(t,c)
 setnames(t, c("Sex", "Survey", "% episodes", "2.5%", "97.5%"))
 
@@ -683,11 +689,11 @@ epst <- svyby(~is_cooking_m, # the variable to calculate the stat for
 ggplot(epst, aes(x = as.POSIXct(st_halfhour, 
                                format = "%H:%M", 
                                tz="UTC"),
-                            y = is_cooking_m,
+                            y = is_cooking_m*100,
                colour = as.factor(ba_survey.x)
                             )
        ) +
-  ggtitle("Cooking in the UK: % of episodes per halfhour by Saturday/Sunday/weekday (mean)") +
+  ggtitle("Cooking in the UK \n % of episodes per halfhour by Saturday/Sunday/weekday (mean)") +
   geom_line() + 
   scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
   #scale_color_discrete(hi = "green", lo = "black") +
@@ -713,11 +719,11 @@ it <- svyby(~any_cook_m, # the variable to calculate the stat for
 ggplot(it, aes(x = as.POSIXct(st_halfhour, 
                                format = "%H:%M", 
                                tz="UTC"),
-                            y = any_cook_m,
+                            y = any_cook_m*100,
                colour = as.factor(ba_survey.x)
                             )
        ) +
-  ggtitle("Cooking in the UK: % of any per halfhour by Saturday/Sunday/weekday (mean)") +
+  ggtitle("Cooking in the UK \n % of any per halfhour by Saturday/Sunday/weekday (mean)") +
   geom_line() + 
   scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
   #scale_color_discrete(hi = "green", lo = "black") +
@@ -745,11 +751,11 @@ epst <- svyby(~is_eating_m, # the variable to calculate the stat for
 ggplot(epst, aes(x = as.POSIXct(st_halfhour, 
                                format = "%H:%M", 
                                tz="UTC"),
-                            y = is_eating_m,
+                            y = is_eating_m*100,
                colour = as.factor(ba_survey.x)
                             )
        ) +
-  ggtitle("Eating in the UK: % of episodes per halfhour by Saturday/Sunday/weekday (mean)") +
+  ggtitle("Eating in the UK \n % of episodes per halfhour by Saturday/Sunday/weekday (mean)") +
   geom_line() + 
   scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
   #scale_color_discrete(hi = "green", lo = "black") +
@@ -775,11 +781,11 @@ it <- svyby(~any_eat_m, # the variable to calculate the stat for
 ggplot(it, aes(x = as.POSIXct(st_halfhour, 
                                format = "%H:%M", 
                                tz="UTC"),
-                            y = any_eat_m,
+                            y = any_eat_m*100,
                colour = as.factor(ba_survey.x)
                             )
        ) +
-  ggtitle("Eating in the UK: % of any per halfhour by Saturday/Sunday/weekday (mean)") +
+  ggtitle("Eating in the UK \n % of any per halfhour by Saturday/Sunday/weekday (mean)") +
   geom_line() + 
   scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
   #scale_color_discrete(hi = "green", lo = "black") +
@@ -816,10 +822,10 @@ weekdayLunchWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
 
 # fiddle to get the right look to the table
 t <- as.data.table(weekdayLunchWm)
-t[, weekdayLunch := round(weekdayLunch, 2)]
+t[, weekdayLunch := round(weekdayLunch*100, 2)]
 t[, se := NULL] # drop SE as we're going to add the 95% CI
 
-c <- round(confint(weekdayLunchWm), 2)
+c <- round(confint(weekdayLunchWm)*100, 2)
 t <- cbind(t,c)
 setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
 
@@ -840,10 +846,10 @@ dinnerWm <- svyby(~dinner, # the variable to calculate the stat for
 
 # fiddle to get the right look to the table
 t <- as.data.table(dinnerWm)
-t[, dinner := round(dinner, 2)]
+t[, dinner := round(dinner*100, 2)]
 t[, se := NULL] # drop SE as we're going to add the 95% CI
 
-c <- round(confint(dinnerWm), 2)
+c <- round(confint(dinnerWm)*100, 2)
 t <- cbind(t,c)
 setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
 
@@ -864,10 +870,10 @@ sundayLunchWm <- svyby(~sundayLunch, # the variable to calculate the stat for
 
 # fiddle to get the right look to the table
 t <- as.data.table(sundayLunchWm)
-t[, sundayLunch := round(sundayLunch, 2)]
+t[, sundayLunch := round(sundayLunch*100, 2)]
 t[, se := NULL] # drop SE as we're going to add the 95% CI
 
-c <- round(confint(sundayLunchWm), 2) 
+c <- round(confint(sundayLunchWm*100), 2) 
 t <- cbind(t,c)
 setnames(t, c("Survey", "% episodes", "2.5%", "97.5%"))
 kable(caption = "UK: Weighted proportion of episodes coded as sunday lunch as a main activity",       
@@ -907,10 +913,93 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
   theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
 # could add confints to this but...
+```
+
+```{r weekdayEatingAtFf}
+# at home
+st <- svyby(~is_eating_mFf, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x, # the factors
+                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday"), # the data in survey form
+                   svymean # the stat function
+                   )
+
+ggplot(st, aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"),
+                            y = is_eating_mFf*100,
+               colour = as.factor(ba_survey.x)
+                            )
+       ) +
+  ggtitle("Eating at friends/family in the UK \n % of episodes per halfhour on weekdays") +
+  geom_line() + 
+  scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title = element_blank()) +
+  labs(x = "Time",
+       y = "%"
+  ) +
+  scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
 # could add confints to this but...
 ```
 
-XX This chart is the proportion of episodes within each location type - need to re-calculate to be specific about kind of eating practice across all episodes XX
+```{r weekdayEatingAtWs}
+# at home
+st <- svyby(~is_eating_mWs, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x, # the factors
+                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday"), # the data in survey form
+                   svymean # the stat function
+                   )
+
+ggplot(st, aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"),
+                            y = is_eating_mWs*100,
+               colour = as.factor(ba_survey.x)
+                            )
+       ) +
+  ggtitle("Eating at work/school in the UK \n % of episodes per halfhour on weekdays") +
+  geom_line() + 
+  scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title = element_blank()) +
+  labs(x = "Time",
+       y = "%"
+  ) +
+  scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
+# could add confints to this but...
+```
+
+```{r weekdayEatingOut}
+# at home
+st <- svyby(~is_eating_mOut, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x, # the factors
+                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday"), # the data in survey form
+                   svymean # the stat function
+                   )
+
+ggplot(st, aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"),
+                            y = is_eating_mOut*100,
+               colour = as.factor(ba_survey.x)
+                            )
+       ) +
+  ggtitle("Eating out in the UK \n % of episodes per halfhour on weekdays") +
+  geom_line() + 
+  scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title = element_blank()) +
+  labs(x = "Time",
+       y = "%"
+  ) +
+  scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
+# could add confints to this but...
+```
+
+NB: eating out could include travelling.
 
 ## Dinner
 		- Contemporary : timing, location, participants, seasons, who cooks
@@ -938,9 +1027,6 @@ This work was funded by RCUK through the End User Energy Demand Centres Programm
  * http://www.demand.ac.uk 
  * http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/K011723/1
  
-# References
- Go here
-
 # Statistical annexes (if needed)
 ## MTUS UK sample
 
