@@ -1,36 +1,31 @@
 ---
 title: 'The Changing Timing of Cooking in the United Kingdom and France: Implications
   for Energy Demand'
-author: "Mathieu Durand-Daubin, Ben Anderson"
-date: "(mathieu.durand-daubin@edf.fr; b.anderson@soton.ac.uk, @dataknut)"
+author: "Mathieu Durand-Daubin, Ben Anderson (mathieu.durand-daubin@edf.fr; b.anderson@soton.ac.uk)"
+date: 'Last run at: `r Sys.time()`'
 output:
-  html_document:
-    fig_caption: yes
-    keep_md: yes
-    number_sections: yes
-    theme: journal
-    toc: yes
-    toc_depth: 3
-  md_document:
-    fig_caption: yes
-    keep_md: yes
-    number_sections: yes
-    theme: journal
-    toc: yes
-    toc_depth: 3
   pdf_document:
     fig_caption: yes
-    keep_md: yes
+    number_sections: yes
+    toc: yes
+  md_document:
+    fig_caption: yes
+    number_sections: yes
+    theme: journal
+    toc: yes
+    toc_depth: 3
+  html_document:
+    fig_caption: yes
     number_sections: yes
     theme: journal
     toc: yes
     toc_depth: 3
   word_document:
     fig_caption: yes
-    keep_md: yes
     number_sections: yes
     theme: journal
     toc: yes
+bibliography: bibliography.bib
 ---
 
 ```{r setupKnitr, include=FALSE}
@@ -116,22 +111,31 @@ More detailed discussion of the problem of peak demand? - expensive/dirty genera
  
 Should this come after a general exploration of the data? So that we can look at the timings and then explain why we concentrate on these 'practices'?
 
-# Data
+# Data and Methods
 A relatively brief introduction to the time use diary data for each country:
 
  * years & sources
  * key collection/diary features
  * categories of activities & any coding issues/missing attributes
 
+Discussion of stats tools used. For UK, R and in particular:
+
+ * base R - for the basics [@baseR]
+ * data.table - for fast (big) data handling [@data.table]
+ * ggplot2 - for slick grpahics [@ggplot2]
+ * knitr - to create this document [@knitr]
+ 
 ## United Kingdom (MTUS)
 
-```{r loadUKData}
-# Load episodes ----
+```{r loadUkEpisodes}
+# use gunzip method
 ecmd <- paste0("gunzip -c ", efile)
 mtusUKEpisodes_DT <- fread(ecmd)
 # set key 
 setkey(mtusUKEpisodes_DT, ba_diarypid)
+```
 
+```{r processUkEpisodes}
 # Episodes processing ----
 
 # > XX need to fix: ----
@@ -146,6 +150,34 @@ mtusUKEpisodes_DT[, r_dow := factor(r_dow,
 				)
 		]
 		
+# > Create a simpler location ----
+mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "at own home",
+	"Home",
+	NA
+	)
+	]
+mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "at another\342\200\231s home",
+	"Family/friends",
+	ba_eloc
+	)
+	]
+mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "at school" | eloc == "at workplace",
+	"Work or school",
+	ba_eloc
+	)
+	]
+mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "at place of worship" | eloc == "at restaurant, bar etc" | 
+	eloc == "at services or shops" | eloc == "travelling" | eloc == "other locations",
+	"Out (somewhere)",
+	ba_eloc
+	)
+	]
+mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "location unknown",
+	"Unknown",
+	ba_eloc
+	)
+	]
+
 # > create a weekday/weekend factor ----
 mtusUKEpisodes_DT[, ba_weekday := ifelse(r_dow == "Saturday",
 						"Saturday",
@@ -226,19 +258,19 @@ mtusUKEpisodes_DT[, r_month := factor(mtusUKEpisodes_DT$r_month,
 cook <- "food preparation, cooking"
 # main act
 mtusUKEpisodes_DT[, is_cooking_m:= ifelse(main == cook, 
-                                          100, # cooking
+                                          1, # cooking
                                           0 # not cooking
                                           )
                   ]
 # secondary act
 mtusUKEpisodes_DT[, is_cooking_s:= ifelse(sec == cook, 
-                                          100, # cooking
+                                          1, # cooking
                                           0 # not cooking
                                           )
                   ]
 # main or secondary
-mtusUKEpisodes_DT[, is_cooking_all:= ifelse(is_cooking_m == 100 | is_cooking_s == 100, 
-                                          100, # cooking
+mtusUKEpisodes_DT[, is_cooking_all:= ifelse(is_cooking_m == 1 | is_cooking_s == 1, 
+                                          1, # cooking
                                           0 # not cooking
                                           )
                   ]
@@ -247,19 +279,44 @@ mtusUKEpisodes_DT[, is_cooking_all:= ifelse(is_cooking_m == 100 | is_cooking_s =
 eat_wk <- "meals at work or school"
 eat_oth <- "meals or snacks in other places"
 mtusUKEpisodes_DT[, is_eating_m:= ifelse(main == eat_wk | main == eat_oth, 
-                                          100, # eating
+                                          1, # eating
                                           0 # not eating
                                           )
                   ]
+# >> eat @ home ----
+mtusUKEpisodes_DT[, is_eating_mHome:= ifelse(is_eating_m == 1 & ba_eloc == "Home", 
+                                          1, # eating
+                                          0 # not eating
+                                          )
+                  ]
+# >> eat @ family/friends ----
+mtusUKEpisodes_DT[, is_eating_mFf:= ifelse(is_eating_m == 1 & ba_eloc == "Family/friends", 
+                                          1, # eating
+                                          0 # not eating
+                                          )
+                  ]
+# >> eat @ work/school ----
+mtusUKEpisodes_DT[, is_eating_mWs:= ifelse(is_eating_m == 1 & ba_eloc == "Work or school", 
+                                          1, # eating
+                                          0 # not eating
+                                          )
+                  ]
+# >> eat out ----
+mtusUKEpisodes_DT[, is_eating_mOut:= ifelse(is_eating_m == 1 & ba_eloc == "Out (somewhere)", 
+                                          1, # eating
+                                          0 # not eating
+                                          )
+                  ]
+
 # secondary act
 mtusUKEpisodes_DT[, is_eating_s:= ifelse(sec == eat_wk | sec == eat_oth, 
-                                          100, # eating
+                                          1, # eating
                                           0 # not eating
                                           )
                   ]
 # main or secondary
-mtusUKEpisodes_DT[, is_eating_all:= ifelse(is_eating_m == 100 | is_eating_s == 100, 
-                                          100, # eating
+mtusUKEpisodes_DT[, is_eating_all:= ifelse(is_eating_m == 1 | is_eating_s == 1, 
+                                          1, # eating
                                           0 # not eating
                                           )
                   ]
@@ -272,12 +329,13 @@ mtusUKEpisodes_DT[, hour := as.POSIXlt(r_epStartTime)$hour]
 mtusUKEpisodes_DT[, mins := as.POSIXlt(r_epStartTime)$min]
 
 
-mtusUKEpisodes_DT[, weekdayLunch := ifelse(is_eating_m == 100 & hour >= 12 & hour <= 14 & 
+mtusUKEpisodes_DT[, weekdayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 14 & 
                                              r_dow != "Saturday" & r_dow != "Sunday",
-                                                      100, # is weekday lunch
+                                                      1, # is weekday lunch
                                                       0 # is not
                                                       )
                              ]
+
 # check - should be weekdays only
 #table(mtusUKEpisodes_DT$weekdayLunch,
 #      mtusUKEpisodes_DT$r_dow,
@@ -287,8 +345,8 @@ mtusUKEpisodes_DT[, weekdayLunch := ifelse(is_eating_m == 100 & hour >= 12 & hou
 
 # > createDinner ----
 # flag dinner
-mtusUKEpisodes_DT[, dinner := ifelse(is_eating_m == 100 & hour >= 17 & hour < 22,
-                                                      100, # is dinner
+mtusUKEpisodes_DT[, dinner := ifelse(is_eating_m == 1 & hour >= 17 & hour < 22,
+                                                      1, # is dinner
                                                       0 # is not
                                                       )
                              ]
@@ -300,9 +358,9 @@ mtusUKEpisodes_DT[, dinner := ifelse(is_eating_m == 100 & hour >= 17 & hour < 22
 
 # > createSundayLunch ----
 # flag sunday lunch
-mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 100 & hour >= 12 & hour <= 15 &
+mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 1 & hour >= 12 & hour <= 15 &
                                             r_dow == "Sunday",
-                                          100, # is sunday lunch
+                                          1, # is sunday lunch
                                           0 # is not
                                           )
                              ]
@@ -312,60 +370,53 @@ mtusUKEpisodes_DT[, sundayLunch := ifelse(is_eating_m == 100 & hour >= 12 & hour
 #      useNA = "always"
 #      )
 
-# > Create a simpler location ----
-mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "at own home",
-	"Home",
-	NA
-	)
-	]
-mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "at another\342\200\231s home",
-	"Family/friends",
-	ba_eloc
-	)
-	]
-mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "at school" | eloc == "at workplace",
-	"Work or school",
-	ba_eloc
-	)
-	]
-mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "at place of worship" | eloc == "at restaurant, bar etc" | 
-	eloc == "at services or shops" | eloc == "travelling" | eloc == "other locations",
-	"Out (somewhere)",
-	ba_eloc
-	)
-	]
-mtusUKEpisodes_DT[, ba_eloc := ifelse(eloc == "location unknown",
-	"Unknown",
-	ba_eloc
-	)
-	]
-
 # > Create the halfhour indicator table ----
 # Uses the processed episodes to aggregate
 mtusUKHalfhourIndicator_DT <- mtusUKEpisodes_DT[,
                     .(
                       n_main_cook_eps = sum(is_cooking_m),
-                      n_main_eat_eps = sum(is_eating_m)
+                      n_main_eat_eps = sum(is_eating_m),
+                      n_is_eating_mHome_eps = sum(is_eating_mHome),
+                      n_is_eating_mFf_eps = sum(is_eating_mFf),
+                      n_is_eating_mWs_eps = sum(is_eating_mWs),
+                      n_is_eating_mOut_eps = sum(is_eating_mOut)
                     ),
                     by = .(survey, ba_survey, season, ba_diarypid, ba_eloc, r_dow, ba_weekday, mtrav, st_halfhour)
                     ]
 mtusUKHalfhourIndicator_DT[, any_cook_m := ifelse(n_main_cook_eps > 0,
-                           100, # at least 1 episode of cooking
+                           1, # at least 1 episode of cooking
                            0)
 ]
-
 mtusUKHalfhourIndicator_DT[, any_eat_m := ifelse(n_main_eat_eps > 0,
-                           100, # at least 1 episode of eating
+                           1, # at least 1 episode of eating
                            0)
 ]
+mtusUKHalfhourIndicator_DT[, any_is_eating_mHome_eps := ifelse(n_is_eating_mHome_eps > 0,
+                           1, # at least 1 episode of eating
+                           0)
+]
+mtusUKHalfhourIndicator_DT[, any_is_eating_mFf_eps := ifelse(n_is_eating_mFf_eps > 0,
+                           1, # at least 1 episode of eating
+                           0)
+]
+mtusUKHalfhourIndicator_DT[, any_is_eating_mWs_eps := ifelse(n_is_eating_mWs_eps > 0,
+                           1, # at least 1 episode of eating
+                           0)
+]
+mtusUKHalfhourIndicator_DT[, any_is_eating_mOut_eps := ifelse(n_is_eating_mOut_eps > 0,
+                           1, # at least 1 episode of eating
+                           0)
+]
+```
 
+```{r loadUkSurveys}
 # Load survey ----
 scmd <- paste0("gunzip -c ", sfile)
 mtusUKSurvey_DT <- fread(scmd)
 setkey(mtusUKSurvey_DT, ba_diarypid)
+```
 
-
-# Survey processing ----
+```{r processUkSurveys}
 # > drop 1995 ----
 mtusUKSurvey_DT <- subset(mtusUKSurvey_DT, survey != 1995)
 
@@ -383,8 +434,10 @@ svyMtusUKSurveyUniq_DT <- svydesign(ids = ~ba_pid,
                                     weight = ~propwt, 
                                     data = mtusUKSurveyUniq_DT
 )
+```
 
-# Join the survey to the processed episodes ----
+```{r mergeUkData}
+# Merge the survey to the processed episodes ----
 setkey(mtusUKEpisodes_DT, ba_diarypid)
 setkey(mtusUKSurvey_DT, ba_diarypid)
 mtusUKEpisodes_DTj <- merge(mtusUKEpisodes_DT, mtusUKSurvey_DT)
@@ -408,8 +461,7 @@ mtusUKHalfhourIndicator_DTj <- merge(mtusUKHalfhourIndicator_DT, mtusUKSurvey_DT
 svyMtusUKHalfhourIndicator_DTj <- svydesign(ids = ~ba_diarypid, 
                                   weight = ~propwt, 
                                   data = mtusUKHalfhourIndicator_DTj
-) # the data table is now part of the survey object
-
+)
 ```
 
 Key codes in the MTUS:
@@ -558,7 +610,10 @@ Brief discussion of how we code weekday lunch, weekday dinner and sunday lunch i
 
 Here we use the MTUS (UK) and French data to look at change in cooking (& eating?) over the last 30 years through the lenses of the three meal type.
 
-XX ? use the definition as 'at least one episode in the half hour'? XX
+> Need to decide whether to use:
+>  * % of episodes OR
+>  * % of halfhours in which the activity was recorded at least once (= 'any in the  half hour' indicator) 
+> I have tested the two approaches below and they seem to give similar results...?
 
 
 ## The distribution of cooking and eating as main activities
@@ -615,7 +670,7 @@ kable(caption = "UK: Weighted proportion of episodes reported as eating as a mai
 
 However as the introduction to this chapter explained, the concern here is less with gender inequalities per se but more with the porentially changing temporal distronution of cooking and eating and the role that gendered norms may play. The following charts show the weighted distribution of cooking as a main activity across time of day and day of the week for the different surveys for all adults.
 
-The first chart shows the results using the '% of episodes' per half hour whilst the second shows the results using the 'any in the half hour' indicator.
+The first chart shows the results using the '% of episodes' recorded as cooking in each half hour whilst the second shows the results using the 'any in the  half hour' indicator. We do not see substantial differences.
 
 ```{r cookingByHalfhourEps}
 
@@ -677,7 +732,7 @@ ggplot(it, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
-The following charts show the distribution of eating across time of day and day of the week for the different surveys.
+The following charts show the distribution of eating across time of day and day of the week for the different surveys. Again the first chart shows the % of episodes recorded as eating whilst the second uses the 'any in the  half hour' indicator. Again we do not see substantial differences.
 
 ```{r eatingByHalfhourEps}
 
@@ -739,7 +794,7 @@ ggplot(it, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
-XX Patterns look similar - shall we stick with the % of episodes? XX
+> XX The % episodes & 'any in the  half hour' indicator patterns look similar - shall we stick with the % of episodes? See also further comparisons in the Annex Section 8.2 XX
 
 XX Brief discussion of our consequential interest in patterns of weekday lunch, weekday dinner and sunday lunch and discussion of how we code them in the MTUS: XX
 
@@ -748,9 +803,8 @@ XX Brief discussion of our consequential interest in patterns of weekday lunch, 
  * Sunday lunch is coded as any eating between 12:00 and 15:00 on Sundays
 
 
-The following tables summarise the prevalence of these 'eating practices' in the different surveys.
+The following tables summarise the prevalence of these 'eating practices' in the different UK surveys.
 
-Weekday lunch:
 ```{r weekdayLunchSummary}
 # weekday lunch ----
 weekdayLunchWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
@@ -774,7 +828,7 @@ kable(caption = "UK: Weighted proportion of episodes coded as weekday lunch as a
       )
 ```
 
-Dinner:
+
 ```{r dinnerSummary}
 # dinner
 dinnerWm <- svyby(~dinner, # the variable to calculate the stat for
@@ -798,7 +852,7 @@ kable(caption = "UK: Weighted proportion of episodes coded as dinner as a main a
       )
 ```
 
-Sunday lunch:
+
 ```{r sundayLunchSummary}
 # dinner
 sundayLunchWm <- svyby(~sundayLunch, # the variable to calculate the stat for
@@ -827,9 +881,10 @@ kable(caption = "UK: Weighted proportion of episodes coded as sunday lunch as a 
 		- What changed in history -> energy implications
 		- What varies between regions -> energy implications
 
-```{r weekdayEating}
-st <- svyby(~is_eating_m, # the variable to calculate the stat for
-                   ~st_halfhour + ba_survey.x + ba_eloc, # the factors
+```{r weekdayEatingAtHome}
+# at home
+st <- svyby(~is_eating_mHome, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x, # the factors
                    subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday"), # the data in survey form
                    svymean # the stat function
                    )
@@ -837,18 +892,17 @@ st <- svyby(~is_eating_m, # the variable to calculate the stat for
 ggplot(st, aes(x = as.POSIXct(st_halfhour, 
                                format = "%H:%M", 
                                tz="UTC"),
-                            y = is_eating_m,
+                            y = is_eating_mHome*100,
                colour = as.factor(ba_survey.x)
                             )
        ) +
-  ggtitle("Eating in the UK: % of episodes per halfhour on weekdays by location") +
+  ggtitle("Eating at home in the UK \n % of episodes per halfhour on weekdays") +
   geom_line() + 
   scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
   theme(legend.title = element_blank()) +
   labs(x = "Time",
        y = "%"
   ) +
-  facet_grid(ba_eloc ~ .) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
   theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
@@ -901,7 +955,7 @@ MTUS episodes per month by year
 
 ```{r ukEpisodesPerMonthTable}
 
-kable(
+kable(caption="UK episodes per month by survey",
   table(mtusUKEpisodes_DT$r_month, mtusUKEpisodes_DT$ba_survey)
 )
 
@@ -910,7 +964,7 @@ kable(
 MTUS episodes per season by year
 ```{r ukEpisodesPerSeasonTable}
 
-kable(
+kable(caption="UK episodes per season by survey",
   table(mtusUKEpisodes_DT$season, mtusUKEpisodes_DT$ba_survey)
 )
 
@@ -921,38 +975,23 @@ MTUS episode locations per year
 
 ```{r ukLocationTable}
 
-kable(
+kable(caption="UK episodes per location (original) by survey",
   table(mtusUKEpisodes_DT$eloc, mtusUKEpisodes_DT$ba_survey)
 )
 
 ```
 
-How frequent are multiple episodes of cooking or eating per half hour?
-
-```{r testHalfHourIndicator}
-
-stem(mtusUKHalfhourIndicator_DT$n_main_cook_eps)
-
-stem(mtusUKHalfhourIndicator_DT$n_main_cook_eps)
-# So there must be a few periods where there is a lot of episode change e.g. because of changing 'with' or secondary acts (for example)
-```
-
-Not frequent at all!
 
 ## Testing methods to analyse temporal distributions of cooking & eating episodes
 In order to control for the potentially different levels of reporting due to the different diary slot durations, we could also calculate an indicator which is 1 if at least one epsiode in a
 given half hour is reported to be the activity of interest and 0 otherwise. In the case of the 1974 data where the diary slot duration was 30 minutes there
-will be no difference. However in the case of the other diaries where data was collected in slots of 15 minutes (1983, 1987, 1995) or 10 minutes (2000/1,
+will be no difference. However in the case of the other diaries where data was collected in slots of 15 minutes (1983, 1987) or 10 minutes (2000/1,
 2005) duration, this will have the effect of increasing the apparent rate as the denominator is no longer the sum of all episodes in the half hour but the
 (lower) number of half hours.
 
 The tables below show the distribution of these indicators across years.
 
 ```{r ukHHIndicatorTable}
-# Create halfhour indicator table for cooking & eating (only)
-# Keep survey & ba_diarypid for linkage if needed
-
-
 kable(caption = "Cooking: Half hour indicator summaries (unweighted)",
   mtusUKHalfhourIndicator_DT[,
                     .(
@@ -975,8 +1014,19 @@ kable(caption = "Cooking: Half hour indicator summaries (unweighted)",
 )
 ```
 
-We would expect there to be a maximum count of 1 in 1974 (the diary slots were 30 minutes long) but higher in the later years (diary slots are shorter). There appear to be some half hours with a lot of episode 'churn' - where the maximum is greater than 4. However the stem plots suggest that these are extremely rare events.
+We would expect there to be a maximum count of 1 in 1974 (the diary slots were 30 minutes long) but higher in the later years (diary slots are shorter). There appear to be some half hours with a lot of episode 'churn' - where the maximum is greater than 4. The following stem and leaf plots show the frequency of multiple episodes of cooking or eating per half hour.
 
+Cooking:
+```{r testNumberCookEpisodesHH}
+stem(mtusUKHalfhourIndicator_DT$n_main_cook_eps)
+```
+
+Eating:
+```{r testNumberEatEpisodesHH}
+stem(mtusUKHalfhourIndicator_DT$n_main_eat_eps)
+```
+
+The stem plots suggest that these are extremely rare events and so can be discounted as affecting the indicator unduly.
 
 In the rest of this section we explore the two different approaches to comparing temporal distirbutions. The first graph in each section simply shows the percentage of episodes in a given half hour that were reported as being the activity of interest.
 
@@ -1066,3 +1116,5 @@ Analysis completed in: `r round(Sys.time() - starttime, 3)` seconds using [knitr
 
 ***
 __Footnotes:__
+
+# References
