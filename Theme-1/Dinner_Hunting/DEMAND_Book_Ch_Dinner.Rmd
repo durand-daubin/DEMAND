@@ -111,7 +111,7 @@ In both the Uk and France, daily load curves reveal a similar shape with a low c
 
 Regarding the daily dynamic, electric consumption drops regularly at night in Great Britain, while resistance points are observed in France where a peak at 11PM reveals the massive use of automated electric hot water tanks, in association with off peak tariffs. A last difference is the observed drop in consumption before the evening peak arises in France, while the peak directly builds up from the plateau in Great Britain. This drop results in a lower relative spread between the minimum and maximum demand of the day (28% in France vs. 49% in Great Britain).
 
-![Seasonal daily electricity total demand in Great Britain and France](figure/fig1.png)
+![Seasonal daily electricity total demand in Great Britain and France](figure/grid-level-profiles.png)
 
 A possible footprint of the lunch break can be spotted in both countries. This trace is quite weak but more noticeable in France. In happens at 12:30 and 13:00 respectively in Great Britain and France. In this case it’s also preceded and followed by a small drop. Lunch peaks appear more clearly during the week-end days, when it is easier to distinguish from work demand (services, industry and agriculture). Because of the weak intensity of this signal, it seems more difficult to study variations in the midday peak than in the evening peak.
 In both countries, the maximum demand is observed in the early evening of Decembre and January, at 17:30 in Great Britain and 19:00 in France, while the sun sets respectively around 16:00 (Birmingham) and 17:00 (Bourges). With respect to sunlight, the peak occurs 30 minutes later in France. In both cases, the seasonal evolution shows the appearance of a lighting peak around 21:30 in August. This peak grows and moves earlier each month until its maximum in December, then it moves back later and flattens until July. This dynamic clearly follows the seasonal changes in the sunset time: the peak grows when darkness coincides with more activities or more places in use (Pigenet, 2009). Interestingly this peak of activity can already be identified during the summer months, especially on the GB curves, before it’s swallowed and magnified by lighting demand when the night comes early enough. Contrary to the light demand, this peak is fixed over the entire year at 17:30 and 19:00 (18:00 with respect to the sun) as mentioned earlier.
@@ -762,7 +762,7 @@ ggplot(it, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
-Overall we can observe more reported early morning weekday food preparation on weekdays in later years compared to 1974 and less at weekday lunch times. Food preparation also appears to have shifted to later in the day by 2005. The same ealry morning shifts are also seen on Saturdays and Sundays but the most notable weekend change is the reduction in lunchtime food preparation on Sundays with a shift towards the evening peak period (17:00 - 18:00).
+Overall we can observe more reported early morning weekday food preparation on weekdays in later years compared to 1974 and less at weekday lunch times. Food preparation also appears to have shifted to later in the day by 2005. The same ealry morning shifts are also seen on Saturdays and Sundays but the most notable weekend change is the reduction in lunchtime food preparation on Sundays with a shift towards the evening peak period (17:00 - 18:00). Overall substantial change may have taken place between 1974 and 1985 but with a slower rate of change thereafter confirming Cheng et al’s results for the reduction in total time spent preparing food in the UK between 1974 and 2000 (Cheng et al. 2007, 46). The analysis also highlights the disappearance of late evening food preparation which may have been associated with preparing food for the next day or for a late ‘supper’ (Cheng et al. 2007).
 
 The following charts show the distribution of eating across time of day and day of the week for the different surveys. Again the first chart shows the % of episodes recorded as eating whilst the second uses the 'any in the  half hour' indicator. Again we do not see substantial differences although as before the suppression of multiple episodes means that the apparebnt magnitude of change over time is (correctly?) reduced.
 
@@ -952,34 +952,7 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
-```{r weekdayEatingAtHome2005BySeason}
-# only for 2005 (contemporary)
-st <- svyby(~is_eating_mHome, # the variable to calculate the stat for
-                   ~st_halfhour + season, # the factors
-                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday" & ba_survey.x == 2005), # the data in survey form
-                   svymean # the stat function
-                   )
-
-ggplot(st, aes(x = as.POSIXct(st_halfhour, 
-                               format = "%H:%M", 
-                               tz="UTC"),
-                            y = is_eating_mHome*100,
-               colour = as.factor(season)
-                            )
-       ) +
-  ggtitle("Eating at home in the UK by season\n % of episodes per halfhour on weekdays") +
-  geom_line() + 
-  scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
-  theme(legend.title = element_blank()) +
-  labs(x = "Time",
-       y = "%"
-  ) +
-  scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
-  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0)) +
-  ylim(0, 30)
-# could add confints to this but...
-```
+X commentary
 
 ```{r weekdayEatingAtFf}
 st <- svyby(~is_eating_mFf, # the variable to calculate the stat for
@@ -1009,6 +982,8 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
+X commentary
+
 ```{r weekdayEatingAtWs}
 st <- svyby(~is_eating_mWs, # the variable to calculate the stat for
                    ~st_halfhour + ba_survey.x, # the factors
@@ -1036,6 +1011,8 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
   ylim(0, 30)
 # could add confints to this but...
 ```
+
+X commentary
 
 ```{r weekdayEatingOut}
 # at home
@@ -1067,6 +1044,36 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
 ```
 
 NB: eating out could include travelling.
+
+The following shows weekday eating at home by season for the year 2000 in the UK.
+```{r weekdayEatingAtHome2000BySeason}
+# only for 2000 ('contemporary') = 2000 has all seasons and largest sample
+st <- svyby(~is_eating_mHome, # the variable to calculate the stat for
+                   ~st_halfhour + season, # the factors
+                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday" & ba_survey.x == 2000), # the data in survey form
+                   svymean # the stat function
+                   )
+
+ggplot(st, aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"),
+                            y = is_eating_mHome*100,
+               colour = as.factor(season)
+                            )
+       ) +
+  ggtitle("Eating at home in the UK by season in 2000\n % of episodes per halfhour on weekdays") +
+  geom_line() + 
+  scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title = element_blank()) +
+  labs(x = "Time",
+       y = "%"
+  ) +
+  scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0)) +
+  ylim(0, 30)
+# could add confints to this but...
+```
 
 ## Dinner
 		- Contemporary : timing, location, participants, seasons, who cooks
@@ -1106,6 +1113,8 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
+X commentary
+
 ```{r sundayEatingAtFf}
 st <- svyby(~is_eating_mFf, # the variable to calculate the stat for
                    ~st_halfhour + ba_survey.x, # the factors
@@ -1133,6 +1142,8 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
   ylim(0, 30) 
 # could add confints to this but...
 ```
+
+X commentary
 
 ```{r sundayEatingAtHome}
 # at home
@@ -1163,6 +1174,8 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
+X commentary
+
 ```{r sundayEatingOut}
 # at home
 st <- svyby(~is_eating_mOut, # the variable to calculate the stat for
@@ -1192,9 +1205,21 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
+X commentary
+
+X from BA DEMAND conf paper:
+
+X need to re-create this using R
+
+Further analysis focusing suggests that preparing ‘Sunday lunch’ has declined for most age groups and especially for those aged under 64 (below).
+
+![Seasonal daily electricity total demand in Great Britain and France](figure/sunday_lunch_from_demand_conf.png)
+
+Preparing Sunday lunch has also markedly declined for the middle and highest income groups but less so for the lowest income group who are also more likely to be over retirement age. This does not imply, of course, that less eating is done on Sunday – just that some of it, particularly for higher income groups, may now be done outside the home or later in the day (c.f. Figure XX and also (Cheng et al. 2007)).
+
 # A peak set on cooking: regional electric demand and cooking times
 
-XX from your DEMAND conference paper - should we include this here? XX
+XX from MD DEMAND conference paper - should we include this here? XX
 
 # Discussion
 Draw together the threads of the results to discuss:
