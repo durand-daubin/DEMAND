@@ -676,7 +676,7 @@ kable(caption = "UK: Weighted proportion of episodes reported as eating as a mai
 
 However as the introduction to this chapter explained, the concern here is less with gender inequalities per se but more with the porentially changing temporal distronution of cooking and eating and the role that gendered norms may play. The following charts show the weighted distribution of cooking as a main activity across time of day and day of the week for the different surveys for all adults.
 
-The first chart shows the results using the '% of episodes' recorded as cooking in each half hour whilst the second shows the results using the 'any in the  half hour' indicator. We do not see substantial differences.
+The first chart shows the results using the '% of episodes' recorded as cooking in each half hour whilst the second shows the results using the 'any in the half hour' indicator. We do not see substantial differences between the charts although the 'any in the half hour' indicator appears to underestimate differences due to the suppression of multiple episodes in the later surveys.
 
 ```{r cookingByHalfhourEps}
 
@@ -693,7 +693,8 @@ ggplot(epst, aes(x = as.POSIXct(st_halfhour,
                colour = as.factor(ba_survey.x)
                             )
        ) +
-  ggtitle("Cooking in the UK \n % of episodes per halfhour by Saturday/Sunday/weekday (mean)") +
+  ggtitle("Cooking in the UK on Saturday/Sunday/weekday (mean)
+          % of episodes per halfhour") +
   geom_line() + 
   scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
   #scale_color_discrete(hi = "green", lo = "black") +
@@ -723,7 +724,8 @@ ggplot(it, aes(x = as.POSIXct(st_halfhour,
                colour = as.factor(ba_survey.x)
                             )
        ) +
-  ggtitle("Cooking in the UK \n % of any per halfhour by Saturday/Sunday/weekday (mean)") +
+  ggtitle("Cooking in the UK on Saturday/Sunday/weekday (mean)
+          % of any per halfhour") +
   geom_line() + 
   scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
   #scale_color_discrete(hi = "green", lo = "black") +
@@ -738,7 +740,11 @@ ggplot(it, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
-The following charts show the distribution of eating across time of day and day of the week for the different surveys. Again the first chart shows the % of episodes recorded as eating whilst the second uses the 'any in the  half hour' indicator. Again we do not see substantial differences.
+Overall we can observe more reported early morning weekday food preparation on weekdays in later years compared to 1974 and less at weekday lunch times. Food preparation also appears to have shifted to later in the day by 2005. The same ealry morning shifts are also seen on Saturdays and Sundays but the most notable weekend change is the reduction in lunchtime food preparation on Sundays with a shift towards the evening peak period (17:00 - 18:00).
+
+The following charts show the distribution of eating across time of day and day of the week for the different surveys. Again the first chart shows the % of episodes recorded as eating whilst the second uses the 'any in the  half hour' indicator. Again we do not see substantial differences although as before the suppression of multiple episodes means that the apparebnt magnitude of change over time is (correctly?) reduced.
+
+XX On this basis I am inclined to think that the 'any in the  half hour' indicator should be preferred? See also further comparisons in the Annex Section 8.2 XX
 
 ```{r eatingByHalfhourEps}
 
@@ -755,7 +761,8 @@ ggplot(epst, aes(x = as.POSIXct(st_halfhour,
                colour = as.factor(ba_survey.x)
                             )
        ) +
-  ggtitle("Eating in the UK \n % of episodes per halfhour by Saturday/Sunday/weekday (mean)") +
+  ggtitle("Eating in the UK on Saturday/Sunday/weekday (mean)
+          % of episodes per halfhour") +
   geom_line() + 
   scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
   #scale_color_discrete(hi = "green", lo = "black") +
@@ -785,6 +792,9 @@ ggplot(it, aes(x = as.POSIXct(st_halfhour,
                colour = as.factor(ba_survey.x)
                             )
        ) +
+  ggtitle("Cooking in the UK on Saturday/Sunday/weekday (mean)
+          % of episodes per halfhour") +
+  
   ggtitle("Eating in the UK \n % of any per halfhour by Saturday/Sunday/weekday (mean)") +
   geom_line() + 
   scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
@@ -800,7 +810,7 @@ ggplot(it, aes(x = as.POSIXct(st_halfhour,
 # could add confints to this but...
 ```
 
-> XX The % episodes & 'any in the  half hour' indicator patterns look similar - shall we stick with the % of episodes? See also further comparisons in the Annex Section 8.2 XX
+As with cooking, there have been notable changes in the temporal pattern of eating in the UK over the survey years. There has been an increase in early morning eating on all days but especially on weekdays (earlier brieakfast) and a decline in lunchtime eating on all days again especially on weekdays. Weekday eating in 2005 carried on later into the evening compared to earlier years and this was also the case on weekends with a notable reduction in the prevalence of sunday lunchtime eating.
 
 XX Brief discussion of our consequential interest in patterns of weekday lunch, weekday dinner and sunday lunch and discussion of how we code them in the MTUS: XX
 
