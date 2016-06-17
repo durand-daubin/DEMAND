@@ -2,7 +2,7 @@
 title: 'The Changing Timing of Cooking in the United Kingdom and France: Implications
   for Energy Demand'
 author: "Mathieu Durand-Daubin, Ben Anderson (mathieu.durand-daubin@edf.fr; b.anderson@soton.ac.uk)"
-date: 'Last run at: 2016-06-17 15:51:01'
+date: 'Last run at: 2016-06-17 17:33:13'
 output:
   pdf_document:
     fig_caption: yes
@@ -71,17 +71,37 @@ In this research we study the energy footprint of practices which are widely sha
 \pagebreak
 
 # Introduction
-Discussion of temporal nature of electricity demand, interest in peaks (reasons for this) and the ability to shift in general.
 
-Recent work (DECC HES?) has highlighted the role of cooking (and subequently eating) in generating demand for electricity during the evening peak period (give times).
+Continuously matching energy generation and demand in time is at the heart electric systems because of their very low storage capacity. This balance generally relies on the diversity and flexibility of the power sources that respond to demand together with attempts to intervene on the demand side, by means of prices reflecting varying generation and transport costs (Yakubovitch, 2005), information, automation or direct load control.
 
-At the same time recent work (Southerton et al) has shown how the habits and practices of eating have changed over time in the UK anbd Spain. Although this work only provides an analysis of the duration of acts (episodes) it provides evidence of the ongoing evolution of eating habits which may have implications for cooking and thus for electricity/energy demand.
+Increasing shares of intermittent renewable sources in the generation mix, in association with the rise of smart grids, renew the need and expectations for demand side management (Strengers, 2013, Torriti, 2016). In particular, consumers are expected to change their behaviours and adapt to the system needs, avoid peak times and absorb energy overcapacities.
 
-It is possible that 're-arranging' cooking habits may be one way to reduce the problematic evening peak electricity demand. However without a more detailed analysis of what kinds of eating (and especially cooking) are already changing and of the variation in cooking practices across the population, we have little idea where to start.
+However, these interventions and injunctions to change behaviour tend to ignore the nature of the practical arrangements to be changed, the fabric of everyday life as it is today, what people have in their hands, and how it relates to energy consumption. Whilst most researchers agree that knowing demand is about understanding what energy is finally consumed for, either focusing on consumers or social practices (Janda, 2011, Shove and Walker, 2015), empirical research struggles to measure the precise role of consumers actions and daily life in the amount of energy they consume. The study of energy demand diversity and evolutions mainly takes into account buildings and appliances efficiency, environmental constraints and consumers’ doings (occupation, activity, gesture or appliance usage). In the most part such studies fail to show any significant relationship between different 'doings' and the variations in energy consumption measured on a large scale (Cayla et al., 2010, Cayla, 2011, Morley and Hazas, 2011, Huebner et al., 2015). Even if the direct link between the use of specific appliances and their energy consumption can be measured (Durand-Daubin, 2013), it seems this link blurs into the complexity of the many practices performed over a year or across large samples of consumers, allowing only steady infrastructures and shared contingency (i.e. seasons) to visibly shape energy demand. More ambitious measurement studies involving energy consumption and people activities are currently under way (Grünevald and Layberry, 2015), and should help to understand how and where the link between practices and energy consumption can be made.
 
-Digression on time use as a footprint/proxy for practices?
+Still, social practices have regular structures based on repetition, synchronisation or sequencing, that can develop on a large scale, and should not just result in random noise. This, after all, is what generates 'peak demand' in the first place. In this chapter, we consider the energy footprint of practices which are widely shared, highly regular, and key markers in the social organisation: eating practices (Southerton et al. 2011, Isaksson and Ellegård, 2015, De Saint Pol, 2006). For this purpose, instead of collecting tailored data, implying high costs and difficult generalisation, we use time use dairy data to analyse synchronised patterns of practices and make an attempt to link people's doings and electric consumption at a regional level based on publicly available network level demand data. Twenty four different areas for which people activities as reported in national time use surveys and electric load curves reported by transport grid operators were studied: Great Britain, France (Continental), and the 22 French regions. A prior study explored the quantitative identification of distinct eating practices based on the above mentioned time use surveys data (Durand-Daubin and Anderson, 2014). Different types of meals were defined in terms of time, durations, secondary activities, participants and places. Surrounding activities allowed to specify the meanings and constraints attached to each type of them. The distributions of these practices were studied across several time scales (week days, seasons, and decades from 1974 to 2010) and areas (UK, France and regions) and the results discussed here build on this earlier work.
+
+In particular, this chapter focuses on the link between people activities around diner time and the evening peak observed in the electric system load curve in both countries. A number of studies have already described this peak in terms of seasonality and underlying usage of appliances or energy services (heating, lighting, cooking…). (XX DECC HES? XX) This peak is suggested to be rooted in the residential sector (Poignant and Sido, 2011), to be highly seasonal, peaking in winter and disappearing in summer, as a result of being essentially made of lighting so that demand varies directly with sunset times (Boßmann et al., 2015, Pigenet, 2009). The peak is also often associated with the rise of active occupancy between the times when people go back home and when they go to sleep (M.A.López-Rodríguez et al., 2011), or with the overlapping of tertiary buildings and residential lighting demand, when people are in transition between these two locations (Pigenet, 2009). 
+
+However, much less attention has been paid to the role that cooking and eating might play in the constitution of evening peak demand and how wider social trends in the timing of these two activities might already be leading to shifts in demand for electricity in the UK and France. It is possible that 're-arranging' cooking habits may be one way to reduce the problematic evening peak electricity demand. However without a more detailed analysis of what kinds of eating (and especially cooking) are already changing and of the variation in cooking practices across the population, we have little idea where to start. Recent work (Southerton et al) has shown how the habits and practices of eating have changed over time in the UK anbd Spain. Although this work only provides an analysis of the duration of acts (episodes) it provides evidence of the ongoing evolution of eating habits which may have implications for cooking and thus for electricity/energy demand.
+
+>XX merge the next two paragraphs? XX
+
+In that perspective we start with the description of electric peaks so as to identify variations between seasons and areas, and define which of them are likely to be explained by people doings, as opposed to environmental contingencies. Then the variations in cooking and eating across regions and seasons are compared with electric peaks to assess which activities have the most impact on the shaping of the peak. Then we relate back the differences in the timing of these activities to the various eating practices earlier defined.
 
 This paper uses nationally representative time use diary data form the United Kingdom and France to compare and contrast the changing timing of cooking and eating in each country over the last 30 years. It then uses the most recent data to analyse and comapre the social and spatial variation in current eating practices in each country. Finally the paper provides preliminary analysis of French regional residential electricity consumption data which highlights the role of regional variation in cooking practices. The paper concludes with a discussion of the implications of the results for electricity demand in the UK and France and outlines directions for future research
+
+# A seasonal peak: evening electric demand in Great Britain and France
+
+In both the Uk and France, daily load curves reveal a similar shape with a low consumption in the early morning, a plateau from 8AM to 4PM and a peak in the evening (figure 1). However a number of structural differences can be noticed. The level of electric consumption is 50% higher in France. This difference obviously remains when expressing this consumption level by inhabitants. It comes from a higher electrification of space heating in the residential and services areas, and of the specific industrial processes in France, while more gas is used in Great Britain. In both countries, the level of electric consumption is higher in winter, all day long, due to the need for more light as a result of a lower sun. But this phenomenon is much stronger in France due to electric space heating demand increasing on colder days. In addition, in the same country, August shows a very low level with a slower increase in the morning, which is the sign of a high rate of workers on holidays. 
+
+Regarding the daily dynamic, electric consumption drops regularly at night in Great Britain, while resistance points are observed in France where a peak at 11PM reveals the massive use of automated electric hot water tanks, in association with off peak tariffs. A last difference is the observed drop in consumption before the evening peak arises in France, while the peak directly builds up from the plateau in Great Britain. This drop results in a lower relative spread between the minimum and maximum demand of the day (28% in France vs. 49% in Great Britain).
+
+![Seasonal daily electricity total demand in Great Britain and France](figure/grid-level-profiles.png)
+
+A possible footprint of the lunch break can be spotted in both countries. This trace is quite weak but more noticeable in France. In happens at 12:30 and 13:00 respectively in Great Britain and France. In this case it’s also preceded and followed by a small drop. Lunch peaks appear more clearly during the week-end days, when it is easier to distinguish from work demand (services, industry and agriculture). Because of the weak intensity of this signal, it seems more difficult to study variations in the midday peak than in the evening peak.
+In both countries, the maximum demand is observed in the early evening of Decembre and January, at 17:30 in Great Britain and 19:00 in France, while the sun sets respectively around 16:00 (Birmingham) and 17:00 (Bourges). With respect to sunlight, the peak occurs 30 minutes later in France. In both cases, the seasonal evolution shows the appearance of a lighting peak around 21:30 in August. This peak grows and moves earlier each month until its maximum in December, then it moves back later and flattens until July. This dynamic clearly follows the seasonal changes in the sunset time: the peak grows when darkness coincides with more activities or more places in use (Pigenet, 2009). Interestingly this peak of activity can already be identified during the summer months, especially on the GB curves, before it’s swallowed and magnified by lighting demand when the night comes early enough. Contrary to the light demand, this peak is fixed over the entire year at 17:30 and 19:00 (18:00 with respect to the sun) as mentioned earlier.
+
+This suggests that the evening peak results from the amount of overlapping between a seasonal environmental contingency (night) and a social phenomenon which depends on the country but is fixed across the year. In the next sections we address the question of the cooking and eating practices that could possibly influence the building and timing of this year-round fixed peak.
 
 # Cooking, Eating and Energy
 Here we need to talk about the changing nature of cooking & eating from the literature (if there is any) - quant (e.g. Southerton) & qual (e.g. Warde).
@@ -120,7 +140,7 @@ Discussion of stats tools used. For UK, R and in particular:
 
 
 ```
-## Read 46.9% of 1364047 rowsRead 89.4% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
+## Read 53.5% of 1364047 rowsRead 93.1% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
 ```
 
 
@@ -223,6 +243,7 @@ Similarly, the reporting of eating is also faily constant over time and was repo
 
 Brief discussion of how we code weekday lunch, weekday dinner and sunday lunch in the French data
 
+
 # The changing temporality of cooking and eating in the UK and France
 
 Here we use the MTUS (UK) and French data to look at change in cooking (& eating?) over the last 30 years through the lenses of the three meal type.
@@ -231,6 +252,7 @@ Here we use the MTUS (UK) and French data to look at change in cooking (& eating
 >  * % of episodes OR
 >  * % of halfhours in which the activity was recorded at least once (= 'any in the  half hour' indicator) 
 > I have tested the two approaches below and they seem to give similar results...?
+
 
 
 ## The distribution of cooking and eating as main activities
@@ -271,7 +293,7 @@ The first chart shows the results using the '% of episodes' recorded as cooking 
 
 ![plot of chunk cookingByHalfhourIndicator](figure/cookingByHalfhourIndicator-1.png)
 
-Overall we can observe more reported early morning weekday food preparation on weekdays in later years compared to 1974 and less at weekday lunch times. Food preparation also appears to have shifted to later in the day by 2005. The same ealry morning shifts are also seen on Saturdays and Sundays but the most notable weekend change is the reduction in lunchtime food preparation on Sundays with a shift towards the evening peak period (17:00 - 18:00).
+Overall we can observe more reported early morning weekday food preparation on weekdays in later years compared to 1974 and less at weekday lunch times. Food preparation also appears to have shifted to later in the day by 2005. The same ealry morning shifts are also seen on Saturdays and Sundays but the most notable weekend change is the reduction in lunchtime food preparation on Sundays with a shift towards the evening peak period (17:00 - 18:00). Overall substantial change may have taken place between 1974 and 1985 but with a slower rate of change thereafter confirming Cheng et al’s results for the reduction in total time spent preparing food in the UK between 1974 and 2000 (Cheng et al. 2007, 46). The analysis also highlights the disappearance of late evening food preparation which may have been associated with preparing food for the next day or for a late ‘supper’ (Cheng et al. 2007).
 
 The following charts show the distribution of eating across time of day and day of the week for the different surveys. Again the first chart shows the % of episodes recorded as eating whilst the second uses the 'any in the  half hour' indicator. Again we do not see substantial differences although as before the suppression of multiple episodes means that the apparebnt magnitude of change over time is (correctly?) reduced.
 
@@ -318,6 +340,11 @@ The following tables summarise the prevalence of these 'eating practices' in the
 |   2000|       0.51| 0.49|  0.53|
 |   2005|       0.37| 0.33|  0.41|
 
+XX from DEMAND conf paper:
+
+As the descriptive analysis suggest, at noon, lunch gathers more than 45% of the French population in the 30 minutes from 12:30 to 1:00PM, when the British peak only reaches 12% half an our later. The French lunch relies partly on people going back home for lunch, and not only on the more developed canteens in France (Southerton et al., 2011). This difference is repeated later for diner, but French people do not reach the level of synchronicity they do for lunch. Diner peaks at 8:00 in France, two hours after their counterparts, leaving a wide period of four hours and a half with barely no eating activity. In between there is still a small bump revealing tea break and “goûter” between 4:00 and 5:00 in both countries. These marked meal times, and their strong conservation in France against international trends are well described by De Saint-Pol (2006).
+
+Cooking or more general food preparation precede meals. This activity is again more concentrated in France, but we notice the overall amount of time dedicated to food preparation for diner is very large in Great Britain. This is not intuitively consistent with the results produced when uniquely associating cooking and eating episodes in a household which concluded to a third less cooked diners in Great Britain than in France (Durand-Daubin and Anderson, 2014). 
 
 ## Week-day eating
 		- Contemporary : timing, location, participants, seasons, who cooks (content can change depending on the relevance for this type of meal)
@@ -326,13 +353,22 @@ The following tables summarise the prevalence of these 'eating practices' in the
 
 ![plot of chunk weekdayEatingAtHome](figure/weekdayEatingAtHome-1.png)
 
+X commentary
+
 ![plot of chunk weekdayEatingAtFf](figure/weekdayEatingAtFf-1.png)
 
+X commentary
+
 ![plot of chunk weekdayEatingAtWs](figure/weekdayEatingAtWs-1.png)
+
+X commentary
 
 ![plot of chunk weekdayEatingOut](figure/weekdayEatingOut-1.png)
 
 NB: eating out could include travelling.
+
+The following shows weekday eating at home by season for the year 2000 in the UK.
+![plot of chunk weekdayEatingAtHome2000BySeason](figure/weekdayEatingAtHome2000BySeason-1.png)
 
 ## Dinner
 		- Contemporary : timing, location, participants, seasons, who cooks
@@ -346,13 +382,34 @@ NB: eating out could include travelling.
 
 ![plot of chunk sundayCooking](figure/sundayCooking-1.png)
 
+X commentary
+
 ![plot of chunk sundayEatingAtFf](figure/sundayEatingAtFf-1.png)
+
+X commentary
 
 ![plot of chunk sundayEatingAtHome](figure/sundayEatingAtHome-1.png)
 
+X commentary
+
 ![plot of chunk sundayEatingOut](figure/sundayEatingOut-1.png)
 
- 
+X commentary
+
+X from BA DEMAND conf paper:
+
+X need to re-create this using R
+
+Further analysis focusing suggests that preparing ‘Sunday lunch’ has declined for most age groups and especially for those aged under 64 (below).
+
+![Seasonal daily electricity total demand in Great Britain and France](figure/sunday_lunch_from_demand_conf.png)
+
+Preparing Sunday lunch has also markedly declined for the middle and highest income groups but less so for the lowest income group who are also more likely to be over retirement age. This does not imply, of course, that less eating is done on Sunday – just that some of it, particularly for higher income groups, may now be done outside the home or later in the day (c.f. Figure XX and also (Cheng et al. 2007)).
+
+# A peak set on cooking: regional electric demand and cooking times
+
+XX from MD DEMAND conference paper - should we include this here? XX
+
 # Discussion
 Draw together the threads of the results to discuss:
 
@@ -591,7 +648,7 @@ As for cooking, the 'at least once in a given half hour' indicator records sligh
 
 ***
 __Meta:__
-Analysis completed in: 12.197 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+Analysis completed in: 12.517 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
 
 ***
 __Footnotes:__
