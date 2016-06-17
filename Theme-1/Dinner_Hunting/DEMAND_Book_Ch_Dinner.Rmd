@@ -1082,7 +1082,7 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
 # at home
 st <- svyby(~is_eating_mHome, # the variable to calculate the stat for
                    ~st_halfhour + ba_survey.x, # the factors
-                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday"), # the data in survey form
+                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Sunday"), # the data in survey form
                    svymean # the stat function
                    )
 
