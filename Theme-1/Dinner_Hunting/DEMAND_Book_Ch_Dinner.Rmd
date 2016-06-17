@@ -822,7 +822,6 @@ XX Brief discussion of our consequential interest in patterns of weekday lunch, 
 The following tables summarise the prevalence of these 'eating practices' in the different UK surveys.
 
 ```{r weekdayLunchSummary}
-# weekday lunch ----
 weekdayLunchWm <- svyby(~weekdayLunch, # the variable to calculate the stat for
                    ~ba_survey.x, # the factors
                    svyMtusUKEpisodes_DTj, # the data in survey form
@@ -921,12 +920,12 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
   ) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
-  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0)) +
+  ylim(0, 30)
 # could add confints to this but...
 ```
 
 ```{r weekdayEatingAtFf}
-# at home
 st <- svyby(~is_eating_mFf, # the variable to calculate the stat for
                    ~st_halfhour + ba_survey.x, # the factors
                    subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday"), # the data in survey form
@@ -949,12 +948,12 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
   ) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
-  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0)) +
+  ylim(0, 30)
 # could add confints to this but...
 ```
 
 ```{r weekdayEatingAtWs}
-# at home
 st <- svyby(~is_eating_mWs, # the variable to calculate the stat for
                    ~st_halfhour + ba_survey.x, # the factors
                    subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday"), # the data in survey form
@@ -977,7 +976,8 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
   ) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
-  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0)) +
+  ylim(0, 30)
 # could add confints to this but...
 ```
 
@@ -1005,7 +1005,8 @@ ggplot(st, aes(x = as.POSIXct(st_halfhour,
   ) +
   scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
-  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0)) +
+  ylim(0, 30)
 # could add confints to this but...
 ```
 
@@ -1016,12 +1017,124 @@ NB: eating out could include travelling.
 		- What changed in history -> energy implications
 		- What varies between regions -> energy implications
 
-## Sunday lunch
+## Sunday meals
 		- Contemporary : timing, location, participants, seasons, who cooks
 		- What changed in history -> energy implications
 		- What varies between regions -> energy implications
 
+```{r sundayCooking}
+# at home
+st <- svyby(~is_cooking_m, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x, # the factors
+                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Sunday"), # the data in survey form
+                   svymean # the stat function
+                   )
 
+ggplot(st, aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"),
+                            y = is_cooking_m*100,
+               colour = as.factor(ba_survey.x)
+                            )
+       ) +
+  ggtitle("Cooking in the UK \n % of episodes per halfhour on Sundays") +
+  geom_line() + 
+  scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title = element_blank()) +
+  labs(x = "Time",
+       y = "%"
+  ) +
+  scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0))
+# could add confints to this but...
+```
+
+```{r sundayEatingAtFf}
+st <- svyby(~is_eating_mFf, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x, # the factors
+                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Sunday"), # the data in survey form
+                   svymean # the stat function
+                   )
+
+ggplot(st, aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"),
+                            y = is_eating_mFf*100,
+               colour = as.factor(ba_survey.x)
+                            )
+       ) +
+  ggtitle("Eating at friends/family in the UK \n % of episodes per halfhour on Sundays") +
+  geom_line() + 
+  scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title = element_blank()) +
+  labs(x = "Time",
+       y = "%"
+  ) +
+  scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0)) +
+  ylim(0, 30) 
+# could add confints to this but...
+```
+
+```{r sundayEatingAtHome}
+# at home
+st <- svyby(~is_eating_mHome, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x, # the factors
+                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Weekday"), # the data in survey form
+                   svymean # the stat function
+                   )
+
+ggplot(st, aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"),
+                            y = is_eating_mHome*100,
+               colour = as.factor(ba_survey.x)
+                            )
+       ) +
+  ggtitle("Eating at home in the UK \n % of episodes per halfhour on Sundays") +
+  geom_line() + 
+  scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title = element_blank()) +
+  labs(x = "Time",
+       y = "%"
+  ) +
+  scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0)) +
+  ylim(0, 30)
+# could add confints to this but...
+```
+
+```{r sundayEatingOut}
+# at home
+st <- svyby(~is_eating_mOut, # the variable to calculate the stat for
+                   ~st_halfhour + ba_survey.x, # the factors
+                   subset(svyMtusUKEpisodes_DTj, ba_weekday == "Sunday"), # the data in survey form
+                   svymean # the stat function
+                   )
+
+ggplot(st, aes(x = as.POSIXct(st_halfhour, 
+                               format = "%H:%M", 
+                               tz="UTC"),
+                            y = is_eating_mOut*100,
+               colour = as.factor(ba_survey.x)
+                            )
+       ) +
+  ggtitle("Eating out in the UK \n % of episodes per halfhour on Sundays") +
+  geom_line() + 
+  scale_colour_grey(start = 0.8, end = 0.3, guide = guide_legend(reverse=TRUE)) + 
+  theme(legend.title = element_blank()) +
+  labs(x = "Time",
+       y = "%"
+  ) +
+  scale_x_datetime(date_labels = "%H:%M", date_breaks = "2 hours") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0.5)) +
+  theme(strip.text.y = element_text(size = 8, colour = "red", angle = 0)) +
+  ylim(0, 30)
+# could add confints to this but...
+```
 
  
 # Discussion
