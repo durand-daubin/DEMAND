@@ -2,7 +2,7 @@
 title: 'The Changing Timing of Cooking in the United Kingdom and France: Implications
   for Energy Demand'
 author: "Mathieu Durand-Daubin, Ben Anderson (mathieu.durand-daubin@edf.fr; b.anderson@soton.ac.uk)"
-date: 'Last run at: 2016-06-17 13:09:12'
+date: 'Last run at: 2016-06-17 15:51:01'
 output:
   pdf_document:
     fig_caption: yes
@@ -120,7 +120,7 @@ Discussion of stats tools used. For UK, R and in particular:
 
 
 ```
-## Read 59.4% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:03
+## Read 46.9% of 1364047 rowsRead 89.4% of 1364047 rowsRead 1364047 rows and 17 (of 17) columns from 0.299 GB file in 00:00:04
 ```
 
 
@@ -339,12 +339,18 @@ NB: eating out could include travelling.
 		- What changed in history -> energy implications
 		- What varies between regions -> energy implications
 
-## Sunday lunch
+## Sunday meals
 		- Contemporary : timing, location, participants, seasons, who cooks
 		- What changed in history -> energy implications
 		- What varies between regions -> energy implications
 
+![plot of chunk sundayCooking](figure/sundayCooking-1.png)
 
+![plot of chunk sundayEatingAtFf](figure/sundayEatingAtFf-1.png)
+
+![plot of chunk sundayEatingAtHome](figure/sundayEatingAtHome-1.png)
+
+![plot of chunk sundayEatingOut](figure/sundayEatingOut-1.png)
 
  
 # Discussion
@@ -585,7 +591,7 @@ As for cooking, the 'at least once in a given half hour' indicator records sligh
 
 ***
 __Meta:__
-Analysis completed in: 10.906 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
+Analysis completed in: 12.197 seconds using [knitr](https://cran.r-project.org/package=knitr) in [RStudio](http://www.rstudio.com).
 
 ***
 __Footnotes:__
